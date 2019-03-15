@@ -23,7 +23,7 @@ class dexined():
     def __init__(self, args):
 
         self.args = args
-        self.utw = args.use_trained_model
+        self.utw = args.use_trained_weights
         self.img_height = args.image_height
         self.img_width = args.image_width
         if args.vgg16_param and args.use_trained_weights:
@@ -59,7 +59,7 @@ class dexined():
     def get_var_weight_decay(self, name, shape, w_init=None, wd=None):
         """Get variables with weight decay"""
         if w_init is None:
-            w_init = tf.contrib.layers.xavier_initializer_conv2d(uniform=True)
+            w_init = tf.contrib.layers.xavier_initializer(uniform=False)
         var = self.get_var_on_cpu(name, shape, initializer=w_init)
         if wd is not None:
             weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name=name + '_w_loss')
@@ -79,7 +79,7 @@ class dexined():
                                               wd=weight_decay)
                 p = int((ks - 1) / 2)
                 in_padded = tf.pad(input, [[0, 0], [p, p], [p, p], [0, 0]], "CONSTANT")
-                conv = tf.nn.conv2d(input=in_padded, filter=w, stride=stride, padding='VALID', name=name)
+                conv = tf.nn.conv2d(input=in_padded, filter=w, strides=stride, padding='VALID', name=name)
                 if use_bias:
                     b = self.get_var_on_cpu(name=name + '_b', shape=[n_output])
                     conv = tf.nn.bias_add(conv, b)
@@ -95,7 +95,7 @@ class dexined():
                     b = tf.get_variable(name=name + '_b', shape=b_shape, initializer=b_init)
                     conv = tf.nn.bias_add(conv, b)
             if use_bn:
-                conv = tf.nn.batch_normalization(conv)
+                conv = tf.contrib.layers.batch_norm(conv)
 
 
         else:  # for separable convolution *Not implemented for get trained weights*
@@ -110,7 +110,7 @@ class dexined():
                 b = self.get_var_on_cpu(name=name + '_b', shape=[n_output])
                 conv = tf.nn.bias_add(conv, b)
             if use_bn:  # batch normalization
-                conv = tf.nn.batch_normalization(conv)
+                conv = tf.contrib.layers.batch_norm(conv)
         return conv
 
     def max_pool(self, input, name):
@@ -120,21 +120,28 @@ class dexined():
         in_padded = tf.pad(input, [[0, 0], [p, p], [p, p], [0, 0]], "CONSTANT")
         return tf.nn.max_pool(in_padded, ksize=[1, ks, ks, 1], strides=[1, 2, 2, 1], padding='VALID', name=name)
 
-    def deconv2d(self, input, n_output, name, k_size=None, weight_decay=None, use_bn=False, stride=2):
+    def deconv2d(self, input, n_output, name, k_size=None, weight_decay=None, use_bn=False, stride=2, w_init=None):
         # k_size=[fsize,fsize,nInput,nOutput] return a double size of input,
         # the upsampling process is by transpose convolution
-        Winit = None  # please set initializer default, is xavier it should be
+        # please set initializer default, is xavier it should be
         # tf.truncated_normal_initializer(stddev=0.1)
         n_input = input.get_shape().as_list()[-1]
+        in_shapes = tf.shape(input)
+        in_shape = input.get_shape().as_list()
+        ks = k_size
         k_size = [k_size, k_size, n_input, n_output]
         w = self.get_var_weight_decay(name=name + '_W', shape=k_size,
-                                      w_init=Winit, wd=weight_decay)
+                                      w_init=w_init, wd=weight_decay)
         b = self.get_var_on_cpu(name=name + '_b', shape=[n_output])
-        dconv = tf.nn.conv2d_transpose(input=input, filter=w, strides=[1, stride, stride, 1],
-                                       padding='SAME', name=name)
+        # p = int((ks - 1) / 2)
+        # in_padded = tf.pad(input, [[0, 0], [p, p], [p, p], [0, 0]], "CONSTANT")
+        out_shape = tf.stack([in_shapes[0], in_shape[1] * stride, in_shape[2] * stride, in_shape[-1]])
+        dconv = tf.nn.conv2d_transpose(value=input, filter=w, strides=[1, stride, stride, 1],
+                                       padding='SAME', name=name, output_shape=out_shape)
         dconv = tf.nn.bias_add(dconv, b)
         if use_bn:  # batch normalization
-            dconv = tf.nn.batch_normalization(dconv)
+
+            dconv = tf.contrib.layers.batch_norm(dconv)
         return dconv
 
     def up_block(self, input, n_outs=1, name='', upscale=None, use_subpixel=False, wd=False):
@@ -149,10 +156,12 @@ class dexined():
                 if use_subpixel is False:
                     # for deconvolution
                     out_conv = self.conv2d(input=out_conv, n_output=n_outs, k_size=1, stride=1,
-                                           weight_decay=wd, name=name + '_conv' + str(i))
+                                           weight_decay=wd, name=name + '_conv' + str(i),
+                                           w_initializer=tf.truncated_normal_initializer(mean=0.0))
                     out_conv = tf.nn.relu(out_conv)
                     out_conv = self.deconv2d(input=out_conv, n_output=n_outs, name=name + '_dconv' + str(i),
-                                             k_size=upscale, weight_decay=wd)
+                                             k_size=upscale, weight_decay=wd,
+                                             w_init=tf.truncated_normal_initializer(stddev=0.1, dtype=tf.float32))
                 elif use_subpixel:
                     # for subpixel
                     out_conv = self.conv2d(input=out_conv, n_output=4, k_size=1, stride=1,
@@ -181,7 +190,7 @@ class dexined():
                                            weight_decay=wd, name=name + '_conv' + str(i))
                     out_conv = tf.nn.relu(out_conv)
                     out_conv = self.deconv2d(input=out_conv, n_output=gen_outputs, name=name + '_dconv' + str(i),
-                                             k_size=upscale, weight_decay=wd)
+                                             k_size=upscale, weight_decay=wd, w_init=None)
                 elif use_subpixel:
                     # for subpixel
                     out_conv = self.conv2d(input=out_conv, n_output=32, k_size=3, stride=1,
@@ -234,14 +243,14 @@ class dexined():
         """ defining rxnt"""
         start_time = time.time()
         use_sconv = self.args.use_separable_conv  # use separable convolution
-        use_spixel = self.args.use_spixel  # use sub pixel convolution
+        use_spixel = self.args.use_subpixel  # use sub pixel convolution
         wdecay = self.args.weight_decay
 
-        with tf.variable_scope('dexinw') as sc:
+        with tf.variable_scope('dexint') as sc:
             # if the input size is [BSx400x400x3]
             # ------------------------ Block 1 ----------------------
             self.conv1_1 = self.conv2d(input=self.images, n_output=32, k_size=3, stride=2, weight_decay=wdecay,
-                                       name='conv1_1', use_bn=True, is_sconv=False)  # [BSx200x200x32]
+                                       name='conv1_1', use_bn=True, is_sconv=use_sconv)  # [BSx200x200x32]
             self.conv1_1 = tf.nn.relu(self.conv1_1)
 
             self.conv1_2 = self.conv2d(input=self.conv1_1, n_output=64, k_size=3, stride=1, weight_decay=wdecay,
@@ -271,7 +280,7 @@ class dexined():
             # ------------------------ Block 3 -----------------------------
             self.block3 = self.add2
             self.add4b3 = self.conv2d(input=self.maxpool2, n_output=256, k_size=1, stride=1, weight_decay=wdecay,
-                                      name='sk4out_b3', use_bn=True, is_sconv=False)  # [BSx100x100x256]
+                                      name='add4b3', use_bn=True, is_sconv=False)  # [BSx100x100x256]
             for i in range(2):
                 self.block3 = tf.nn.relu(self.block3)
                 self.block3 = self.conv2d(input=self.block3, n_output=256, k_size=3, stride=1, weight_decay=wdecay,
@@ -307,14 +316,14 @@ class dexined():
                                           is_sconv=False)  # [BSx50x50x512]
                 self.block4 = tf.nn.relu(self.block4)
 
-                self.block4 = self.conv2d(input=self.block3, n_output=512, k_size=3, stride=1, weight_decay=wdecay,
+                self.block4 = self.conv2d(input=self.block4, n_output=512, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block4_conv2_{}'.format(i + 1), use_bn=True,
                                           is_sconv=False)  # [BSx50x50x512]
                 self.block4 = tf.add(self.block4, self.add4b4) / 2
 
             self.output4 = self.up_block(input=self.block4, n_outs=1, name='output4', upscale=int(2 ** 3),
                                          use_subpixel=use_spixel, wd=wdecay)  # [BSx400x400x1]
-            self.maxpool4 = self.max_pool(self.block3, name='maxpool4')  # [BSx25x25x512
+            self.maxpool4 = self.max_pool(self.block4, name='maxpool4')  # [BSx25x25x512
             self.add4 = tf.add(self.maxpool4, self.sk4b4output)
             self.sk4b5output = self.conv2d(input=self.add4, n_output=512, k_size=1, stride=1, weight_decay=wdecay,
                                            name='sk4b5_out', use_bn=True, is_sconv=False)  # [BSx25x25x512]
@@ -325,7 +334,7 @@ class dexined():
             self.add4b5 = tf.add(self.add4b5, self.maxpool4)
             self.add4b5 = self.conv2d(input=self.add4b5, n_output=512, k_size=1, stride=1, weight_decay=wdecay,
                                       name='add4b5_conv2', use_bn=True, is_sconv=False)  # [BSx25x25x512]
-            for k in range(3):
+            for i in range(3):
                 self.block5 = tf.nn.relu(self.block5)
                 self.block5 = self.conv2d(input=self.block5, n_output=512, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block5_conv1_{}'.format(i + 1), use_bn=True,
@@ -428,7 +437,7 @@ class dexined():
         error = tf.cast(tf.not_equal(pred, tf.cast(self.edgemaps, tf.int32)), tf.float32)
         self.error = tf.reduce_mean(error, name='pixel_error')
 
-        tf.summary.scalar('Train', self.all_losses)  # previously self.loss
+        tf.summary.scalar('Training', self.all_losses)  # previously self.loss
         tf.summary.scalar('Validation', self.error)
 
         train_log_dir = path.join(self.args.logs_dir, self.args.model_name.lower() +
