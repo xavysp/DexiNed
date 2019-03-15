@@ -329,12 +329,12 @@ class dexined():
                 self.block5 = tf.nn.relu(self.block5)
                 self.block5 = self.conv2d(input=self.block5, n_output=512, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block5_conv1_{}'.format(i + 1), use_bn=True,
-                                          is_sconv=False)  # [BSx50x50x512]
+                                          is_sconv=False)  # [BSx25x25x512]
                 self.block5 = tf.nn.relu(self.block5)
 
                 self.block5 = self.conv2d(input=self.block5, n_output=512, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block5_conv2_{}'.format(i + 1), use_bn=True,
-                                          is_sconv=False)  # [BSx50x50x512]
+                                          is_sconv=False)  # [BSx25x25x512]
                 self.block5 = tf.add(self.block5, self.add4b5) / 2
 
             self.output5 = self.up_block(input=self.block5, n_outs=1, name='output5', upscale=int(2 ** 4),
@@ -350,12 +350,12 @@ class dexined():
                 self.block6 = tf.nn.relu(self.block6)
                 self.block6 = self.conv2d(input=self.block6, n_output=256, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block6_conv1_{}'.format(i + 1), use_bn=True,
-                                          is_sconv=False)  # [BSx50x50x512]
+                                          is_sconv=False)  # [BSx25x25x256]
                 self.block6 = tf.nn.relu(self.block6)
 
                 self.block6 = self.conv2d(input=self.block6, n_output=256, k_size=3, stride=1, weight_decay=wdecay,
                                           name='block6_conv2_{}'.format(i + 1), use_bn=True,
-                                          is_sconv=False)  # [BSx50x50x512]
+                                          is_sconv=False)  # [BSx25x25x256]
                 self.block6 = tf.add(self.block6, self.add4b6) / 2
 
             self.output6 = self.up_block(input=self.block6, n_outs=1, name='output6', upscale=int(2 ** 4),
