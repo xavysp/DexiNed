@@ -174,7 +174,7 @@ if __name__ == '__main__':
     batch_size = 8
     input = torch.rand(batch_size, 3, 400, 400).cuda()
     target = torch.rand(batch_size, 1, 400, 400).cuda()
-    model = DXtremNet().cuda()
+    model = DexiNet().cuda()
     for i in range(5000):
         print(i)
         output = model(input)
