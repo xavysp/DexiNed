@@ -28,20 +28,43 @@ class _DenseBlock(nn.Sequential):
             input_features = out_features
 
 class UpConvBlock(nn.Module):
-    def __init__(self, in_features, up_scale):
+    def __init__(self, in_features, up_scale, mode='deconv'):
         super(UpConvBlock, self).__init__()
+        self.up_factor = 2
         self.constant_features = 16
 
-        up_layers = []
+        layers = None
+        if mode == 'deconv':
+            layers = self.make_deconv_layers(in_features, up_scale)
+        elif mode == 'pixel_shuffle':
+            layers = self.make_pixel_shuffle_layers(in_features, up_scale)
+        assert layers is not None, layers
+        self.features = nn.Sequential(*layers)
+
+    def make_deconv_layers(self, in_features, up_scale):
+        layers = []
         for i in range(up_scale):
             kernel_size = 2 ** (i + 1)
             out_features = self.compute_out_features(i, up_scale)
-            up_layers.append(nn.Conv2d(in_features, out_features, 1))
-            up_layers.append(nn.ReLU(inplace=True))
-            up_layers.append(nn.ConvTranspose2d(
+            layers.append(nn.Conv2d(in_features, out_features, 1))
+            layers.append(nn.ReLU(inplace=True))
+            layers.append(nn.ConvTranspose2d(
                 out_features, out_features, kernel_size, stride=2))
             in_features = out_features
-        self.features = nn.Sequential(*up_layers)
+        return layers
+
+    def make_pixel_shuffle_layers(self, in_features, up_scale):
+        layers = []
+        for i in range(up_scale):
+            kernel_size = 2 ** (i + 1)
+            out_features = self.compute_out_features(i, up_scale)
+            in_features = int(in_features / (self.up_factor ** 2))
+            layers.append(nn.PixelShuffle(self.up_factor))
+            layers.append(nn.Conv2d(in_features, out_features, 1))
+            if i < up_scale:
+                layers.append(nn.ReLU(inplace=True))
+            in_features = out_features
+        return layers
 
     def compute_out_features(self, idx, up_scale):
         return 1 if idx == up_scale - 1 else self.constant_features
@@ -53,9 +76,10 @@ class SingleConvBlock(nn.Module):
     def __init__(self, in_features, out_features, stride):
         super(SingleConvBlock, self).__init__()
         self.conv = nn.Conv2d(in_features, out_features, 1, stride=stride)
+        self.bn = nn.BatchNorm2d(out_features)
 
     def forward(self, x):
-        return self.conv(x)
+        return self.bn(self.conv(x))
 
 class DoubleConvBlock(nn.Module):
     def __init__(self, in_features, out_features, mid_features=None, stride=1):
@@ -164,9 +188,8 @@ class DexiNet(nn.Module):
         block_cat = torch.cat(results, dim=1)  # Bx6xHxW
         block_cat = self.block_cat(block_cat)  # Bx1xHxW
 
-        # return with non-linearity
+        # return results
         results.append(block_cat)
-        results = [torch.sigmoid(r) for r in results]
         return results
 
 
