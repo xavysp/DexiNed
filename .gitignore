@@ -1,0 +1,3 @@
+.dev_env*
+*swp
+__pycache__
