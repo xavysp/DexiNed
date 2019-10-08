@@ -11,7 +11,7 @@ from utls.losses import *
 from utls.utls import (get_local_time, print_info, print_warning, print_error)
 
 slim = tf.contrib.slim
-class xceptionet():
+class dexined():
 
     def __init__(self, args):
 
@@ -117,9 +117,6 @@ class xceptionet():
                                                 strides=(1, 1), padding='same', name='conv2_block2_{}'.format(k + 1))
                 # bx200x200x128
                 self.block2_xcp= slim.batch_norm(self.block2_xcp)
-                # self.block2_xcp = tf.add(self.block2_xcp, self.add1_1)/2 # because there is not
-                # iteration this line is not needed
-            # self.block2_xcp = tf.nn.relu(self.block2_xcp)  # edited 14/03
             self.maxpool2_1=slim.max_pool2d(self.block2_xcp,kernel_size=[3,3],stride=2, padding='same',
                                         scope='maxpool2_1') # bx100x100x128, b=batch size
             self.add2_1 = tf.add(self.maxpool2_1, self.rconv1)
@@ -228,27 +225,14 @@ class xceptionet():
 
             self.output4 = self.side_layer(self.block4_xcp, filters=1,name='output4', upscale=int(2 ** 3),
                                            strides=(1,1),kernel_size=[1,1],sub_pixel=use_subpixel)  # bx400x400x1
-            #self, inputs, filters=None,kernel_size=None, strides=(1,1),name=None, upscale=None, sub_pixel=False):
-            # bellow line have to be commented, because it is not used.
-            # Just till middle flow is required for this implementation ***
-
             # conv1 Block5 -----------------------------------------------------
-            # self.conv_b2b4 is the maxPooling conv in block 2 ********* check this ********* with
-            # before it was  self.conv_b2b4 now it is self.addb3_4b4
             self.convb3_2ab4 = tf.layers.conv2d(self.conv_b2b4, filters=512, kernel_size=[1, 1],
                                               activation=None,
                                               kernel_initializer=None,
                                               strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
                                               padding='SAME', name="conv_b2b5")  # bx25x25x728 before ssmish trainint
-            # self.convb3_2ab4 = tf.layers.conv2d(self.maxpool3_1, filters=512, kernel_size=[1, 1],
-            #                                     activation=None,
-            #                                     kernel_initializer=None,
-            #                                     strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
-            #                                     padding='SAME', name="conv_b2b5")  # bx25x25x728
-            self.block5_xcp=self.add4_1 # self.rconv4
 
-            # self.block5_xcp= tf.add(self.block5_xcp, self.convb2_4b5)
-            # self.addb2b5 =  tf.add(self.convb2_4b5,self.maxpool4_1) # this before first ssmihd training
+            self.block5_xcp=self.add4_1 # self.rconv4
             self.addb2b5 =  tf.add(self.convb3_2ab4,self.maxpool4_1) # this before first ssmihd training
             self.addb2b5 = tf.layers.conv2d(self.addb2b5, filters=512, kernel_size=[1, 1],
                                                activation=None,
@@ -280,23 +264,14 @@ class xceptionet():
                                            upscale=int(2 ** 4), sub_pixel=use_subpixel, strides=(1,1))
 
             # *********************** block 6 *****************************************
-
-            # self.convb2_4b5 = tf.layers.conv2d(self.conv_b2b4, filters=512, kernel_size=[1, 1],
-            #                                    activation=None,
-            #                                    kernel_initializer=None,
-            #                                    strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
-            #                                    padding='SAME', name="conv_b2b5")  # bx25x25x728
             self.block6_xcp = self.add5_1  # self.rconv4
             self.block6_xcp = tf.layers.conv2d(self.block6_xcp, filters=256, kernel_size=[1, 1],
                                                activation=None,
                                                kernel_initializer=None,
                                                strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
                                                padding='SAME', name="conv0_b6")  # bx25x25x512
-            # here maybe batch normalization of block6_xcp
+
             self.block6_xcp = slim.batch_norm(self.block6_xcp)
-            # self.block5_xcp= tf.add(self.block5_xcp, self.convb2_4b5)
-            # self.addb45_2b6 = tf.add(self.maxpool4_1, self.block5_xcp) # be careful with this line and the next
-            # self.addb25_2b6 = tf.add(self.convb2_4b5, self.block5_xcp) # be careful with this line too
             self.addb25_2b6 = tf.layers.conv2d(self.block5_xcp, filters=256, kernel_size=[1, 1],
                                                activation=None,
                                                kernel_initializer=None,
@@ -332,7 +307,6 @@ class xceptionet():
 
             self.side_outputs = [self.output1, self.output2, self.output3,
                                  self.output4, self.output5,self.output6]
-            # w_shape = [1, 1, len(self.side_outputs), 1]
 
             self.fuse = tf.layers.conv2d(tf.concat(self.side_outputs, axis=3),filters=1,
                                         kernel_size=[1,1], name='fuse_1',strides=(1,1),padding='same',
@@ -553,7 +527,6 @@ class xceptionet():
             self.predictions.append(output)
 
     def setup_training(self, session):
-
         """
             Apply sigmoid non-linearity to side layer ouputs + fuse layer outputs
             Compute total loss := side_layer_loss + fuse_layer_loss
