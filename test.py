@@ -8,6 +8,7 @@ from io import BytesIO
 
 from models.vgg16 import Vgg16
 from models.xception import xceptionet
+from models.dexined import dexined
 from utls.utls import *
 from utls.dataset_manager import (data_parser,get_single_image,
                                   get_testing_batch, open_images)
@@ -22,15 +23,10 @@ class m_tester():
     def setup(self, session):
 
         try:
-
-            if self.args.model_state=='train':
-                is_training=True
-            else:
-                is_training=False
-            if self.args.model_name=='HED'or self.args.model_name=='RCF':
-                self.model = Vgg16(self.args,is_training)
+            if self.args.model_name=='DXN':
+                self.model = dexined(self.args)
             elif self.args.model_name=='XCP':
-                self.model = xceptionet(self.args, is_training)
+                self.model = xceptionet(self.args)
             else:
                 print_error("Error setting model, {}".format(self.args.model_name))
 
@@ -118,12 +114,11 @@ class m_tester():
 
         # Take the edge map from the network from side layers and fuse layer
         # for saving results
-        result_dir = self.args.test_dataset.lower()+'_'+self.args.model_name.lower()
+        result_dir = 'DexiNed_'+self.args.train_dataset+'2'+self.args.test_dataset
         res_dir = os.path.join(self.args.base_dir_results,result_dir)
-        res_dir = os.path.join(res_dir,'msi_'+self.args.model_name) if self.args.use_nir else os.path.join(res_dir,'vis_'+self.args.model_name)
         gt_dir = os.path.join(res_dir,'gt')
-        all_dir = os.path.join(res_dir,'all_res')
-        resf_dir = os.path.join(res_dir,'imgs')
+        all_dir = os.path.join(res_dir,'pred-h5')
+        resf_dir = os.path.join(res_dir,'pred-f')
         resa_dir = os.path.join(res_dir,'pred-a')
 
         if not os.path.exists(resf_dir):

@@ -22,8 +22,8 @@ def config_model():
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='SSMIHD', choices=['SSMIHD','BSDS'])
-    parser.add_argument('--test_dataset', default='MULTICUE', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
-    parser.add_argument('--which_dataset', default='MULTICUE',choices = ['SSMIHD','BSDS', 'NYUD'])
+    parser.add_argument('--test_dataset', default='CID', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
+    parser.add_argument('--which_dataset', default='CID',choices = ['SSMIHD','BSDS', 'NYUD'])
     parser.add_argument('--dataset_dir',default='/opt/dataset/',type=str)
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb_pair.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
@@ -35,7 +35,8 @@ def config_model():
     parser.add_argument('--use_dataset', default=True, type=bool)
     # model config
     parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
-    parser.add_argument('--model_name', default='XCP',choices=['HED','RCF','XCP''None'])
+    parser.add_argument('--model_name', default='DXN',choices=['DXN','XCP','None'])
+    parser.add_argument('--use_v1', default=False,type=bool)
     parser.add_argument('--model_purpose', default='edges',choices=['edges','restoration','None'])
     parser.add_argument('--batch_size_train',default=8,type=int)
     parser.add_argument('--batch_size_val',default=8, type=int)
@@ -65,8 +66,8 @@ def config_model():
     parser.add_argument('--use_trained_model', default=True,type=bool) # for vvg16
     parser.add_argument('--use_previous_trained', default=True, type=bool)
     # image configuration
-    parser.add_argument('--image_width', default=1280, type=int) # 480 fro NYUD 560 ssmihd 1280 default 400
-    parser.add_argument('--image_height', default=720, type=int) # 480 for NYUD 425 ssmihd 720 default 400
+    parser.add_argument('--image_width', default=512, type=int) # 480 fro NYUD 560 ssmihd 1280 default 400
+    parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 ssmihd 720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
     parser.add_argument('--test_snapshot', default=149736, type=int) #  5000
