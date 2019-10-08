@@ -1,4 +1,9 @@
+#!/usr/bin/python3.7 python
 """
+This code is based on DexiNed,
+the main work here is ege detection given a multispectral image
+multispectral = {Visible and NearInfrared}
+whenever the NIR is not given, this is estimated by an hallucination network.
 Check all paremeters before run this app the most important is
 dataset configuration
 and testing configuration
