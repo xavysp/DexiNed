@@ -176,65 +176,35 @@ def split_pair_names(opts, file_names, base_dir=None):
     # If base_dir is None, it assume that the list have the complete image source
     if opts.model_state=='train':
 
-        if not opts.use_nir:
-
-            if opts.dataset_name!='NYUD':
-
-                if base_dir==None:
-                    file_names =[c.split(' ') for c in file_names]
-                else:
-                    if opts.dataset_name.lower()=='ssmihd':
-                        x_base_dir=os.path.join(base_dir,'imgs',opts.model_state)
-                        y_base_dir =os.path.join(base_dir,'edge_maps',opts.model_state)
-                        file_names = [c.split(' ') for c in file_names]
-                        file_names = [(os.path.join(x_base_dir, c[0]),
-                                       os.path.join(y_base_dir, c[1])) for c in file_names]
-                    else:
-                        file_names = [c.split(' ') for c in file_names]
-                        file_names = [(os.path.join(base_dir, c[0]),
-                                       os.path.join(base_dir, c[1])) for c in file_names]
-            elif opts.dataset_name=='NYUD':
-                file_names = [c.split(' ') for c in file_names]
-                file_names = [(os.path.join(base_dir, c[0])) for c in file_names]  # to add baseDir in
-                # the path files of the whole of path-file list
-            else:
-                print("list names not splited yet Error in 185 split_pair_names()")
+        if base_dir==None:
+            file_names =[c.split(' ') for c in file_names]
         else:
-            if opts.dataset_name=='SSMIHD':
+            if opts.train_dataset.lower()=='ssmihd':
+                x_base_dir=os.path.join(base_dir,'imgs',opts.model_state)
+                y_base_dir =os.path.join(base_dir,'edge_maps',opts.model_state)
                 file_names = [c.split(' ') for c in file_names]
-                raise NotImplementedError
-
+                file_names = [(os.path.join(x_base_dir, c[0]),
+                               os.path.join(y_base_dir, c[1])) for c in file_names]
+            else:
+                file_names = [c.split(' ') for c in file_names]
+                file_names = [(os.path.join(base_dir, c[0]),
+                               os.path.join(base_dir, c[1])) for c in file_names]
         return file_names
     else:
         # ******************* for data testing ****************************
-        if not opts.use_nir:
-
-            if opts.test_dataset != 'NYUD':
-
-                if base_dir == None:
-                    file_names = [c.split(' ') for c in file_names]
-                else:
-                    if opts.test_dataset.lower() == 'ssmihd':
-                        x_base_dir = os.path.join(base_dir,'imgs', opts.model_state)
-                        y_base_dir = os.path.join(base_dir,'edge_maps', opts.model_state)
-                        file_names = [c.split(' ') for c in file_names]
-                        file_names = [(os.path.join(x_base_dir, c[0]),
-                                       os.path.join(y_base_dir, c[1])) for c in file_names]
-                    else:
-                        file_names = [c.split(' ') for c in file_names]
-                        file_names = [(os.path.join(base_dir, c[0]),
-                                       os.path.join(base_dir, c[1])) for c in file_names]
-            elif opts.test_dataset == 'NYUD':
+        if base_dir == None:
+            file_names = [c.split(' ') for c in file_names]
+        else:
+            if opts.test_dataset.lower() == 'ssmihd':
+                x_base_dir = os.path.join(base_dir,'imgs', opts.model_state)
+                y_base_dir = os.path.join(base_dir,'edge_maps', opts.model_state)
+                file_names = [c.split(' ') for c in file_names]
+                file_names = [(os.path.join(x_base_dir, c[0]),
+                               os.path.join(y_base_dir, c[1])) for c in file_names]
+            else:
                 file_names = [c.split(' ') for c in file_names]
                 file_names = [(os.path.join(base_dir, c[0]),
-                               os.path.join(base_dir, c[1])) for c in file_names]  # to add baseDir in
-                # the path files of the whole of path-file list
-            else:
-                print("list names not splited yet Error in 185 split_pair_names()")
-        else:
-            if opts.dataset_name == 'SSMIHD':
-                file_names = [c.split(' ') for c in file_names]
-                raise NotImplementedError
+                               os.path.join(base_dir, c[1])) for c in file_names]
 
         return file_names
 # ____________ End reading files list

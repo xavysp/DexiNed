@@ -30,30 +30,14 @@ class dexined():
                 self.data_dict = np.load(weights_file, encoding='latin1').item()
                 print_info("Model weights loaded from {}".format(self.args.model_weights_path))
 
-        if self.args.use_nir:
-
-            if args.model_state=='test':
-                # self.images = tf.placeholder(tf.float32, [None, None,
-                #                                           None, self.args.n_channels + 1])
-                self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
-                                                          self.args.image_width, self.args.n_channels + 1])
-            else:
-                self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
-                                                          self.args.image_width, self.args.n_channels + 1])
-
+        if args.model_state=='test':
+            self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
+                                                      self.args.image_width, self.args.n_channels])
         else:
-            if args.model_state=='test':
-                # self.images = tf.placeholder(tf.float32, [None, None,
-                #                                           None, self.args.n_channels])
-                self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
-                                                          self.args.image_width, self.args.n_channels])
-            else:
-                self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
-                                                          self.args.image_width, self.args.n_channels])
-
+            self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
+                                                      self.args.image_width, self.args.n_channels])
         self.edgemaps = tf.placeholder(tf.float32, [None, self.args.image_height,
                                                     self.args.image_width, 1])
-
         self.define_model()
 
     def define_model(self, is_training=True):
@@ -62,7 +46,6 @@ class dexined():
         Load VGG params from disk without FC layers A
         Add branch layers (with deconv) after each CONV block
         """
-
         start_time = time.time()
         separable=self.args.use_separable_conv
         use_subpixel=self.args.use_subpixel
@@ -211,7 +194,6 @@ class dexined():
                                                         padding='same', name='conv2_block4_{}'.format(k+1)) # bx50x50x728, b=batch size
                 self.block4_xcp = slim.batch_norm(self.block4_xcp)
                 self.block4_xcp = tf.add(self.block4_xcp, self.addb3_4b4)/2
-                # self.block4_xcp = self.block4_xcp - self.addb3_4b4
             # end block 4
             self.maxpool4_1 = slim.max_pool2d(self.block4_xcp, kernel_size=[3, 3], stride=2, padding='same',
                                              scope='maxpool3_1')  # bx25x25x728, b=batch size
@@ -567,16 +549,11 @@ class dexined():
         tf.summary.scalar('Validation', self.error)
 
         self.merged_summary = tf.summary.merge_all()
-        if self.args.use_nir:
-            self.train_log_dir = os.path.join(self.args.logs_dir,
-                                          os.path.join(self.args.model_name+'_'+self.args.dataset_name+'_RGBN','train'))
-            self.val_log_dir = os.path.join(self.args.logs_dir,
-                                        os.path.join(self.args.model_name+'_'+self.args.dataset_name+'_RGBN', 'val'))
-        else:
-            self.train_log_dir = os.path.join(self.args.logs_dir,
-                                          os.path.join(self.args.model_name+'_'+self.args.dataset_name,'train'))
-            self.val_log_dir = os.path.join(self.args.logs_dir,
-                                        os.path.join(self.args.model_name+'_'+self.args.dataset_name, 'val'))
+
+        self.train_log_dir = os.path.join(self.args.logs_dir,
+                                      os.path.join(self.args.model_name+'_'+self.args.train_dataset,'train'))
+        self.val_log_dir = os.path.join(self.args.logs_dir,
+                                    os.path.join(self.args.model_name+'_'+self.args.train_dataset, 'val'))
 
         if not os.path.exists(self.train_log_dir):
             os.makedirs(self.train_log_dir)
