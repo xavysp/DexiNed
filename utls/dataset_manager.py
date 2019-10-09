@@ -1090,89 +1090,52 @@ def data_parser(args):
 
         train_files_name = args.train_list # dataset base dir
 
-        if args.use_nir:  # whenever in the training you are using NIR channels*
-            train_list_path = os.path.join(args.dataset_dir + args.train_dataset,
-                                           train_files_name)
-            train_list = read_files_list(train_list_path)
+        base_dir = os.path.join(args.dataset_dir, args.train_dataset,'edges') \
+            if args.train_dataset.lower() == 'ssmihd' else os.path.join(args.dataset_dir, args.train_dataset)
 
-            train_list = split_pair_names(train_list,
-                                          train_dataset=args.which_dataset,use_nir=True)
-            n_train = len(train_list)
-            print_info("Training set-up from {}, size: {}".format(train_list_path, n_train))
+        train_list_path = os.path.join(base_dir, train_files_name)
 
-            train_ids = np.arange(n_train)
-            np.random.shuffle(train_ids)
-            cache_info = [train_list, train_ids,]
+        train_list = read_files_list(train_list_path)
 
-        else:
+        train_samples = split_pair_names(args,train_list, base_dir=base_dir)
+        n_train = len(train_samples)
+        print_info(" Enterely training set-up from {}, size: {}".format(train_list_path, n_train))
 
-            base_dir = os.path.join(args.dataset_dir,
-                                    args.train_dataset,args.model_purpose)\
-                if args.train_dataset.upper()=='SSMIHD' else os.path.join(args.dataset_dir,args.train_dataset)
+        all_train_ids = np.arange(n_train)
+        np.random.shuffle(all_train_ids)
 
-            train_list_path = os.path.join(base_dir, train_files_name)
+        train_ids = all_train_ids[:int(args.train_split * len(train_list))]
+        valid_ids = all_train_ids[int(args.train_split * len(train_list)):]
 
-            train_list = read_files_list(train_list_path)
-
-            train_samples = split_pair_names(args,train_list, base_dir=base_dir)
-            n_train = len(train_samples)
-            print_info(" Enterely training set-up from {}, size: {}".format(train_list_path, n_train))
-
-            all_train_ids = np.arange(n_train)
-            np.random.shuffle(all_train_ids)
-
-            train_ids = all_train_ids[:int(args.train_split * len(train_list))]
-            valid_ids = all_train_ids[int(args.train_split * len(train_list)):]
-
-            print_info("Training set-up from {}, size: {}".format(train_list_path, len(train_ids)))
-            print_info("Validation set-up from {}, size: {}".format(train_list_path, len(valid_ids)))
-            cache_info = {
-                "files_path": train_samples,
-                "n_files": n_train,
-                "train_indices": train_ids,
-                "validation_indices": valid_ids
-            }
+        print_info("Training set-up from {}, size: {}".format(train_list_path, len(train_ids)))
+        print_info("Validation set-up from {}, size: {}".format(train_list_path, len(valid_ids)))
+        cache_info = {
+            "files_path": train_samples,
+            "n_files": n_train,
+            "train_indices": train_ids,
+            "validation_indices": valid_ids
+        }
         return cache_info
 
 # ************** for testing **********************
     elif args.model_state=='test':
-        base_dir = os.path.join(args.dataset_dir,
-                                args.train_dataset, args.model_purpose) \
-            if args.test_dataset.upper() == 'SSMIHD' else os.path.join(args.train_dataset, args.test_dataset)
+        base_dir = os.path.join(args.dataset_dir,'edges',args.test_dataset)\
+            if args.test_dataset.lower()=='ssmihd' else os.path.join(args.dataset_dir,args.test_dataset)
 
         if args.test_dataset.upper() == "SSMIHD":
-            if args.use_nir:
-                valid_list_path = os.path.join(base_dir,args.args.test_list )
+            test_files_name = args.test_list
+            test_list_path = os.path.join(base_dir,test_files_name)
+            test_list = read_files_list(test_list_path)
 
-                valid_list = read_files_list(valid_list_path)
-                valid_list = split_pair_names(valid_list,
-                                              train_dataset=args.which_dataset, use_nir=True)
-                n_valid = int(len(valid_list))
-                print_info("Validation set-up from {}, size: {}".format(valid_list_path, n_valid))
-                if args.test_augmented:
-                    valid_ids = np.arange(int(n_valid // 2), n_valid)
-                else:
-                    valid_ids = np.arange(n_valid)
+            test_samples = split_pair_names(args, test_list, base_dir)
+            n_test = len(test_samples)
+            print_info(" Enterely testing set-up from {}, size: {}".format(test_list_path, n_test))
 
-                print_info("Test set-up from {}, size: {}".format(valid_list_path, len(valid_ids)))
+            test_ids = np.arange(n_test)
+            # np.random.shuffle(test_ids)
 
-                # np.random.shuffle(valid_ids)
-                cache_out = [valid_list, valid_ids]
-
-            else:
-                test_files_name = args.test_list
-                test_list_path = os.path.join(base_dir,test_files_name)
-                test_list = read_files_list(test_list_path)
-
-                test_samples = split_pair_names(args, test_list, base_dir)
-                n_test = len(test_samples)
-                print_info(" Enterely testing set-up from {}, size: {}".format(test_list_path, n_test))
-
-                test_ids = np.arange(n_test)
-                # np.random.shuffle(test_ids)
-
-                print_info("testing set-up from {}, size: {}".format(test_list_path, len(test_ids)))
-                cache_out = [test_samples, test_ids]
+            print_info("testing set-up from {}, size: {}".format(test_list_path, len(test_ids)))
+            cache_out = [test_samples, test_ids]
 
             return cache_out
 
@@ -1221,77 +1184,41 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
         file_names =[]
         images=[]
         edgemaps=[]
-        if arg.use_nir:
-            for idx, b in enumerate(batch):
-                x_nir = Image.open(file_list[b][0])
-                x_rgb = Image.open(file_list[b][1])
-                y = Image.open(file_list[b][2])
+        for idx, b in enumerate(batch):
+            x = cv.imread(file_list[b][0]) #  Image.open(file_list[b][0])
+            y = cv.imread(file_list[b][1]) #  Image.open(file_list[b][1])
+            if arg.model_state=='test':
+                pass
+            else:
+                x = cv.resize(x, dsize=(arg.image_width,arg.image_height)) # x.resize((arg.image_width, arg.image_height))
+                y = cv.resize(y,dsize=(arg.image_width, arg.image_height))# y.resize((arg.image_width, arg.image_height))
+            # pay attention here
+            x = np.array(x, dtype=np.float32)
+            # x = x[:, :, arg.channel_swap] # while using opencv it is not necessary
+            x -= arg.mean_pixel_values[0:3]
 
-                x_nir = x_nir.resize((arg.image_width, arg.image_height))
-                x_rgb = x_rgb.resize((arg.image_width, arg.image_height))
-                y = y.resize((arg.image_width, arg.image_height))
+            y = cv.cvtColor(y, cv.COLOR_BGR2GRAY)# np.array(y.convert('L'), dtype=np.float32)
+            y = np.array(y, dtype=np.float32)
+            if arg.train_dataset.lower()=='ssmihd':
+                y = image_normalization(y)
+                y[y < 51] = 0  # first 100
+                # y[y >= 100] = 255.0 #  first 100 and this uncomented [v4]
+            else:
+                y = image_normalization(y)
+                y[y<107]=0 # first nothing second <50 third <30
+                y[y >= 107] = 255.0
+            if arg.target_regression:
+                bin_y = y/255.0
+            else:
+                bin_y = np.zeros_like(y)
+                bin_y[np.where(y)]=1
 
-                x_nir = x_nir.convert("L")
-                # pay attention here
-                x_nir = np.array(x_nir, dtype=np.float32)
-                x_nir = np.expand_dims(x_nir,axis=2)
-                x_rgb = np.array(x_rgb, dtype=np.float32)
+            bin_y = bin_y if bin_y.ndim ==2 else bin_y[:,:,0]
+            bin_y = np.expand_dims(bin_y,axis=2)
 
-                x_rgb = x_rgb[:, :, arg.channel_swap]
-                x = np.concatenate((x_rgb,x_nir),axis=2)
-                x -= arg.mean_pixel_values
-
-                y = np.array(y.convert('L'), dtype=np.float32)
-                if arg.target_regression:
-                    bin_y = y/255.0
-                else:
-                    bin_y = np.zeros_like(y)
-                    bin_y[np.where(y)]=1
-
-                bin_y = bin_y if bin_y.ndim ==2 else bin_y[:,:,0]
-                bin_y = np.expand_dims(bin_y,axis=2)
-
-                images.append(x)
-                edgemaps.append(bin_y)
-                file_names.append(file_list[b])
-
-        else:
-            # without nir
-            for idx, b in enumerate(batch):
-                x = cv.imread(file_list[b][0]) #  Image.open(file_list[b][0])
-                y = cv.imread(file_list[b][1]) #  Image.open(file_list[b][1])
-                if arg.model_state=='test':
-                    pass
-                else:
-                    x = cv.resize(x, dsize=(arg.image_width,arg.image_height)) # x.resize((arg.image_width, arg.image_height))
-                    y = cv.resize(y,dsize=(arg.image_width, arg.image_height))# y.resize((arg.image_width, arg.image_height))
-                # pay attention here
-                x = np.array(x, dtype=np.float32)
-                # x = x[:, :, arg.channel_swap] # while using opencv it is not necessary
-                x -= arg.mean_pixel_values[0:3]
-
-                y = cv.cvtColor(y, cv.COLOR_BGR2GRAY)# np.array(y.convert('L'), dtype=np.float32)
-                y = np.array(y, dtype=np.float32)
-                if arg.train_dataset.lower()=='ssmihd':
-                    y = image_normalization(y)
-                    y[y < 51] = 0  # first 100
-                    # y[y >= 100] = 255.0 #  first 100 and this uncomented [v4]
-                else:
-                    y = image_normalization(y)
-                    y[y<107]=0 # first nothing second <50 third <30
-                    y[y >= 107] = 255.0
-                if arg.target_regression:
-                    bin_y = y/255.0
-                else:
-                    bin_y = np.zeros_like(y)
-                    bin_y[np.where(y)]=1
-
-                bin_y = bin_y if bin_y.ndim ==2 else bin_y[:,:,0]
-                bin_y = np.expand_dims(bin_y,axis=2)
-
-                images.append(x)
-                edgemaps.append(bin_y)
-                file_names.append(file_list[b])
+            images.append(x)
+            edgemaps.append(bin_y)
+            file_names.append(file_list[b])
 
         return images, edgemaps, file_names
 
@@ -1367,16 +1294,9 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
 
 
 def get_training_batch(arg, data_ids):
-
-    if arg.use_nir:
-        train_ids = data_ids['train_indices']
-        file_list = data_ids['files_path']
-        batch_ids = np.random.choice(train_ids, arg.batch_size_train)
-
-    else:
-        train_ids = data_ids['train_indices']
-        file_list= data_ids['files_path']
-        batch_ids = np.random.choice(train_ids,arg.batch_size_train)
+    train_ids = data_ids['train_indices']
+    file_list= data_ids['files_path']
+    batch_ids = np.random.choice(train_ids,arg.batch_size_train)
 
     return get_batch(arg, file_list, batch_ids)
 
@@ -1427,44 +1347,6 @@ def open_images(file_list):
 # _____________ End batch management
 
 # _____________ Save result _________
-def save_result(config, data):
-    """
-    :param config:  model configs
-    :param data: [input_data, label_data, predi_data]
-    :return: just print done
-    """
-    main_dir = '/home/xsoria/matlabprojects/edges/results'
-
-    if  config.which_dataset =="SSMIHD" and config.use_nir:
-        main_dir = os.path.join(main_dir,config.train_dataset+'_RGBN')
-        if not os.path.exists(main_dir):
-            os.makedirs(main_dir)
-
-    elif config.which_dataset =="SSMIHD" and not config.use_nir:
-        main_dir = os.path.join(main_dir, config.train_dataset)
-        if not os.path.exists(main_dir):
-            os.makedirs(main_dir)
-
-    elif config.which_dataset=="BSDS":
-        main_dir = os.path.join(main_dir, config.result_folder)
-        if not os.path.exists(main_dir):
-            os.makedirs(main_dir)
-    else:
-        print_error("something is wrong with the dataset implementation, check it ;)")
-        sys.exit()
-
-    if config.model_state=="train":
-        file_path= os.path.join(main_dir,'valid_res.h5')
-    elif config.model_state=="test":
-        file_path = os.path.join(main_dir, 'test_res.h5')
-    else:
-        print_error("there is not any model state")
-        sys.exit()
-
-    in_data = data[0]
-    label = np.array(data[1])
-    predi = data[2]
-    save_h5_data(file_path, in_data,label,predi)
 
 # for testing on single images
 def get_single_image(args,file_path=None):
