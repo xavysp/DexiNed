@@ -33,7 +33,7 @@ def config_model():
     parser.add_argument('--test_augmented', default=False,type=bool)
     parser.add_argument('--use_dataset', default=True, type=bool)
     # model config
-    parser.add_argument('--model_state', default='train', choices=['train','test','None']) # always in None
+    parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
     parser.add_argument('--model_name', default='DXN',choices=['DXN','XCP','None'])
     parser.add_argument('--use_v1', default=False,type=bool)
     parser.add_argument('--model_purpose', default='edges',choices=['edges','restoration','None'])
@@ -64,11 +64,11 @@ def config_model():
     parser.add_argument('--use_trained_model', default=True,type=bool) # for vvg16
     parser.add_argument('--use_previous_trained', default=False, type=bool)
     # image configuration
-    parser.add_argument('--image_width', default=416, type=int) # 480 fro NYUD 560 ssmihd 1280 default 400
-    parser.add_argument('--image_height', default=416, type=int) # 480 for NYUD 425 ssmihd 720 default 400
+    parser.add_argument('--image_width', default=512, type=int) # 480 fro NYUD 560 ssmihd 1280 default 400
+    parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 ssmihd 720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
-    parser.add_argument('--test_snapshot', default=149736, type=int) #  5000
+    parser.add_argument('--test_snapshot', default=149999, type=int) #  old: 149736
     parser.add_argument('--testing_threshold', default=0.0, type=float)
     parser.add_argument('--base_dir_results',default='/opt/results/edges',type=str)
     args = parser.parse_args()
