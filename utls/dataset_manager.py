@@ -1119,7 +1119,7 @@ def data_parser(args):
 
 # ************** for testing **********************
     elif args.model_state=='test':
-        base_dir = os.path.join(args.dataset_dir,'edges',args.test_dataset)\
+        base_dir = os.path.join(args.dataset_dir,args.test_dataset,'edges')\
             if args.test_dataset.lower()=='ssmihd' else os.path.join(args.dataset_dir,args.test_dataset)
 
         if args.test_dataset.upper() == "SSMIHD":

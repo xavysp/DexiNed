@@ -159,7 +159,7 @@ class m_trainer():
                 self.model.val_writer.add_summary(summary, idx)
                 print_info(('[{}/{}]'.format(idx, self.args.max_iterations),'VALIDATION error: %0.5f'%error,
                            'pError: %.5f'%prev_loss))
-                if (idx+1) % (self.args.val_interval*170)== 0:
+                if (idx+1) % (self.args.val_interval*150)== 0:
                     print('updating visualisation')
                     plt.close()
                     fig = plt.figure()
