@@ -37,8 +37,16 @@ Non-edge detection datasets
 * [CID](http://www.cs.rug.nl/~imaging/databases/contour_database/contour_database.html) <!-- * [DCD](http://www.cs.cmu.edu/~mengtial/proj/sketch/)-->, [BSDS300](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [BSDS500](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [NYUD](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html), and [PASCAL-context](https://cs.stanford.edu/~roozbeh/pascal-context/)
 
 # Performance
+<center>
 
-
+|     Methods    |    ODS   |    ODS   |    AP    |
+| -------------- | ---------| -------- | -------- |
+| `[SED]()`      | `60.2 ±` | `74.3 ±` | `43.6 ±` |
+| `[HED]()`      | `60.8 ±` | `74.3 ±` | `44.3 ±` |
+| `[RCF]()`      | `60.8 ±` | `74.3 ±` | `44.3  ` |
+| `[BDCN]()`     | `60.8 ±` | `74.3  ` | `44.3 ±` |
+| `DexiNed(Ours)`| `60.8  ` | `74.3 ±` | `44.3 ±` |
+</center>
 
 # Citation
 Please cite our paper if you find helpful,
