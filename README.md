@@ -3,11 +3,14 @@
 (Sorry for any inconvenience, it will be ready soon)
 
 Tensorflow Implementation of DexiNed
-# Overview
+# Introduction
+
+# Geting Started
 
 # Dataset
 
-# Requerements
+# Performance
+
 
 
 # Citation
