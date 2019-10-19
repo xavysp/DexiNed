@@ -22,7 +22,7 @@ def config_model():
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='SSMIHD', choices=['SSMIHD','BSDS'])
-    parser.add_argument('--test_dataset', default='NYUD', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
+    parser.add_argument('--test_dataset', default='CID', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
     parser.add_argument('--dataset_dir',default='/opt/dataset/',type=str)
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
@@ -68,7 +68,7 @@ def config_model():
     parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 ssmihd 720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
-    parser.add_argument('--test_snapshot', default=149999, type=int) #  old: 149736
+    parser.add_argument('--test_snapshot', default=149736, type=int) #  old: 149736
     parser.add_argument('--testing_threshold', default=0.0, type=float)
     parser.add_argument('--base_dir_results',default='/opt/results/edges',type=str)
     args = parser.parse_args()
@@ -78,8 +78,6 @@ def config_model():
 def get_session(gpu_fraction):
 
     '''Assume that you have 6GB of GPU memory and want to allocate ~2GB'''
-
-    # num_threads = int(os.environ.get('OMP_NUM_THREADS'))
     num_threads = False
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
 
@@ -91,7 +89,6 @@ def get_session(gpu_fraction):
 
 
 def main(args):
-
 
     if not args.dataset_augmented:
         if (args.dataset_name =="NYUD" or args.dataset_name=="BSDS") and not args.use_nir:
@@ -123,7 +120,6 @@ def main(args):
         tester = m_tester(args)
         tester.setup(sess)
         tester.run(sess)
-
 
     if args.model_state=="None":
         print("Sorry the model state is {}".format(args.model_state))
