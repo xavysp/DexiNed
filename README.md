@@ -25,7 +25,9 @@ BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collecte
 Edge detection dataset
 * [BIPED]()
 * [MDBD]()
+
 Non-edge detection datasets
+
 * [CID]()
 * [DCD]()
 * [BSDS300]()
