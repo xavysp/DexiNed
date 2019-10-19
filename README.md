@@ -14,6 +14,13 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
 
+## Requirements
+
+* [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org)
+* [OpenCV](https://pypi.org/project/opencv-python/)
+* [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
+
+
 # Datasets
 
 ## Trained dataset
