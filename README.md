@@ -16,24 +16,24 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 # Datasets
 
-## Trained dataset7
+## Trained dataset
 
 BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download [here](https://xavysp.github.io/MBIPED/)
 
 ## Tested datasets
 
 Edge detection dataset
-* [BIPED]()
-* [MDBD]()
+* [BIPED](https://xavysp.github.io/MBIPED/)
+* [MDBD](http://serre-lab.clps.brown.edu/resource/multicue/)
 
 Non-edge detection datasets
 
-* [CID]()
-* [DCD]()
-* [BSDS300]()
-* [BSDS500]()
-* [NYUD]()
-* [PASCAL-context]()
+* [CID](http://www.cs.rug.nl/~imaging/databases/contour_database/contour_database.html)
+<!-- * [DCD](http://www.cs.cmu.edu/~mengtial/proj/sketch/)-->
+* [BSDS300](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
+* [BSDS500](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
+* [NYUD](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
+* [PASCAL-context](https://cs.stanford.edu/~roozbeh/pascal-context/)
 
 # Performance
 
