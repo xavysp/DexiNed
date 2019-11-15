@@ -1,5 +1,5 @@
-#!/usr/bin/python3.7 python
-"""
+""" DexiNed main script
+
 This code is based on DexiNed,
 the main work here is ege detection given a multispectral image
 multispectral = {Visible and NearInfrared}
@@ -8,9 +8,8 @@ Check all paremeters before run this app the most important is
 dataset configuration
 and testing configuration
 """
-import os, sys
-import numpy as np
-import argparse, json
+import sys
+import argparse
 import tensorflow as tf
 
 import utls.dataset_manager as dm
@@ -77,24 +76,24 @@ def config_model():
 
 def get_session(gpu_fraction):
 
-    '''Assume that you have 6GB of GPU memory and want to allocate ~2GB'''
     num_threads = False
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
 
     if num_threads:
         return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, intra_op_parallelism_threads=num_threads))
     else:
-        # return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         return tf.Session(config=tf.ConfigProto())
 
 
 def main(args):
 
     if not args.dataset_augmented:
-        if (args.dataset_name =="NYUD" or args.dataset_name=="BSDS") and not args.use_nir:
-            print(args.dataset_name, " dataset is already augmented")
-        else:
-            dm.augment_data(args)
+        # Only for BIPED dataset
+        # dm.augment_data(args)
+        print("Please visit the webpage of BIPED in:")
+        print("https://xavysp.github.io/MBIPED/")
+        print("and run the code")
+        sys.exit()
 
     if args.model_state =='train' or args.model_state=='test':
         sess = get_session(args.gpu_limit)
