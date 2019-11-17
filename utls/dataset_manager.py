@@ -1,7 +1,6 @@
 """
 
 """
-import numpy as np
 import sys, os
 import cv2 as cv
 from PIL import Image
@@ -24,8 +23,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                 adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                 rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                 rot_gt = cv.warpAffine(gt, adjus_M, (img_height, img_width))
-                # print("just for check 90: ", i)
-
             elif i % 19 == 0:
                 if i == 57:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -39,30 +36,21 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                     rot_gt = cv.warpAffine(gt, adjus_M, (img_height, img_width))
-                    # cv.rectangle(rot_x, (75, 75), (720 - 75, 720 - 75), (0, 0, 255), (2))
                     rot_x = rot_x[75:720 - 75, 75:720 - 75, :]
                     rot_gt = rot_gt[75:720 - 75, 75:720 - 75]
-                    # print("just for check 19: ", i, rot_x.shape)
-
                 else:
-
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                     rot_gt = cv.warpAffine(gt, adjus_M, (img_height, img_width))
-                    # cv.rectangle(rot_x,(95,95),(720-95,720-95),(0,0,255),(2) )
                     rot_x = rot_x[95:720 - 95, 95:720 - 95, :]
                     rot_gt = rot_gt[95:720 - 95, 95:720 - 95]
-                    # print("just for check 19: ", i, rot_x.shape)
-
             elif i % 23 == 0:
                 if i == 161:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                     rot_gt = cv.warpAffine(gt, adjus_M, (img_height, img_width))
-                    # cv.rectangle(rot_x,(85,85),(720-85,720-85),(0,0,255),(2) )
                     rot_x = rot_x[85:720 - 85, 85:720 - 85, :]
                     rot_gt = rot_gt[85:720 - 85, 85:720 - 85]
-                    # print("just for check 23: ", i, rot_x.shape)
                 else:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
@@ -84,9 +72,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     # a = np.copy(rot_x)
                     rot_x = rot_x[10:img_size-90, 10:img_size+110, :]
                     rot_gt = rot_gt[10:img_size-90, 10:img_size+110]
-                    # cv.rectangle(a, (10, 10), (img_size+110, img_size-90), (0, 0, 255), (2))
-                    # print("just for check 90: ", i)
-
                 else:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height + 450, img_width))
@@ -94,8 +79,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     # a = np.copy(rot_x)
                     rot_x = rot_x[100:img_size + 200, 300:img_size + 200, :]
                     rot_gt = rot_gt[100:img_size + 200, 300:img_size + 200]
-                    # cv.rectangle(a, (300, 100), (img_size+200, img_size+200), (0, 0, 255), (2))
-
             elif i % 19 == 0:
                 if i == 57:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -112,8 +95,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height+i, img_width))
                     rot_gt = cv.warpAffine(gt, adjus_M, (img_height+i, img_width))
-                    # a = np.copy(rot_x)
-                    # cv.rectangle(a, (355, 100), (img_size+205, img_size-50), (0, 0, 255), (2))
                     rot_x = rot_x[100:img_size-50,355:img_size+205, :]
                     rot_gt = rot_gt[100:img_size-50,355:img_size+205]
                     # print("just for check 19: ", i, rot_x.shape)
@@ -165,7 +146,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     # cv.rectangle(a, (390, 115), (img_size+170, img_size-105), (0, 0, 255), (2))
                     rot_x = rot_x[115:img_size-105, 390:img_size+170, :]
                     rot_gt = rot_gt[115:img_size-105, 390:img_size+170]
-
             return rot_x,rot_gt
     else:
         # For  NIR imagel but just NIR (ONE data)
@@ -175,7 +155,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                 adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                 rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                 # print("just for check 90: ", i)
-
             elif i % 19 == 0:
                 if i == 57:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -189,15 +168,12 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     # cv.rectangle(rot_x, (75, 75), (720 - 75, 720 - 75), (0, 0, 255), (2))
                     rot_x = rot_x[75:720 - 75, 75:720 - 75, :]
                     # print("just for check 19: ", i, rot_x.shape)
-
                 else:
-
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height, img_width))
                     # cv.rectangle(rot_x,(95,95),(720-95,720-95),(0,0,255),(2) )
                     rot_x = rot_x[95:720 - 95, 95:720 - 95, :]
                     # print("just for check 19: ", i, rot_x.shape)
-
             elif i % 23 == 0:
                 if i == 161:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -220,28 +196,23 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
             else:
                 print("Error line 221 in dataset_manager")
                 sys.exit()
-
         else:
-            # when the image size are not the same
             img_size = img_width if img_width < img_height else img_height
             if i % 90 == 0:
                 if i == 180:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height + 250, img_width))
-                    # a = np.copy(rot_x)
                     rot_x = rot_x[10:img_size - 90, 10:img_size + 110, :]
 
                 else:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height + 450, img_width))
-                    # a = np.copy(rot_x)
                     rot_x = rot_x[100:img_size + 200, 300:img_size + 200, :]
 
             elif i % 19 == 0:
                 if i == 57:
                     adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                     rot_x = cv.warpAffine(x, adjus_M, (img_height + i + 5, img_width))
-                    # a = np.copy(rot_x)
                     # #                 x    y             x           y
                     # cv.rectangle(a, (275, 275), (img_size+55, img_size+55), (0, 0, 255), (2))
                     #                   y                   x
@@ -289,7 +260,6 @@ def rotated_img_extractor(x=None, gt=None,img_width=None, img_height=None,i=None
                     rot_x = rot_x[115:img_size - 105, 390:img_size + 170, :]
         return rot_x
 
-
 def augment_data(args):
 
     data_for = 'train'  # choice [train validation, test]
@@ -308,7 +278,7 @@ def augment_data(args):
         base_dataset_dir = args.dataset_dir.lower() + args.train_dataset + '/edges'
         GT_dir = os.path.join(base_dataset_dir, 'edge_maps/train/rgbr/aug')
         X_dir = os.path.join(base_dataset_dir, 'imgs/train/rgbr/aug')
-        # this implementation is just for ssmihd dataset
+        # this implementation is just for BIPED dataset
         gt_list = os.listdir(os.path.join(GT_dir,'real'))  #
         gt_list.sort()
         x_list = os.listdir(os.path.join(X_dir,'real'))
@@ -353,7 +323,6 @@ def augment_data(args):
             print('...split done')
 
         # *************** image rotation *******************************
-        # **************************************************************
         if not imgs_rotated:
 
             # for p1 ***********
@@ -377,9 +346,6 @@ def augment_data(args):
             else:
                 print("error reading folder name")
                 sys.exit()
-
-
-            # image size
             if n==len(x_aug_list) and n== len(gt_aug_list):
                 pass
             else:
@@ -434,11 +400,9 @@ def augment_data(args):
                     cv.waitKey(400) # 1000= 1 seg
                 print("rotation with {} degrees fullfiled ".format(i))
             cv.destroyAllWindows()
-
-
             print("... rotation done in ", folder_name)
+
         # **************** flipping horizontally ***********
-        # **************************************************
         if not imgs_flipped:
             type_aug= '_flip'
             dir_list = os.listdir(X_dir)
@@ -471,13 +435,10 @@ def augment_data(args):
                     cv.imwrite(os.path.join(save_dir_x, X_list[j]),flip_x)
 
                 print("End flipping file in {}".format(os.path.join(X_dir,i)))
-
             cv.destroyAllWindows()
-
             print("... Flipping  data augmentation finished")
 
         # ***********Data augmentation based on gamma correction **********
-        # *****************************************************************
         if not imgs_gamma_corrected:
             gamma30 = '_ga30'
             gamma60 = '_ga60'
@@ -525,15 +486,10 @@ def augment_data(args):
                     cv.imwrite(os.path.join(save_dir_x60, X_list[j]), gam60_x)
 
                 print("End gamma correction, file in {}".format(os.path.join(X_dir, i)))
-
             cv.destroyAllWindows()
-
             print("... gamma correction  data augmentation finished")
 
-
-
     # ************** for validation ********************************
-    #***************                ********************************
     elif data_for=='validation' and not args.use_nir:
 
         train_GT_dir = args.dataset_dir + args.train_dataset + '/valid'
@@ -554,7 +510,6 @@ def augment_data(args):
                 os.path.join(train_X_dir, 'X_un'), x_list[0]))
             img_width = tmp_img.shape[1]
             img_height = tmp_img.shape[0]
-
             for i in range(n):
                 x_tmp = cv.imread(os.path.join(
                     os.path.join(train_X_dir, 'X_un'), x_list[i]))
@@ -603,7 +558,6 @@ def augment_data(args):
             else:
                 print("error reading folder name")
                 sys.exit()
-
             # image size
             tmp_img = cv.imread(os.path.join(X_dir,
                                              os.path.join('X/' + folder_name, x_aug_list[1])))
@@ -630,7 +584,6 @@ def augment_data(args):
                     os.makedirs(current_GT_dir)
 
                 for j in range(n):
-                    # i = degrees[j]
                     if folder_name == 'GT_un':
                         tmp_x = cv.imread(os.path.join(X_dir,
                                                        os.path.join(folder_name_x, x_aug_list[j])))
@@ -645,8 +598,6 @@ def augment_data(args):
                         adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                         rot_x = cv.warpAffine(tmp_x, adjus_M, (img_height, img_width))
                         rot_gt = cv.warpAffine(tmp_gt, adjus_M, (img_height, img_width))
-                        # print("just for check 90: ", i)
-
                     elif i % 19 == 0:
                         if i == 57:
                             adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -663,18 +614,12 @@ def augment_data(args):
                             # cv.rectangle(rot_x, (75, 75), (720 - 75, 720 - 75), (0, 0, 255), (2))
                             rot_x = rot_x[75:720 - 75, 75:720 - 75, :]
                             rot_gt = rot_gt[75:720 - 75, 75:720 - 75]
-                            # print("just for check 19: ", i, rot_x.shape)
-
                         else:
-
                             adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                             rot_x = cv.warpAffine(tmp_x, adjus_M, (img_height, img_width))
                             rot_gt = cv.warpAffine(tmp_gt, adjus_M, (img_height, img_width))
-                            # cv.rectangle(rot_x,(95,95),(720-95,720-95),(0,0,255),(2) )
                             rot_x = rot_x[95:720 - 95, 95:720 - 95, :]
                             rot_gt = rot_gt[95:720 - 95, 95:720 - 95]
-                            # print("just for check 19: ", i, rot_x.shape)
-
                     elif i % 23 == 0:
                         if i == 161:
                             adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
@@ -688,11 +633,8 @@ def augment_data(args):
                             adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                             rot_x = cv.warpAffine(tmp_x, adjus_M, (img_height, img_width))
                             rot_gt = cv.warpAffine(tmp_gt, adjus_M, (img_height, img_width))
-                            # cv.rectangle(rot_x, (105, 105), (720 - 105, 720 - 105), (0, 0, 255), (2))
                             rot_x = rot_x[105:720 - 105, 105:720 - 105, :]
                             rot_gt = rot_gt[105:720 - 105, 105:720 - 105]
-                            # print("just for check 23:", i, rot_x.shape)
-
                     else:
                         print('Error using degrees for rotation')
                         sys.exit()
@@ -780,7 +722,6 @@ def augment_data(args):
                 print('...split done')
 
             #  ***************** image rotation ******************
-            # ****************************************************
             if not imgs_rotated:
 
                 # for p1 ***********
@@ -801,8 +742,8 @@ def augment_data(args):
                     sys.exit()
 
                 # image size
-                tmp_img = cv.imread(os.path.join(X_dir,
-                                                 os.path.join(folder_name, x_aug_list[1])))
+                tmp_img = cv.imread(os.path.join(
+                    X_dir, os.path.join(folder_name, x_aug_list[1])))
                 img_width = tmp_img.shape[1]
                 img_height = tmp_img.shape[0]
 
@@ -810,9 +751,7 @@ def augment_data(args):
                     if folder_name == 'p1':
                         current_X_dir = X_dir + '/p1_rot_' + str(i)
                     elif folder_name == 'p2':
-
                         current_X_dir = X_dir + '/p2_rot_' + str(i)
-
                     elif folder_name == 'real':
                         current_X_dir = X_dir + '/real_rot_' + str(i)
                     else:
@@ -828,7 +767,6 @@ def augment_data(args):
                                                            os.path.join(folder_name_x, x_aug_list[j])))
                             rot_x = rotated_img_extractor(x=tmp_x, gt=None, img_width=img_width,
                                                           img_height=img_height, i=i, two_data=False)
-
                         else:
                             tmp_x = cv.imread(os.path.join(X_dir,
                                                            os.path.join(folder_name, x_aug_list[j])))
@@ -907,9 +845,7 @@ def augment_data(args):
                         cv.imwrite(os.path.join(save_dir_x60, X_list[j]), gam60_x)
 
                     print("End gamma correction, file in {}".format(os.path.join(X_dir, i)))
-
                 cv.destroyAllWindows()
-
                 print("... gamma correction  data augmentation finished")
 
 
@@ -972,9 +908,7 @@ def augment_data(args):
                     if folder_name == 'p1':
                         current_X_dir = X_dir + '/X/p1_rot_' + str(i)
                     elif folder_name == 'p2':
-
                         current_X_dir = X_dir + '/X/p2_rot_' + str(i)
-
                     elif folder_name == 'X_un':
                         current_X_dir = X_dir + 'X/un_rot_' + str(i)
                     else:
@@ -986,17 +920,15 @@ def augment_data(args):
                     for j in range(n):
                         # i = degrees[j]
                         if folder_name == 'X_un':
-                            tmp_x = cv.imread(os.path.join(X_dir,
-                                                           os.path.join(folder_name_x, x_aug_list[j])))
-
+                            tmp_x = cv.imread(
+                                os.path.join(X_dir, os.path.join(folder_name_x, x_aug_list[j])))
                         else:
-                            tmp_x = cv.imread(os.path.join(X_dir,
-                                                           os.path.join('X/' + folder_name, x_aug_list[j])))
+                            tmp_x = cv.imread(
+                                os.path.join(X_dir, os.path.join('X/' + folder_name, x_aug_list[j])))
 
                         if i % 90 == 0:
                             adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                             rot_x = cv.warpAffine(tmp_x, adjus_M, (img_height, img_width))
-                            # print("just for check 90: ", i)
 
                         elif i % 19 == 0:
                             if i == 57:
@@ -1011,9 +943,7 @@ def augment_data(args):
                                 # cv.rectangle(rot_x, (75, 75), (720 - 75, 720 - 75), (0, 0, 255), (2))
                                 rot_x = rot_x[75:720 - 75, 75:720 - 75, :]
                                 # print("just for check 19: ", i, rot_x.shape)
-
                             else:
-
                                 adjus_M = cv.getRotationMatrix2D((img_width / 2, img_height / 2), i, 1)
                                 rot_x = cv.warpAffine(tmp_x, adjus_M, (img_height, img_width))
                                 # cv.rectangle(rot_x,(95,95),(720-95,720-95),(0,0,255),(2) )
@@ -1033,7 +963,6 @@ def augment_data(args):
                                 # cv.rectangle(rot_x, (105, 105), (720 - 105, 720 - 105), (0, 0, 255), (2))
                                 rot_x = rot_x[105:720 - 105, 105:720 - 105, :]
                                 # print("just for check 23:", i, rot_x.shape)
-
                         else:
                             print('Error using degrees for rotation')
                             sys.exit()
@@ -1074,12 +1003,8 @@ def augment_data(args):
                 cv.destroyAllWindows()
 
                 print("... Flipping  validation data augmentation finished")
-
         else:
             print("This part is not finished yet")
-
-
-
     else:
 
         print("Error, just train and validation code have written")
@@ -1091,7 +1016,7 @@ def data_parser(args):
         train_files_name = args.train_list # dataset base dir
 
         base_dir = os.path.join(args.dataset_dir, args.train_dataset,'edges') \
-            if args.train_dataset.lower() == 'ssmihd' else os.path.join(args.dataset_dir, args.train_dataset)
+            if args.train_dataset.lower() == 'biped' else os.path.join(args.dataset_dir, args.train_dataset)
 
         train_list_path = os.path.join(base_dir, train_files_name)
 
@@ -1120,9 +1045,9 @@ def data_parser(args):
 # ************** for testing **********************
     elif args.model_state=='test':
         base_dir = os.path.join(args.dataset_dir,args.test_dataset,'edges')\
-            if args.test_dataset.lower()=='ssmihd' else os.path.join(args.dataset_dir,args.test_dataset)
+            if args.test_dataset.lower()=='BIPED' else os.path.join(args.dataset_dir,args.test_dataset)
 
-        if args.test_dataset.upper() == "SSMIHD":
+        if args.test_dataset.upper() == "BIPED":
             test_files_name = args.test_list
             test_list_path = os.path.join(base_dir,test_files_name)
             test_list = read_files_list(test_list_path)
@@ -1199,7 +1124,7 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
 
             y = cv.cvtColor(y, cv.COLOR_BGR2GRAY)# np.array(y.convert('L'), dtype=np.float32)
             y = np.array(y, dtype=np.float32)
-            if arg.train_dataset.lower()=='ssmihd':
+            if arg.train_dataset.lower()=='biped':
                 y = image_normalization(y)
                 y[y < 51] = 0  # first 100
                 # y[y >= 100] = 255.0 #  first 100 and this uncomented [v4]
@@ -1224,9 +1149,10 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
 
     else:
         # for testing re-coding is needed
-        if arg.test_dataset=='SSMIHD' and (arg.model_state=='test' and arg.use_nir):
+        if arg.test_dataset=='BIPED' and (arg.model_state=='test' and arg.use_nir):
             x_nir = Image.open(file_list[0])
             x_rgb = Image.open(file_list[1])
+            real_size = x_rgb.shape
             # y = Image.open(file_list[2])
             if not arg.image_width % 6 == 0 and arg.image_width > 1000:
                 x_nir = x_nir.resize((arg.image_width, arg.image_height)) #--
@@ -1255,17 +1181,16 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
             #
             # bin_y = bin_y if bin_y.ndim == 2 else bin_y[:, :, 0]
             # bin_y = np.expand_dims(bin_y, axis=2)
-
             images =x
             edgemaps  = None
-            file_names = file_list[2]
+            file_info = (file_list[2], real_size)
 
         else:
             x = cv.imread(file_list[0])
             y = cv.imread(file_list[1])
             real_size = x.shape
 
-            if arg.test_dataset.lower()=='ssmihd' or arg.test_dataset.lower()=='multicue':
+            if arg.test_dataset.lower()=='biped' or arg.test_dataset.lower()=='multicue':
                 pass
             else:
                 x = cv.resize(x, dsize=(arg.image_width, arg.image_height))
@@ -1288,7 +1213,6 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
             edgemaps = bin_y
             file_info = (file_list[1],real_size)
         return images, edgemaps, file_info
-
 
 def get_training_batch(arg, data_ids):
     train_ids = data_ids['train_indices']
@@ -1340,7 +1264,7 @@ def open_images(file_list):
 def get_single_image(args,file_path=None):
 
     if file_path is None:
-        img_dir = os.path.join(args.dataset_dir, args.test_dataset)
+        img_dir = 'data' if args.dataset_dir is None else os.path.join(args.dataset_dir, args.test_dataset)
         file_list = os.listdir(img_dir)
         data =[]
         for i in file_list:

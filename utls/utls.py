@@ -1,5 +1,5 @@
-"""
-Every single of advanced operation for approach the project will be found here
+""" Utilities
+
 """
 import numpy as np
 import time
@@ -19,12 +19,12 @@ def get_model_trained_name(sess=None,data_dir=None, last_update=True):
             print('Not performet yet')
 
 def gamma_correction(i, g,gamma=True):
-    """
-    0.4040 0.3030 0.6060
+    """Gamma correction
+    This function is for gamma corrections and de-correction 0.4040 0.3030 0.6060
     :param i: image data
     :param g: gamma value
     :param gamma: if true do gamma correction if does not degamma correction
-    :return:gamma corrected image if false image without gamma correction
+    :return:if gamma gamma corrected image else image without gamma correction
     """
     i = np.float32(i)
     if gamma:
@@ -34,13 +34,15 @@ def gamma_correction(i, g,gamma=True):
     return img
 
 def image_normalization(img, img_min=0, img_max=255):
-    """This is a typical image normalization function
+    """ Image normalization given a minimum and maximum
+
+    This is a typical image normalization function
     where the minimum and maximum of the image is needed
     source: https://en.wikipedia.org/wiki/Normalization_(image_processing)
     :param img: an image could be gray scale or color
     :param img_min:  for default is 0
     :param img_max: for default is 255
-    :return: a normalized image, if max is 255 the dtype is uint8
+    :return: a normalized image given a scale
     """
     img = np.float32(img)
     epsilon=1e-12 # whenever an inconsistent image
@@ -116,7 +118,6 @@ def normalization_data_01(data):
                 N = data[i,:,:,-1]
                 data[i,:,:,0]= ((im-np.min(im))*1/(np.max(im)-np.min(im)))
                 data[i, :, :, -1] = ((N - np.min(N)) * 1 / (np.max(N) - np.min(N)))
-            del im, N
 
         elif data.shape[-1]==1:
             for i in range(n_imgs):
@@ -179,7 +180,7 @@ def split_pair_names(opts, file_names, base_dir=None):
         if base_dir==None:
             file_names =[c.split(' ') for c in file_names]
         else:
-            if opts.train_dataset.lower()=='ssmihd':
+            if opts.train_dataset.lower()=='biped':
                 x_base_dir=os.path.join(base_dir,'imgs',opts.model_state)
                 y_base_dir =os.path.join(base_dir,'edge_maps',opts.model_state)
                 file_names = [c.split(' ') for c in file_names]
@@ -195,7 +196,7 @@ def split_pair_names(opts, file_names, base_dir=None):
         if base_dir == None:
             file_names = [c.split(' ') for c in file_names]
         else:
-            if opts.test_dataset.lower() == 'ssmihd':
+            if opts.test_dataset.lower() == 'biped':
                 x_base_dir = os.path.join(base_dir,'imgs', opts.model_state)
                 y_base_dir = os.path.join(base_dir,'edge_maps', opts.model_state)
                 file_names = [c.split(' ') for c in file_names]
@@ -212,7 +213,7 @@ def split_pair_names(opts, file_names, base_dir=None):
 # _____________ H5 file manager _________
 
 def h5_reader(path):
-    """
+    """ Read H5 file
     Read .h5 file format data h5py <<.File>>
     :param path:file path of desired file
     :return: dataset -> contain images data for training;
@@ -284,7 +285,6 @@ def restore_rgb(config,I):
     :param I: and image or a set of images
     :return: an image or a set of images restored
     """
-
     if  len(I)>3 and not type(I)==np.ndarray:
         I =np.array(I)
         I = I[:,:,:,0:3]
@@ -317,9 +317,6 @@ def restore_edgemap(config,I):
         n = I.shape[0]
         for i in range(n):
             y=I[i,...]
-
-
-
     elif len(I.shape)==3 and I.shape[-1]==1:
 
         I = np.array(I.convert('L'), dtype=np.float32)
@@ -384,6 +381,5 @@ def tensor_norm_01(data):
             print('NaN detected after normalization')
             return 'variable has NaN values'
         return data
-
     else:
         print('Please use image_normalization() function')

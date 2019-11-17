@@ -1,13 +1,12 @@
 
 
 import tensorflow as tf
-
 from PIL import Image
 
 from models.dexined import dexined
 from utls.utls import *
 from utls.dataset_manager import data_parser,get_single_image,\
-    get_testing_batch, open_images
+    get_testing_batch
 
 class m_tester():
 
@@ -29,7 +28,7 @@ class m_tester():
 
             saver = tf.train.Saver()
             saver.restore(session, meta_model_file)
-            print_info('Done restoring VGG-16 model from {}'.format(meta_model_file))
+            print_info('Done restoring DexiNed model from {}'.format(meta_model_file))
 
         except Exception as err:
 
@@ -73,7 +72,10 @@ class m_tester():
         save predicted edge maps
         """
         result_dir = 'DexiNed_'+self.args.train_dataset+'2'+self.args.test_dataset
-        res_dir = os.path.join(self.args.base_dir_results,result_dir)
+        if self.args.base_dir_results is None:
+            res_dir = os.path.join('results', result_dir)
+        else:
+            res_dir = os.path.join(self.args.base_dir_results,result_dir)
         gt_dir = os.path.join(res_dir,'gt')
         all_dir = os.path.join(res_dir,'pred-h5')
         resf_dir = os.path.join(res_dir,'pred-f')
@@ -92,7 +94,6 @@ class m_tester():
             em_maps = [e[0] for e in em_maps]
             em_a = np.mean(np.array(em_maps), axis=0)
             em_maps = em_maps + [em_a ]
-            # save gt image
 
             em = em_maps[len(em_maps)-2]
             em[em < self.args.testing_threshold] = 0.0
