@@ -73,20 +73,18 @@ class dexined():
 
             self.output1 = self.side_layer(self.conv1_2,name='output1',filters=1, upscale=int(2 ** 1),
                                            strides=(1,1),kernel_size=[1,1],sub_pixel=use_subpixel)  # bx400x400x1
-            self.rconv1 = tf.layers.conv2d(self.conv1_2,filters=128, kernel_size=[1,1],
-                                        activation=None,
-                                        kernel_initializer= None,
-                                        strides=(2,2), bias_initializer=tf.constant_initializer(0.0),
-                                        padding='SAME', name="rconv1")  # bx100x100x128
+            self.rconv1 = tf.layers.conv2d(
+                self.conv1_2,filters=128, kernel_size=[1,1], activation=None,
+                kernel_initializer= None, strides=(2,2), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="rconv1")  # bx100x100x128
             self.rconv1 =slim.batch_norm(self.rconv1)
 
             # ------------------------- Block2 ----------------------------------------
             self.block2_xcp = self.conv1_2
-            self.add1_1 = tf.layers.conv2d(self.conv1_2, filters=128, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="add1_1_conv")
+            self.add1_1 = tf.layers.conv2d(
+                self.conv1_2, filters=128, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="add1_1_conv")
             for k in range(1):
                 self.block2_xcp = tf.layers.conv2d(
                     self.block2_xcp, filters=128, kernel_size=[3, 3],
@@ -104,25 +102,22 @@ class dexined():
             self.add2_1 = tf.add(self.maxpool2_1, self.rconv1)
             self.output2 = self.side_layer(self.block2_xcp,filters=1,name='output2', upscale=int(2 ** 1),
                                            strides=(1,1),kernel_size=[1,1],sub_pixel=use_subpixel) # bx400x400x1
-            self.rconv2= tf.layers.conv2d(self.add2_1,filters=256, kernel_size=[1,1],
-                                        activation=None,
-                                        kernel_initializer= None,
-                                        strides=(2,2), bias_initializer=tf.constant_initializer(0.0),
-                                        padding='SAME', name="rconv2")  # bx50x50x256
+            self.rconv2= tf.layers.conv2d(
+                self.add2_1,filters=256, kernel_size=[1,1], activation=None,
+                kernel_initializer= None, strides=(2,2), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="rconv2")  # bx50x50x256
             self.rconv2 = slim.batch_norm(self.rconv2)
 
             # ------------------------- Block3 ----------------------------------------
             self.block3_xcp = self.add2_1
-            self.addb2_4b3 = tf.layers.conv2d(self.maxpool2_1,filters=256, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="add2conv_4b3") # 100x100x256
+            self.addb2_4b3 = tf.layers.conv2d(
+                self.maxpool2_1,filters=256, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="add2conv_4b3") # 100x100x256
             self.addb2_4b3 = slim.batch_norm(self.addb2_4b3)
             for k in range(2):
 
                 self.block3_xcp=tf.nn.relu(self.block3_xcp)
-
                 self.block3_xcp = tf.layers.conv2d(
                     self.block3_xcp, filters=256, kernel_size=[3, 3],
                     strides=(1, 1), padding='same', name='con1v_block3_{}'.format(k + 1)) # bx100x100x256
@@ -139,28 +134,25 @@ class dexined():
             self.maxpool3_1 = slim.max_pool2d(self.block3_xcp, kernel_size=[3, 3],stride=2, padding='same',
                                              scope='maxpool3_1')  # bx50x50x256
             self.add3_1 = tf.add(self.maxpool3_1, self.rconv2)
-            self.rconv3 = tf.layers.conv2d(self.add3_1, filters=512, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="rconv3")  # bx25x25x512
+            self.rconv3 = tf.layers.conv2d(
+                self.add3_1, filters=512, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="rconv3")  # bx25x25x512
             self.rconv3 = slim.batch_norm(self.rconv3) # VARIABLE ON NORMALIZATION ****
             self.output3 = self.side_layer(self.block3_xcp, filters=1,name='output3', upscale=int(2 ** 2),
                                            strides=(1,1),kernel_size=[1,1],sub_pixel=use_subpixel)   # bx400x400x1
 
             # ------------------------- Block4 ----------------------------------------
-            self.conv_b2b4 = tf.layers.conv2d(self.maxpool2_1, filters=256, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="conv_b2b4")  # bx50x50x256
+            self.conv_b2b4 = tf.layers.conv2d(
+                self.maxpool2_1, filters=256, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="conv_b2b4")  # bx50x50x256
             self.block4_xcp= self.add3_1
             self.addb2b3 = tf.add(self.conv_b2b4, self.maxpool3_1)
-            self.addb3_4b4 = tf.layers.conv2d(self.addb2b3, filters=512, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="add3conv_4b4")  # bx50x50x512
+            self.addb3_4b4 = tf.layers.conv2d(
+                self.addb2b3, filters=512, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="add3conv_4b4")  # bx50x50x512
             self.addb3_4b4 = slim.batch_norm(self.addb3_4b4)
             for k in range(3):
                 self.block4_xcp= tf.nn.relu(self.block4_xcp)
@@ -179,30 +171,27 @@ class dexined():
             self.maxpool4_1 = slim.max_pool2d(self.block4_xcp, kernel_size=[3, 3], stride=2, padding='same',
                                              scope='maxpool3_1')  # bx25x25x728, b=batch size
             self.add4_1 = tf.add(self.maxpool4_1, self.rconv3)
-            self.rconv4 = tf.layers.conv2d(self.add4_1, filters=512, kernel_size=[1, 1],
-                                           activation=None,
-                                           kernel_initializer=None,
-                                           strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                           padding='SAME', name="rconv4")  # bx25x25x512
+            self.rconv4 = tf.layers.conv2d(
+                self.add4_1, filters=512, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="rconv4")  # bx25x25x512
             self.rconv4 = slim.batch_norm(self.rconv4)  # VARIABLE ON NORMALIZATION ****
 
             self.output4 = self.side_layer(self.block4_xcp, filters=1,name='output4', upscale=int(2 ** 3),
                                            strides=(1,1),kernel_size=[1,1],sub_pixel=use_subpixel)  # bx400x400x1
 
             # ------------------------- Block5 ----------------------------------------
-            self.convb3_2ab4 = tf.layers.conv2d(self.conv_b2b4, filters=512, kernel_size=[1, 1],
-                                              activation=None,
-                                              kernel_initializer=None,
-                                              strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
-                                              padding='SAME', name="conv_b2b5")  # bx25x25x512
+            self.convb3_2ab4 = tf.layers.conv2d(
+                self.conv_b2b4, filters=512, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(2, 2), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="conv_b2b5")  # bx25x25x512
 
             self.block5_xcp=self.add4_1
             self.addb2b5 =  tf.add(self.convb3_2ab4,self.maxpool4_1)
-            self.addb2b5 = tf.layers.conv2d(self.addb2b5, filters=512, kernel_size=[1, 1],
-                                               activation=None,
-                                               kernel_initializer=None,
-                                               strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                               padding='SAME', name="addb2b5")  # bx25x25x512
+            self.addb2b5 = tf.layers.conv2d(
+                self.addb2b5, filters=512, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="addb2b5")  # bx25x25x512
             self.addb2b5 = slim.batch_norm(self.addb2b5)
             for k in range(3):
                 self.block5_xcp=tf.nn.relu(self.block5_xcp)
@@ -224,18 +213,16 @@ class dexined():
 
             # ------------------------- Block6 ----------------------------------------
             self.block6_xcp = self.add5_1  # self.rconv4
-            self.block6_xcp = tf.layers.conv2d(self.block6_xcp, filters=256, kernel_size=[1, 1],
-                                               activation=None,
-                                               kernel_initializer=None,
-                                               strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                               padding='SAME', name="conv0_b6")  # bx25x25x256
+            self.block6_xcp = tf.layers.conv2d(
+                self.block6_xcp, filters=256, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="conv0_b6")  # bx25x25x256
 
             self.block6_xcp = slim.batch_norm(self.block6_xcp)
-            self.addb25_2b6 = tf.layers.conv2d(self.block5_xcp, filters=256, kernel_size=[1, 1],
-                                               activation=None,
-                                               kernel_initializer=None,
-                                               strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
-                                               padding='SAME', name="add2b6")  # bx25x25x256
+            self.addb25_2b6 = tf.layers.conv2d(
+                self.block5_xcp, filters=256, kernel_size=[1, 1], activation=None,
+                kernel_initializer=None, strides=(1, 1), bias_initializer=tf.constant_initializer(0.0),
+                padding='SAME', name="add2b6")  # bx25x25x256
             self.addb25_2b6 = slim.batch_norm(self.addb25_2b6)
             for k in range(3):
                 self.block6_xcp = tf.nn.relu(self.block6_xcp)
@@ -273,9 +260,9 @@ class dexined():
                    kernel_initializer=None, strides=(1,1), separable_conv=False):
 
         if separable_conv:
-            conv = tf.layers.separable_conv2d(inputs, filters=filters, kernel_size=kernel_size,
-                                                      depth_multiplier=depth_multiplier, padding=padding,
-                                                      name=name)
+            conv = tf.layers.separable_conv2d(
+                inputs, filters=filters, kernel_size=kernel_size,
+                depth_multiplier=depth_multiplier, padding=padding, name=name)
         else:
             conv= tf.layers.conv2d(inputs, filters=filters, kernel_size=kernel_size,
                              strides=strides,padding=padding, kernel_initializer=kernel_initializer, name=name)
@@ -306,12 +293,10 @@ class dexined():
                         sub_net = tf.nn.bias_add(sub_net, biases)
                         sub_net = tf.nn.relu(sub_net)
 
-                        sub_net = tf.layers.conv2d_transpose(sub_net, filters=filters,
-                                                            kernel_size=[(upscale), (upscale)],
-                                                            strides=(2, 2), padding="SAME",
-                                                            kernel_initializer=tf.truncated_normal_initializer(
-                                                                stddev=0.1),
-                                                            name='{}_deconv_{}_{}'.format(name, upscale, i)) # upscale/2
+                        sub_net = tf.layers.conv2d_transpose(
+                            sub_net, filters=filters, kernel_size=[(upscale), (upscale)],
+                            strides=(2, 2), padding="SAME", kernel_initializer=tf.truncated_normal_initializer(stddev=0.1),
+                            name='{}_deconv_{}_{}'.format(name, upscale, i)) # upscale/2
                     else:
 
                         sub_net = self.conv_layer(sub_net, filters=output_filters,
@@ -323,11 +308,10 @@ class dexined():
                         sub_net = tf.nn.bias_add(sub_net, biases)
                         sub_net = tf.nn.relu(sub_net)
                         # *
-                        sub_net = tf.layers.conv2d_transpose(sub_net, filters=output_filters,
-                                                             kernel_size=[(upscale), (upscale)],
-                                                             strides=(2, 2), padding="SAME",
-                                                             kernel_initializer=None,
-                                                             name='{}_deconv_{}_{}'.format(name, upscale, i)) # tf.truncated_normal_initializer(stddev=0.1)
+                        sub_net = tf.layers.conv2d_transpose(
+                            sub_net, filters=output_filters, kernel_size=[(upscale), (upscale)],
+                            strides=(2, 2), padding="SAME", kernel_initializer=None,
+                            name='{}_deconv_{}_{}'.format(name, upscale, i))
                     i += 1
                     scale=2**i
 
@@ -368,7 +352,7 @@ class dexined():
                     scale = 2 ** i
 
             elif sub_pixel:
-                # Upsampling by sunPixel convolution
+                # Upsampling by subPixel convolution
                 while (scale <= upscale):
                     if scale == upscale:
                         sub_net = self.conv_layer(sub_net, filters=4,
@@ -389,10 +373,9 @@ class dexined():
                             raise Exception(' the output channel is not setted')
                     else:
 
-                        sub_net = self.conv_layer(sub_net, filters=32,
-                                                  kernel_size=3, kernel_initializer=None,
-                                                  strides=strides, name=name + '_conv' + str(
-                                i))  # bx100x100x64 tf.truncated_normal_initializer(mean=0.0, stddev=0.15)
+                        sub_net = self.conv_layer(
+                            sub_net, filters=32, kernel_size=3, kernel_initializer=None,
+                            strides=strides, name=name + '_conv' + str(i))  # bx100x100x32
                         biases = tf.Variable(tf.constant(0.0, shape=[32], dtype=tf.float32),
                                              name=name + '_conv_b' + str(i))
                         sub_net = tf.nn.bias_add(sub_net, biases)
@@ -411,9 +394,7 @@ class dexined():
                     scale = 2 ** i
             else:
                 raise NotImplementedError
-
             return sub_net
-
         classifier = upsample_block(inputs, filters=filters, kernel_size=kernel_size, strides=strides,
                                         name=name, upscale=upscale, sub_pixel=sub_pixel)
         return classifier
@@ -421,7 +402,6 @@ class dexined():
     def _upscore_layer(self, input, n_outputs, name,
                        ksize=4, stride=2,shape=None):
         strides = [1, stride, stride, 1]
-        # with tf.variable_scope(name):
         in_features = input.get_shape().as_list()[3]
 
         if shape is None:
@@ -438,11 +418,9 @@ class dexined():
         output_shape = tf.stack(new_shape)
 
         f_shape = [ksize, ksize, n_outputs, in_features]
-
         # create
         num_input = ksize * ksize * in_features / stride
         stddev = (2 / num_input) ** 0.5
-
         weights = self.get_deconv_filter(f_shape,name=name+'_Wb')
         deconv = tf.nn.conv2d_transpose(input,weights, output_shape,
                                         strides=strides, padding='SAME', name=name)
