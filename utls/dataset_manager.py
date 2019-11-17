@@ -1261,20 +1261,18 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
             file_names = file_list[2]
 
         else:
-
             x = cv.imread(file_list[0])
             y = cv.imread(file_list[1])
+            real_size = x.shape
 
             if arg.test_dataset.lower()=='ssmihd' or arg.test_dataset.lower()=='multicue':
                 pass
             else:
                 x = cv.resize(x, dsize=(arg.image_width, arg.image_height))
                 y = cv.resize(y, dsize=(arg.image_width, arg.image_height))
-            # # pay attention here
             x = np.array(x, dtype=np.float32)
             # x = x[:, :, arg.channel_swap] # while using opencv it is not necessary
             x -= arg.mean_pixel_values[:-1]
-
             y = cv.cvtColor(y, cv.COLOR_BGR2GRAY)
             y = np.array(y, dtype=np.float32)
             if arg.target_regression:
@@ -1288,9 +1286,8 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
 
             images = x
             edgemaps = bin_y
-            file_names = file_list[1]
-
-        return images, edgemaps, file_names
+            file_info = (file_list[1],real_size)
+        return images, edgemaps, file_info
 
 
 def get_training_batch(arg, data_ids):
@@ -1318,11 +1315,7 @@ def get_testing_batch(arg,list_ids, use_batch=True, i=None):
         batch_ids = test_ids[i:i + arg.batch_size_test]
         return get_batch(arg,file_list,batch_ids)
     else:
-        if arg.test_dataset=='SSMIHD':
-            return get_batch(arg, list_ids[0],list_ids[1], use_batch=False)
-        else:
-            return get_batch(arg, list_ids[0], list_ids[1], use_batch=False)
-
+        return get_batch(arg, list_ids[0],list_ids[1], use_batch=False)
 
 def open_images(file_list):
     if len(file_list)>2 and not len(file_list)==3:
@@ -1342,11 +1335,6 @@ def open_images(file_list):
         file_names= file_list
 
     return imgs, file_names
-
-
-# _____________ End batch management
-
-# _____________ Save result _________
 
 # for testing on single images
 def get_single_image(args,file_path=None):
@@ -1368,7 +1356,8 @@ def get_single_image(args,file_path=None):
             x = cv.resize(x, dsize=(args.image_width, args.image_height))
         # x = x[:, :, arg.channel_swap] # while using opencv it is not necessary
         x -= args.mean_pixel_values[:-1]
-        return x, file_path
+        img_info = (file_path,img.shape)
+        return x, img_info
 
 def visualize_result(imgs_list, arg):
     """

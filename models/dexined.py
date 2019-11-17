@@ -1,10 +1,10 @@
 """ DexiNed architecture description
 
+
 Created by: Xavier Soria Poma
 Modified from: https://github.com/machrisaa/tensorflow-vgg
 Autonomous University of Barcelona-Computer Vision Center
 xsoria@cvc.uab.es/xavysp@gmail.com
-
 """
 
 import time

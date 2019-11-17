@@ -21,16 +21,15 @@ def config_model():
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='SSMIHD', choices=['SSMIHD','BSDS'])
-    parser.add_argument('--test_dataset', default='CID', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
+    parser.add_argument('--test_dataset', default='CLASSIC', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
     parser.add_argument('--dataset_dir',default='/opt/dataset/',type=str)
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
-    parser.add_argument('--val_list',default='msi_valid_list.txt', type=str)
     parser.add_argument('--test_list', default='test_pair.lst',type=str) # for NYUD&BSDS:test_pair.lst, ssmihd: msi_test.lst/vis_test.lst
     # SSMIHD_RGBN msi_valid_list.txt and msi_test_list.txt is for unified test
     parser.add_argument('--use_nir', default=False, type=bool)
     parser.add_argument('--test_augmented', default=False,type=bool)
-    parser.add_argument('--use_dataset', default=True, type=bool)
+    parser.add_argument('--use_dataset', default=False, type=bool) # test: dataset TRUE single image FALSE
     # model config
     parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
     parser.add_argument('--model_name', default='DXN',choices=['DXN','XCP','None'])
