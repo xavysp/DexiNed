@@ -67,7 +67,7 @@ def config_model():
     parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 ssmihd 720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
-    parser.add_argument('--test_snapshot', default=149999, type=int) #  old: 149736
+    parser.add_argument('--test_snapshot', default=149736, type=int) #  old: 149736
     parser.add_argument('--testing_threshold', default=0.0, type=float)
     parser.add_argument('--base_dir_results',default='/opt/results/edges',type=str)
     args = parser.parse_args()
