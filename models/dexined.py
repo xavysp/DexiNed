@@ -26,17 +26,6 @@ class dexined():
         self.utw= self.args.use_trained_model
         self.img_height =args.image_height
         self.img_width =args.image_width
-
-        base_path = os.path.abspath(os.path.dirname(__file__))
-        if self.args.use_trained_model:
-            if not os.path.exists(base_path) or len(os.listdir(base_path)) == 0:  # :
-                self.data_dict=[]
-                print(' *** No model to take for fine tuning ***')
-            else:
-                weights_file = os.path.join(base_path, self.args.model_weights_path)
-                self.data_dict = np.load(weights_file, encoding='latin1').item()
-                print_info("Model weights loaded from {}".format(self.args.model_weights_path))
-
         if args.model_state=='test':
             self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
                                                       self.args.image_width, self.args.n_channels])
@@ -240,7 +229,7 @@ class dexined():
 
             self.output6 = self.side_layer(self.block6_xcp, filters=1, name='output6', kernel_size=[1, 1],
                                            upscale=int(2 ** 4), sub_pixel=use_subpixel, strides=(1, 1))
-            # ******************** end blocks *****************************************
+            # ******************** End blocks *****************************************
 
             self.side_outputs = [self.output1, self.output2, self.output3,
                                  self.output4, self.output5,self.output6]
@@ -507,6 +496,5 @@ class dexined():
             os.makedirs(self.train_log_dir)
         if not os.path.exists(self.val_log_dir):
             os.makedirs(self.val_log_dir)
-
         self.train_writer = tf.summary.FileWriter(self.train_log_dir, session.graph)
         self.val_writer = tf.summary.FileWriter(self.val_log_dir)

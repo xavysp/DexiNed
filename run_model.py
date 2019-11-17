@@ -20,15 +20,14 @@ def config_model():
 
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
-    parser.add_argument('--train_dataset', default='SSMIHD', choices=['SSMIHD','BSDS'])
-    parser.add_argument('--test_dataset', default='CLASSIC', choices=['SSMIHD', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
-    parser.add_argument('--dataset_dir',default='/opt/dataset/',type=str)
+    parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
+    parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
+    parser.add_argument('--dataset_dir',default=None,type=str) # default:'/opt/dataset/'
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
     parser.add_argument('--test_list', default='test_pair.lst',type=str) # for NYUD&BSDS:test_pair.lst, ssmihd: msi_test.lst/vis_test.lst
     # SSMIHD_RGBN msi_valid_list.txt and msi_test_list.txt is for unified test
     parser.add_argument('--use_nir', default=False, type=bool)
-    parser.add_argument('--test_augmented', default=False,type=bool)
     parser.add_argument('--use_dataset', default=False, type=bool) # test: dataset TRUE single image FALSE
     # model config
     parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
@@ -51,8 +50,7 @@ def config_model():
     parser.add_argument('--loss_weights', default=1.0, type=float)
     parser.add_argument('--save_interval', default=10000, type=int)  # 50000
     parser.add_argument('--val_interval', default=30, type=int)
-    parser.add_argument('--use_separable_conv', default=False, type= bool) # chech **
-    parser.add_argument('--use_subpixel', default=None, type=bool)  # chech **
+    parser.add_argument('--use_subpixel', default=None, type=bool)  # None=upsampling with transp conv
     parser.add_argument('--deep_supervision', default=True, type= bool)
     parser.add_argument('--target_regression',default=True, type=bool) # true
     parser.add_argument('--mean_pixel_values', default=[103.939,116.779,123.68, 137.86], type=float)# [103.939,116.779,123.68]
@@ -68,7 +66,7 @@ def config_model():
     # test config
     parser.add_argument('--test_snapshot', default=149736, type=int) #  old: 149736
     parser.add_argument('--testing_threshold', default=0.0, type=float)
-    parser.add_argument('--base_dir_results',default='/opt/results/edges',type=str)
+    parser.add_argument('--base_dir_results',default=None,type=str) # default: '/opt/results/edges'
     args = parser.parse_args()
 
     return args
@@ -109,7 +107,7 @@ def main(args):
 
     if args.model_state=='test':
 
-        if not args.test_augmented and args.test_dataset=="SSMIHD":
+        if args.test_dataset=="SSMIHD":
             if args.image_width >700:
                 pass
             else:

@@ -1,14 +1,10 @@
 
 
-# import os, sys
-# import argparse
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import functools
-# import numpy as np
 
-from models.vgg16 import Vgg16
-from models.xception import xceptionet
+
 from models.dexined import dexined
 from utls.utls import *
 from utls.dataset_manager import (data_parser,
@@ -35,29 +31,24 @@ class m_trainer():
     def run(self, sess):
         if not self.init:
             return
-        train_data = data_parser(self.args)  # train_data = "files_path": train_samples,"n_files": n_train,
-                # "train_indices": train_ids,"validation_indices": valid_ids
+        train_data = data_parser(self.args)
 
         self.model.setup_training(sess)
-
         if self.args.lr_scheduler is not None:
             global_step = tf.Variable(0, trainable=False, dtype=tf.int64)
-
         if self.args.lr_scheduler is None:
             learning_rate = tf.constant(self.args.learning_rate, dtype=tf.float16)
         else:
             raise NotImplementedError('Learning rate scheduler type [%s] is not implemented',
                                       self.args.lr_scheduler)
-
         opt = tf.train.AdamOptimizer(learning_rate)
-
-        # coded by me
         trainG = opt.minimize(self.model.loss)# like hed
         saver = tf.train.Saver(max_to_keep=7)
+
         sess.run(tf.global_variables_initializer())
         # here to recovery previous training
         if self.args.use_previous_trained:
-            if self.args.dataset_name.lower()!='ssmihd': # using ssmihd pretrained to use in other dataset
+            if self.args.dataset_name.lower()!='biped': # using biped pretrained to use in other dataset
                 model_path = os.path.join('checkpoints',self.args.model_name+
                                           '_'+self.args.train_dataset,'train')
             else:
@@ -83,10 +74,9 @@ class m_trainer():
         prev_loss=1000.
         prev_val = None
         # directories for checkpoints
-
-        checkpoint_dir = os.path.join(self.args.checkpoint_dir,
-                                          self.args.model_name + '_' + self.args.train_dataset,
-                                                       self.args.model_state)
+        checkpoint_dir = os.path.join(
+            self.args.checkpoint_dir, self.args.model_name + '_' + self.args.train_dataset,
+            self.args.model_state)
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
 
@@ -94,14 +84,11 @@ class m_trainer():
         for idx in range(ini, maxi):
 
             x_batch, y_batch,_ = get_training_batch(self.args, train_data)
-
             run_metadata = tf.RunMetadata()
 
-            _, summary, loss,pred_maps= sess.run([trainG,
-                                        self.model.merged_summary,
-                                         self.model.loss, self.model.predictions],
-                                        feed_dict={self.model.images: x_batch,
-                                                   self.model.edgemaps: y_batch,})
+            _, summary, loss,pred_maps= sess.run(
+                [trainG, self.model.merged_summary, self.model.loss, self.model.predictions],
+                feed_dict={self.model.images: x_batch, self.model.edgemaps: y_batch})
             if idx%5==0:
                 self.model.train_writer.add_run_metadata(run_metadata,
                                                          'step{:06}'.format(idx))
@@ -124,8 +111,6 @@ class m_trainer():
             # ********* for validation **********
             if (idx+1) % self.args.val_interval== 0:
                 pause_show=0.01
-                # plt.close()
-                # *** recode with restore_rgb fuinction **********
                 imgs_list = []
                 img = x_batch[2][:,:,0:3]
                 gt_mp= y_batch[2]
@@ -135,10 +120,7 @@ class m_trainer():
                     tmp=pred_maps[i][2,...]
                     imgs_list.append(tmp)
                 vis_imgs = visualize_result(imgs_list, self.args)
-                # plt.title("Epoch:" + str(idx + 1) + " Loss:" + '%.5f' % loss + " training")
-
                 fig.suptitle("Iterac:" + str(idx + 1) + " Loss:" + '%.5f' % loss + " training")
-                # plt.imshow(np.uint8(img))
                 fig.add_subplot(1,1,1)
                 plt.imshow(np.uint8(vis_imgs))
 
@@ -147,11 +129,10 @@ class m_trainer():
                 plt.pause(pause_show)
 
                 im, em, _ = get_validation_batch(self.args, train_data)
-
-                summary, error, pred_val = sess.run([self.model.merged_summary, self.model.error,
-                                           self.model.fuse_output],
-                                          feed_dict={self.model.images: im, self.model.edgemaps: em})
-                if error<=0.08: # all annotation concideration: 0.13, when is greather that 50 <=0.09
+                summary, error, pred_val = sess.run(
+                    [self.model.merged_summary, self.model.error, self.model.fuse_output],
+                    feed_dict={self.model.images: im, self.model.edgemaps: em})
+                if error<=0.08:
                     saver.save(sess, os.path.join(checkpoint_dir, self.args.model_name), global_step=idx)
                     prev_loss = loss
                     print("Parameters saved in the validation stage when its error is <=0.08::", error)
@@ -166,6 +147,4 @@ class m_trainer():
 
         saver.save(sess, os.path.join(checkpoint_dir, self.args.model_name), global_step=idx)
         print("Final Weights saved", idx, " Current Loss", loss)
-
-        # plt.show()
         self.model.train_writer.close()
