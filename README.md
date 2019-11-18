@@ -10,6 +10,8 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 # Introduction
 
+* [Geting Started](#Geting Starter)
+
 # Geting Started
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
