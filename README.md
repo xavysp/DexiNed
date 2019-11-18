@@ -19,7 +19,6 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 ## Project Architecture
 
 ```
-.
 ├── data_generator              # dataset generator 
 |   ├── pre_data_generator.py   # data genertor for pre-train phase
 |   └── meta_data_generator.py  # data genertor for meta-train phase
