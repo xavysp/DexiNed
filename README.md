@@ -14,6 +14,9 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
 
+## Test
+    python run_model.py 
+
 ## Requirements
 
 * [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
