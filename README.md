@@ -26,6 +26,7 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 * Other package like Numpy, h5py, PIL. 
 
 Once the packages are installed,  clone this repo as follow: 
+
     git clone https://github.com/xavysp/DexiNed.git
     cd DexiNed
 
