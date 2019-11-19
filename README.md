@@ -122,6 +122,4 @@ Please cite our paper if you find helpful,
     archivePrefix={arXiv},
     primaryClass={cs.CV}
 ```-->
-# Acnowledgement
 
-...
