@@ -8,11 +8,13 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
-# Introduction
+# Table of Contents
 
 * [Geting Started](#geting-started)
 * [Datasets](#datasets)
 * [Performance](#performance)
+* [Citation](#citation)
+* [Aknowledgement](#aknowledgement)
 
 # Geting Started
 
