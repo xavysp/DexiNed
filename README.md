@@ -62,7 +62,7 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save this files intro the DexiNed folder like: DexiNed/checkpoints/(here) then run as follow:
+Before test the DexiNed model it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: DexiNed/checkpoints/(here), then run as follow:
 
     python run_model.py 
 Make sure that in run_model.py the test setting be as:
@@ -71,7 +71,7 @@ Make sure that in run_model.py the test setting be as:
 ## Train
 
     python run_model.py 
-Make sure that in run_model.py the test setting be as:
+Make sure that in run_model.py the train setting be as:
 ```parser.add_argument('--model_state', default='train', choices=['train','test','None'])```
 
 # Datasets
@@ -94,13 +94,13 @@ Non-edge detection datasets
 
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
-| `[SED]()`      | `60.2` | `74.3` | `43.6` |
-| `[HED]()`      | `60.8` | `74.3` | `44.3` |
-| `[RCF]()`      | `60.8` | `74.3` | `44.3` |
-| `[BDCN]()`     | `60.8` | `74.3` | `44.3` |
-| `DexiNed(Ours)`| `60.8` | `74.3` | `44.3` |
+| `[SED]()`      | `.732` | `.745` | `.786` |
+| `[HED]()`      | `.853` | `.863` | `.911` |
+| `[RCF]()`      | `.863` | `.874` | `.914` |
+| `[BDCN]()`     | `.869` | `.878` | `.918` |
+| `DexiNed(Ours)`| `.874` | `.884` | `.916` |
 </center>
-
+Evaluation performed to BIPED dataset
 # Citation
 Please cite our paper if you find helpful,
 ```
