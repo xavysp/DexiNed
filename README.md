@@ -16,36 +16,43 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 # Geting Started
 
+ Before starting to use this model,  there are some requerements to fullfile.
+ 
+## Requirements
+
+* [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
+* [OpenCV](https://pypi.org/project/opencv-python/)
+* [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
+* Other package like Numpy, h5py, PIL. 
+
+Once the packages are installed,  clone this repo as follow: 
+    git clone https://github.com/xavysp/DexiNed.git
+    cd DexiNed
+
 ## Project Architecture
 
 ```
-├── data_generator              # dataset generator 
+├── data                          # dataset generator 
 |   ├── pre_data_generator.py   # data genertor for pre-train phase
 |   └── meta_data_generator.py  # data genertor for meta-train phase
-├── models                      # tensorflow model files 
+├── figs                      # tensorflow model files 
 |   ├── resnet12.py             # resnet12 class
-|   ├── resnet18.py             # resnet18 class
-|   ├── pre_model.py            # pre-train model class
 |   └── meta_model.py           # meta-train model class
-├── trainer                     # tensorflow trianer files  
-|   ├── pre.py                  # pre-train trainer class
-|   └── meta.py                 # meta-train trainer class
-├── utils                       # a series of tools used in this repo
-|   └── misc.py                 # miscellaneous tool functions
-├── main.py                     # the python file with main function and parameter settings
-└── run_experiment.py           # the script to run the whole experiment
+├── models                     # tensorflow trianer files  
+|   └── dexined.py                 # meta-train trainer class
+├── utls                       # a series of tools used in this repo
+|   └── dataset_manager.py      # miscellaneous tool functions
+|   └── losses.py               # miscellaneous tool functions
+|   └── utls.py                 # miscellaneous tool functions
+├── run_model.py                # the python file with main function and parameter settings
+└── test.py               # the script to run the whole experiment
+└── train.py              # the script to run the whole experiment
 ```
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
 
 ## Test
     python run_model.py 
-
-## Requirements
-
-* [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
-* [OpenCV](https://pypi.org/project/opencv-python/)
-* [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
 
 
 # Datasets
