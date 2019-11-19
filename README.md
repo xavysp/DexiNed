@@ -59,9 +59,9 @@ parser.add_argument('--train_list',default='train_rgb.lst', type=str)
 parser.add_argument('--test_list', default='test_pair.lst',type=str)  
 ```
 
-* [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
-
 ## Test
+Before test the DexiNed model it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save this files intro the DexiNed folder like: DexiNed/checkpoints/(here) then run as follow:
+
     python run_model.py 
 
 
