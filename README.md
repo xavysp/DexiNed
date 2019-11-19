@@ -64,7 +64,7 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ## Test
 Before test the DexiNed model it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: DexiNed/checkpoints/(here), then run as follow:
 
-    python run_model.py 
+    python run_model.py --image_width=512 --image_height=512
 Make sure that in run_model.py the test setting be as:
 ```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
 
