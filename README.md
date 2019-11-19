@@ -63,7 +63,14 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 Before test the DexiNed model it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save this files intro the DexiNed folder like: DexiNed/checkpoints/(here) then run as follow:
 
     python run_model.py 
+Make sure that in run_model.py the test setting be as:
+```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
 
+## Train
+
+    python run_model.py 
+Make sure that in run_model.py the test setting be as:
+```parser.add_argument('--model_state', default='train', choices=['train','test','None'])```
 
 # Datasets
 
@@ -103,7 +110,7 @@ Please cite our paper if you find helpful,
 }
 ```
 
-```
+<!--```
 @misc{soria2020dexined_ext,
     title={Towards a Robust Deep Learning Model for Edge Detection},
     author={Xavier Soria and Edgar Riba and Angel Sappa},
@@ -111,5 +118,5 @@ Please cite our paper if you find helpful,
     eprint={000000000},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
-```
+```-->
 # Acnowledgement
