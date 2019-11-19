@@ -50,15 +50,14 @@ Once the packages are installed,  clone this repo as follow:
 ```
 
 As described above, run_model.py has the parameters settings, wether DexiNed is used for training or testing, before thoses processes the parameters need to be set
-'''
+```
 parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
 parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
 parser.add_argument('--dataset_dir',default=None,type=str)
 parser.add_argument('--dataset_augmented', default=True,type=bool)
 parser.add_argument('--train_list',default='train_rgb.lst', type=str)
-parser.add_argument('--test_list', default='test_pair.lst',type=str)
-    
-'''
+parser.add_argument('--test_list', default='test_pair.lst',type=str)  
+```
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
 
