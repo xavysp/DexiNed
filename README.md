@@ -33,21 +33,20 @@ Once the packages are installed,  clone this repo as follow:
 ## Project Architecture
 
 ```
-├── data                          # dataset generator 
-|   ├── pre_data_generator.py   # data genertor for pre-train phase
-|   └── meta_data_generator.py  # data genertor for meta-train phase
-├── figs                      # tensorflow model files 
-|   ├── resnet12.py             # resnet12 class
-|   └── meta_model.py           # meta-train model class
-├── models                     # tensorflow trianer files  
-|   └── dexined.py                 # meta-train trainer class
-├── utls                       # a series of tools used in this repo
-|   └── dataset_manager.py      # miscellaneous tool functions
-|   └── losses.py               # miscellaneous tool functions
+├── data                        # sample images for testing
+|   ├── lena_std.tif            # sample 1
+|   └── stonehengeuk.jpg        # sample 2
+├── figs                        # Images used in README.md
+|   └── DexiNed_banner.png      # DexiNed banner
+├── models                      # tensorflow model file  
+|   └── dexined.py              # DexiNed class
+├── utls                        # a series of tools used in this repo
+|   └── dataset_manager.py      # tools for dataset managing
+|   └── losses.py               # Loss function used to train DexiNed 
 |   └── utls.py                 # miscellaneous tool functions
-├── run_model.py                # the python file with main function and parameter settings
-└── test.py               # the script to run the whole experiment
-└── train.py              # the script to run the whole experiment
+├── run_model.py                # the main python file with main functions and parameter settings
+└── test.py                     # the script to run the test experiment
+└── train.py                    # the script to run the train experiment
 ```
 
 * [Checkpoints](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D)
