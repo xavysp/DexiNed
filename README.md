@@ -80,9 +80,9 @@ Make sure that in run_model.py the train setting be as:
 
 BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download [here](https://xavysp.github.io/MBIPED/)
 
-## Dataset used for Testing
+## Datasets used for Testing
 
-Edge detection dataset
+Edge detection datasets
 * [BIPED](https://xavysp.github.io/MBIPED/) and [MDBD](http://serre-lab.clps.brown.edu/resource/multicue/)
 
 Non-edge detection datasets
