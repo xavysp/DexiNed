@@ -49,7 +49,7 @@ Once the packages are installed,  clone this repo as follow:
 └── train.py                    # the script to run the train experiment
 ```
 
-As described above, run_model.py has the parameters settings, wether DexiNed is used for training or testing, before thoses processes the parameters need to be set
+As described above, run_model.py has the parameters settings, wether DexiNed is used for training or testing, before thoses processes the parameters need to be set. As highlighted, DexiNed is trained just one time with our proposed dataset BIPED so in "--train_dataset" as the default setting is BIDEP; however, in the testing stage (--test_dataset), any dataset can be used, even CLASSIC, which are any arvitrare image downloaded from internet but to evaluate with single images or CLASSIC "--use_dataset" have to be in FALSE mode. Whenever a dataset is used to test or train DexiNed the arguments have to heve the list of training or testingn files files (--train_list, --test_list). Pay attention in the parameters settings, and change whatever you want, like ''--image_width'' or ''--image_height''. To test lena image I have set 512x512.
 ```
 parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
 parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
