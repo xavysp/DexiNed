@@ -94,8 +94,8 @@ Non-edge detection datasets
 
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
-| `[SED](https://github.com/ArashAkbarinia/BoundaryDetection)`      | `.732` | `.745` | `.786` |
-| `[HED]()`      | `.853` | `.863` | `.911` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.732` | `.745` | `.786` |
+| [HED](https://github.com/s9xie/hed)      | `.853` | `.863` | `.911` |
 | `[RCF]()`      | `.863` | `.874` | `.914` |
 | `[BDCN]()`     | `.869` | `.878` | `.918` |
 | `DexiNed(Ours)`| `.874` | `.884` | `.916` |
