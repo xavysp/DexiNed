@@ -60,8 +60,8 @@ def config_model():
     parser.add_argument('--use_trained_model', default=True,type=bool) # for vvg16
     parser.add_argument('--use_previous_trained', default=False, type=bool)
     # image configuration
-    parser.add_argument('--image_width', default=512, type=int) # 480 fro NYUD 560 ssmihd 1280 default 400
-    parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 ssmihd 720 default 400
+    parser.add_argument('--image_width', default=960, type=int) # 480 NYUD=560 BIPED=1280 default 400
+    parser.add_argument('--image_height', default=560, type=int) # 480 for NYUD 425 BIPED=720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
     parser.add_argument('--test_snapshot', default=149736, type=int) #  old: 149736
