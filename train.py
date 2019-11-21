@@ -4,7 +4,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import functools
 
-
 from models.dexined import dexined
 from utls.utls import *
 from utls.dataset_manager import (data_parser,
