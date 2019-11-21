@@ -466,7 +466,8 @@ class dexined():
                 self.loss += (self.args.loss_weights * cost)
                 self.predictions.append(output)
             else:
-                cost =truth_difference_error(prediction=self.side_outputs[-1], label=self.edgemaps)
+                cost =sigmoid_cross_entropy_balanced(b, self.edgemaps, name='cross_entropy{}'.format(idx))
+                self.loss += (self.args.loss_weights * cost)
                 self.loss += (self.args.loss_weights * cost)
                 self.predictions.append(output)
 
