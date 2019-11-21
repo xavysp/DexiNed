@@ -1,13 +1,15 @@
 """ DexiNed main script
 
-This code is based on DexiNed,
-the main work here is ege detection given a multispectral image
-multispectral = {Visible and NearInfrared}
-whenever the NIR is not given, this is estimated by an hallucination network.
-Check all paremeters before run this app the most important is
-dataset configuration
-and testing configuration
+This code is based on DexiNed (Dense Extreme Inception Network for Edge Detection),
+Please pay attention in the function config_model() to set any parameter before training or
+testing the model.
 """
+__author__ = "Xavier Soria Poma, CVC-UAB"
+__email__ = "xsoria@cvc.uab.es / xavysp@gmail.com"
+__homepage__="www.cvc.uab.cat/people/xsoria"
+__credits__=['DexiNed']
+__copyright__   = "MIT License [see LICENSE for details]"#"Copyright 2019, CIMI"
+
 import sys
 import argparse
 import tensorflow as tf
