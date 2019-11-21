@@ -4,7 +4,7 @@
 - Sorry for any inconvenience, we are updating the repo
 ``` -->
 
-This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning.
+This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), the last version will be uploaded after the camera-ready deadline of WACV2020.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
@@ -50,7 +50,7 @@ Once the packages are installed,  clone this repo as follow:
 └── train.py                    # the script to run the train experiment
 ```
 
-As described above, run_model.py has the parameters settings, wether DexiNed is used for training or testing, before thoses processes the parameters need to be set. As highlighted, DexiNed is trained just one time with our proposed dataset BIPED so in "--train_dataset" as the default setting is BIDEP; however, in the testing stage (--test_dataset), any dataset can be used, even CLASSIC, which are any arbitrary image downloaded from internet but to evaluate with single images or CLASSIC "--use_dataset" have to be in FALSE mode. Whenever a dataset is used to test or train DexiNed the arguments have to have the list of training or testing files (--train_list, --test_list). Pay attention in the parameters' settings, and change whatever you want, like ''--image_width'' or ''--image_height''. To test lena image I have set 512x51 (see "test" section).
+As described above, run_model.py has the parameters settings, whether DexiNed is used for training or testing, before those processes the parameters need to be set. As highlighted, DexiNed is trained just one time with our proposed dataset BIPED, so in "--train_dataset" as the default setting is BIDEP; however, in the testing stage (--test_dataset), any dataset can be used, even CLASSIC, which is an arbitrary image downloaded from the internet. However, to evaluate with single images or CLASSIC "--use_dataset" has to be in FALSE mode. Whenever a dataset is used to test or train on DexiNed the arguments have to have the list of training or testing files (--train_list, --test_list). Pay attention in the parameters' settings, and change whatever you want, like ''--image_width'' or ''--image_height''. To test the Lena image I set 512x51 (see "test" section).
 ```
 parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
 parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
@@ -61,11 +61,12 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: DexiNed/checkpoints/(here), then run as follow:
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: DexiNed/checkpoints/(here the checkpoints from Drive), then run as follow:
 
     python run_model.py --image_width=512 --image_height=512
 Make sure that in run_model.py the test setting be as:
 ```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
+DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc.
 
 ## Train
 
