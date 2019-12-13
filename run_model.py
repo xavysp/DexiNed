@@ -109,7 +109,7 @@ def main(args):
 
     if args.model_state=='test':
 
-        if args.test_dataset=="SSMIHD":
+        if args.test_dataset=="BIPED":
             if args.image_width >700:
                 pass
             else:
