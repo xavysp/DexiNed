@@ -21,6 +21,7 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
  
 ## Requirements
 
+* [Python 3.7](https://www.python.org/downloads/release/python-370/g)
 * [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
