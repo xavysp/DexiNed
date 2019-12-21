@@ -79,7 +79,7 @@ Make sure that in run_model.py the train setting be as:
 
 ## Dataset used for Training
 
-BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download [here](https://xavysp.github.io/MBIPED/)
+BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2](www.kaggle.com/dataset/f8d9bd9eac5c4c63c8df11f40e980c002c4c1278fcade27af89f64777500359c)
 
 ## Datasets used for Testing
 
