@@ -91,17 +91,25 @@ Non-edge detection datasets
 * [CID](http://www.cs.rug.nl/~imaging/databases/contour_database/contour_database.html) <!-- * [DCD](http://www.cs.cmu.edu/~mengtial/proj/sketch/)-->, [BSDS300](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [BSDS500](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [NYUD](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html), and [PASCAL-context](https://cs.stanford.edu/~roozbeh/pascal-context/)
 
 # Performance
+
+The results below are from the last version of BIPEP. After WACV20, the BIPED images have been again checked and added annotations. All of those models have been trained again. 
+
 <center>
 
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
-| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.732` | `.745` | `.786` |
-| [HED](https://github.com/s9xie/hed)      | `.853` | `.863` | `.911` |
-| [RCF](https://github.com/yun-liu/rcf)      | `.863` | `.874` | `.914` |
-| [BDCN](https://github.com/pkuCactus/BDCN)     | `.869` | `.878` | `.918` |
-| DexiNed(Ours)| `.874` | `.884` | `.916` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection) before     | `.717` | `.731` | `.756` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.000` | `.000` | `.000` |
+| [HED](https://github.com/s9xie/hed) before     | `.823` | `.847` | `.869` |
+| [HED](https://github.com/s9xie/hed)     | `.000` | `.000` | `.000` |
+| [RCF](https://github.com/yun-liu/rcf) before     | `.843` | `.859` | `.882` |
+| [RCF](https://github.com/yun-liu/rcf)      | `.000` | `.000` | `.000` |
+| [BDCN](https://github.com/pkuCactus/BDCN) before    | `.839` | `.854` | `.887` |
+| [BDCN](https://github.com/pkuCactus/BDCN)     | `.000` | `.000` | `.000` |
+| DexiNed(WACV'20)| `.859` | `.867` | `.905` |
+| DexiNed(Ours)| `.000` | `.000` | `.000` |
 </center>
-Evaluation performed to BIPED dataset
+Evaluation performed to BIPED dataset. We will update the result soon.
 
 # Citation
 Please cite our paper if you find helpful,
