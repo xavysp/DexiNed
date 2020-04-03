@@ -186,12 +186,22 @@ def validation(epoch, dataloader, model, device, output_dir):
 
 
 def weight_init(m):
+    torch.nn.init.xavier_uniform_(m.weight)
     if isinstance(m, (nn.Conv2d, )):
-        torch.nn.init.xavier_uniform_(m.weight)
+
+        if m.weight.data.shape[1]==torch.Size([1]):
+            torch.nn.init.normal_(m.weight, mean=0.0)
+#            print(m.weight)
+        if m.weight.data.shape==torch.Size([1,6,1,1]):
+            torch.nn.init.constant_(m.weight,0.2)
         if m.bias is not None: 
             torch.nn.init.zeros_(m.bias)
+        # for fusion layer
+            
     if isinstance(m, (nn.ConvTranspose2d,)):
-        torch.nn.init.xavier_normal_(m.weight)
+        if m.weight.data.shape[:2] == torch.Size([1,1]):
+            torch.nn.init.normal_(m.weight,std=0.1)
+        
         if m.bias is not None: 
             torch.nn.init.zeros_(m.bias)
 
@@ -231,7 +241,9 @@ def main():
 
     tb_writer = None
     if args.tensorboard:
-        from tensorboardX import SummaryWriter
+#        from tensorboardX import SummaryWriter # previous torch version
+        from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
+        
         tb_writer = SummaryWriter(log_dir=args.output_dir)
 
     device = torch.device('cuda')
