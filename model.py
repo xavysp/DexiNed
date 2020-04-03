@@ -44,7 +44,7 @@ class UpConvBlock(nn.Module):
     def make_deconv_layers(self, in_features, up_scale):
         layers = []
         for i in range(up_scale):
-            kernel_size = 2 ** (i + 1)
+            kernel_size = 2 ** up_scale
             out_features = self.compute_out_features(i, up_scale)
             layers.append(nn.Conv2d(in_features, out_features, 1))
             layers.append(nn.ReLU(inplace=True))
@@ -82,10 +82,10 @@ class SingleConvBlock(nn.Module):
         return self.bn(self.conv(x))
 
 class DoubleConvBlock(nn.Module):
-    def __init__(self, in_features, out_features, mid_features=None, stride=1):
+    def __init__(self, in_features, mid_features,out_features=None, stride=1):
         super(DoubleConvBlock, self).__init__()
-        if mid_features is None:
-            mid_features = out_features
+        if out_features is None:
+            out_features = mid_features
         self.conv1 = nn.Conv2d(
             in_features, mid_features, 3, padding=1, stride=stride)
         self.bn1 = nn.BatchNorm2d(mid_features)
@@ -106,7 +106,7 @@ class DexiNet(nn.Module):
     """ Definition of the DXtrem network. """
     def __init__(self):
         super(DexiNet, self).__init__()
-        self.block_1 = DoubleConvBlock(3, 64, 32, stride=2)
+        self.block_1 = DoubleConvBlock(3, 32, 64, stride=2)
         self.block_2 = DoubleConvBlock(64, 128)
         self.dblock_3 = _DenseBlock(2, 128, 256)
         self.dblock_4 = _DenseBlock(3, 256, 512)
@@ -126,9 +126,9 @@ class DexiNet(nn.Module):
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
         self.up_block_1 = UpConvBlock(64, 1)
-        self.up_block_2 = UpConvBlock(128, 2)
-        self.up_block_3 = UpConvBlock(256, 3)
-        self.up_block_4 = UpConvBlock(512, 4)
+        self.up_block_2 = UpConvBlock(128, 1)
+        self.up_block_3 = UpConvBlock(256, 2)
+        self.up_block_4 = UpConvBlock(512, 3)
         self.up_block_5 = UpConvBlock(512, 4)
         self.up_block_6 = UpConvBlock(256, 4)
         self.block_cat = nn.Conv2d(6, 1, kernel_size=1)
@@ -150,27 +150,30 @@ class DexiNet(nn.Module):
         block_2_side = self.side_2(block_2_add)
 
         # Block 3
-        block_3_pre_dense = self.pre_dense_3(block_2_add)
+        block_3_pre_dense = self.pre_dense_3(block_2_down)
         block_3, _ = self.dblock_3([block_2_add, block_3_pre_dense])
         block_3_down = self.maxpool(block_3)
         block_3_add = block_3_down + block_2_side
         block_3_side = self.side_3(block_3_add)
 
         # Block 4
-        block_4_pre_dense = self.pre_dense_4(block_3_add)
+        block_4_pre_dense_256 = self.side_2(block_2_down)
+        block_4_pre_dense = self.pre_dense_4(block_4_pre_dense_256 + block_3_down)
         block_4, _ = self.dblock_4([block_3_add, block_4_pre_dense])
         block_4_down = self.maxpool(block_4)
         block_4_add = block_4_down + block_3_side
         block_4_side = self.side_4(block_4_add)
 
         # Block 5
-        block_5_pre_dense = self.pre_dense_5(block_4_add)
+        block_5_pre_dense_512 = self.side_3(block_4_pre_dense_256)
+        block_5_pre_dense = self.pre_dense_5(block_5_pre_dense_512 + block_4_down )
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
         block_5_add = block_5 + block_4_side
-        block_5_side = self.side_5(block_5_add)
+#        block_5_side = self.side_5(block_5_add)
 
         # Block 6
-        block_6_pre_dense = self.pre_dense_6(block_5_add)
+        block_6_pre_dense = self.pre_dense_6(block_5)
+#        block_5_pre_dense_256 = self.pre_dense_6(block_5_add) # if error uncomment
         block_6, _ = self.dblock_6([block_5_add, block_6_pre_dense])
 
         # upsampling blocks
@@ -198,7 +201,7 @@ if __name__ == '__main__':
     input = torch.rand(batch_size, 3, 400, 400).cuda()
     target = torch.rand(batch_size, 1, 400, 400).cuda()
     model = DexiNet().cuda()
-    for i in range(5000):
+    for i in range(20000):
         print(i)
         output = model(input)
         loss = nn.MSELoss()(output[-1], target)
