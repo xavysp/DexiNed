@@ -210,11 +210,11 @@ def main():
     # Training settings
     parser = argparse.ArgumentParser(description='Training application.')
     # Data parameters
-    parser.add_argument('--input-dir', type=str, required=True,
+    parser.add_argument('--input-dir', type=str,default='/opt/dataset/BIPED/edges',
                         help='the path to the directory with the input data.')
-    parser.add_argument('--input-val-dir', type=str, required=True,
+    parser.add_argument('--input-val-dir', type=str,default='/opt/dataset/CID',
                         help='the path to the directory with the input data for validation.')
-    parser.add_argument('--output-dir', type=str, required=True,
+    parser.add_argument('--output-dir', type=str, default='checkpoints',
                         help='the path to output the results.')
     parser.add_argument('--log-interval-vis', type=int, default=100,
                         help='how many batches to wait before logging training status')
@@ -223,11 +223,11 @@ def main():
                         help='the optimization solver to use (default: adam)')
     parser.add_argument('--num-epochs', type=int, default=20, metavar='N',
                         help='number of training epochs (default: 100)')
-    parser.add_argument('--lr', type=float, default=1e-3, metavar='LR',
-                        help='learning rate (default: 1e-3)')
+    # parser.add_argument('--lr', type=float, default=1e-3, metavar='LR',
+    #                     help='learning rate (default: 1e-3)')
     parser.add_argument('--wd', type=float, default=1e-5, metavar='WD',
                         help='weight decay (default: 1e-5)')
-    parser.add_argument('--lr', default=1e-6, type=float,
+    parser.add_argument('--lr', default=1e-4, type=float,
                         help='Initial learning rate.')
     parser.add_argument('--lr_stepsize', default=1e4, type=int,
                         help='Learning rate step size.')
@@ -272,11 +272,11 @@ def main():
                                 shuffle=False, num_workers=args.num_workers)
 
     criterion = weighted_cross_entropy_loss
-    optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
 
     # Learning rate scheduler.
-    lr_schd = lr_scheduler.StepLR(optimizer, step_size=args.lr_stepsize,
-                                  gamma=args.lr_gamma)
+    # lr_schd = lr_scheduler.StepLR(optimizer, step_size=args.lr_stepsize,
+    #                               gamma=args.lr_gamma)
     
     for epoch in range(args.num_epochs):
         # Create output directory
@@ -286,7 +286,7 @@ def main():
         train(epoch, dataloader_train, model, criterion, optimizer, device,
               args.log_interval_vis, tb_writer)
 
-        lr_schd.step() # decay lr at the end of the epoch.
+        # lr_schd.step() # decay lr at the end of the epoch.
     
         with torch.no_grad():
             validation(epoch, dataloader_val, model, device, output_dir_epoch)
