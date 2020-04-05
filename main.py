@@ -4,6 +4,7 @@ import os
 import argparse
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -19,9 +20,11 @@ from losses import weighted_cross_entropy_loss
 
 
 class CidDataset(Dataset):
-    def __init__(self, data_root, transforms=None):
+    def __init__(self, data_root, transforms=None, arg = None):
         self.data_root = data_root
         self.transforms = transforms
+        self.mean_bgr = arg.mean_pixel_values[0:3] if len(arg.mean_pixel_values)==4\
+            else arg.mean_pixel_values
 
         self.data_index = self._build_index()
 
@@ -58,17 +61,19 @@ class CidDataset(Dataset):
         return dict(images=image, labels=label, file_names=file_name)
 
 
-class BiedMyDataset(Dataset):
+class BipedMyDataset(Dataset):
     train_modes = ['train', 'test',]
     dataset_types = ['rgbr',]
     data_types = ['aug',]
     def __init__(self, data_root, train_mode='train', dataset_type='rgbr',
-                 transforms=None):
+                 transforms=None, arg=None):
         self.data_root = data_root
         self.train_mode = train_mode
         self.dataset_type = dataset_type
         self.data_type = 'aug' # be aware that this might change in the future
         self.transforms = transforms
+        self.mean_bgr = arg.mean_pixel_values[0:3] if len(arg.mean_pixel_values) == 4 \
+            else arg.mean_pixel_values
 
         self.data_index = self._build_index()
 
@@ -108,7 +113,35 @@ class BiedMyDataset(Dataset):
             label = self.transforms(label)
         return dict(images=image, labels=label)
 
-
+    # def transform(self, img, gt):
+    #
+    #     gt = np.array(gt, dtype=np.float32)
+    #     if len(gt.shape) == 3:
+    #         gt = gt[:, :, 0]
+    #     gt /= 255.
+    #     if self.yita is not None:
+    #         gt[gt >= self.yita] = 1
+    #     gt = torch.from_numpy(np.array([gt])).float()
+    #     img = np.array(img, dtype=np.float32)
+    #     if self.rgb:
+    #         img = img[:, :, ::-1]  # RGB->BGR
+    #     img -= self.mean_bgr
+    #     data = []
+    #     if self.scale is not None and self.is_train:
+    #         for scl in self.scale:
+    #             img_scale = cv2.resize(img, None, fx=scl, fy=scl, interpolation=cv2.INTER_LINEAR)
+    #             data.append(torch.from_numpy(img_scale.transpose((2, 0, 1))).float())
+    #         return data, gt
+    #     img = img.transpose((2, 0, 1))
+    #     img = torch.from_numpy(img.copy()).float()
+    #     if self.crop_size:
+    #         _, h, w = gt.size()
+    #         assert (self.crop_size < h and self.crop_size < w)
+    #         i = random.randint(0, h - self.crop_size)
+    #         j = random.randint(0, w - self.crop_size)
+    #         img = img[:, i:i + self.crop_size, j:j + self.crop_size]
+    #         gt = gt[:, i:i + self.crop_size, j:j + self.crop_size]
+    #         return img, gt
 
 def train(epoch, dataloader, model, criterion, optimizer, device,
           log_interval_vis, tb_writer):
@@ -117,15 +150,15 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
         images = sample_batched['images'].to(device)  # BxCxHxW
         labels = sample_batched['labels'].to(device)  # BxHxW
         labels = labels[:, None]  # Bx1xHxW
-        
+
         preds_list = model(images)
         loss = sum([criterion(preds, labels) for preds in preds_list])
         loss /= images.shape[0]  # the batch size
-        
+
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        
+
         print('Epoch: {0} Sample {1}/{2} Loss: {3}' \
               .format(epoch, batch_id, len(dataloader), loss.item()))
 
@@ -135,21 +168,33 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
         if batch_id % log_interval_vis == 0:
             #import ipdb;ipdb.set_trace()
             # log images
-            images_vis = torchvision.utils.make_grid(images[:16], 4, 4)
-            images_vis = tgm.utils.tensor_to_image(images_vis)
-            cv2.namedWindow('images', cv2.WINDOW_NORMAL)
-            cv2.imshow('images', images_vis)
-            # log ground truth
-            labels_vis = torchvision.utils.make_grid(labels[:16], 4, 4)
-            labels_vis = tgm.utils.tensor_to_image(labels_vis)
-            cv2.namedWindow('edges', cv2.WINDOW_NORMAL)
-            cv2.imshow('edges', labels_vis)
-            # log prediction
-            edges_vis = torchvision.utils.make_grid(preds_list[-1][:16], 4, 4)
-            edges_vis = tgm.utils.tensor_to_image(edges_vis * 255.).astype(np.uint8)
-            cv2.namedWindow('edges_pred', cv2.WINDOW_NORMAL)
-            cv2.imshow('edges_pred', edges_vis)
-            cv2.waitKey(3)
+            # images_vis = torchvision.utils.make_grid(images[:16], 4, 4)
+            # images_vis = tgm.utils.tensor_to_image(images_vis)
+            # cv2.namedWindow('images', cv2.WINDOW_NORMAL)
+            # cv2.imshow('images', images_vis)
+            # # log ground truth
+            # labels_vis = torchvision.utils.make_grid(labels[:16], 4, 4)
+            # labels_vis = tgm.utils.tensor_to_image(labels_vis)
+            # cv2.namedWindow('edges', cv2.WINDOW_NORMAL)
+            # cv2.imshow('edges', labels_vis)
+            # # log prediction
+            # edges_vis = torchvision.utils.make_grid(preds_list[-1][:16], 4, 4)
+            # edges_vis = tgm.utils.tensor_to_image(edges_vis * 255.).astype(np.uint8)
+            # cv2.namedWindow('edges_pred', cv2.WINDOW_NORMAL)
+            # cv2.imshow('edges_pred', edges_vis)
+            # cv2.waitKey(3)
+            res_data = []
+            img = images.cpu().numpy()
+            res_data.append(img)
+            ed_gt = labels.cpu().numpy()
+            res_data.append(ed_gt)
+            for i in range(len(preds_list)):
+                tmp = preds_list[i]
+                tmp = torch.sigmoid(tmp)
+                tmp = tmp.cpu().detach().numpy()
+                res_data.append(tmp)
+
+
 
 
 
@@ -236,7 +281,14 @@ def main():
     parser.add_argument('--num-workers', default=8, type=int,
                         help='the number of workers for the dataloader.')
     parser.add_argument('--tensorboard', action='store_true', default=False,
-                        help='use tensorboard for logging purposes')
+                        help='use tensorboard for logging purposes'),
+    parser.add_argument('--gpu', type=str, default='1',
+                        help='select GPU'),
+    parser.add_argument('--img_width', type = int, default = 400, help='image size for training')
+    parser.add_argument('--img_height', type = int, default = 400, help='image size for training')
+    parser.add_argument('--channel_swap', default=[2, 1, 0], type=int)
+    parser.add_argument('--mean_pixel_values', default=[104.00699, 116.66877, 122.67892, 137.86],
+                        type=float)  # [103.939,116.779,123.68] [104.00699, 116.66877, 122.67892]
     args = parser.parse_args()
 
     tb_writer = None
@@ -245,24 +297,25 @@ def main():
         from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
         
         tb_writer = SummaryWriter(log_dir=args.output_dir)
-
+    print(" **** You have available ", torch.cuda.device_count(), "GPUs!")
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     device = torch.device('cuda')
     model = DexiNet().to(device)
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
     model.apply(weight_init)
 
     height, width = 400, 400
     transformations_train = transforms.Compose([
         transforms.Lambda(lambda img: cv2.resize(img, (width, height))),
         tgm.utils.image_to_tensor,
-        transforms.Lambda(lambda tensor: tensor.float() / 255.),
+        transforms.Lambda(lambda tensor: (tensor.float()-arg.mean_pixel_values[0:3]) / 255.),
     ])
     transformations_val = transforms.Compose([
         tgm.utils.image_to_tensor,
-        transforms.Lambda(lambda tensor: tensor.float() / 255.),
+        transforms.Lambda(lambda tensor: (tensor.float()-arg.mean_pixel_values[0:3]) / 255.),
     ])
 
-    dataset_train = BiedMyDataset(args.input_dir, train_mode='train',
+    dataset_train = BipedMyDataset(args.input_dir, train_mode='train',
                                   transforms=transformations_train)
     dataset_val = CidDataset(args.input_val_dir, transforms=transformations_val)
 
