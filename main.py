@@ -33,7 +33,7 @@ class CidDataset(Dataset):
         for file_name_ext in os.listdir(images_path):
             file_name = file_name_ext[:-4]
             sample_indices.append(
-                (os.path.join(images_path, file_name + '.pgm'),
+                (os.path.join(images_path, file_name + '.png'),
                  os.path.join(labels_path, file_name + '.png'),)
             )
             assert os.path.isfile(sample_indices[-1][0]), sample_indices[-1][0]
@@ -186,24 +186,24 @@ def validation(epoch, dataloader, model, device, output_dir):
 
 
 def weight_init(m):
-    torch.nn.init.xavier_uniform_(m.weight)
+    # torch.nn.init.xavier_uniform_(m.weight)
     if isinstance(m, (nn.Conv2d, )):
-
+        torch.nn.init.xavier_uniform_(m.weight)
         if m.weight.data.shape[1]==torch.Size([1]):
-            torch.nn.init.normal_(m.weight, mean=0.0)
+            torch.nn.init.normal_(m.weight, mean=0.0,)
 #            print(m.weight)
         if m.weight.data.shape==torch.Size([1,6,1,1]):
             torch.nn.init.constant_(m.weight,0.2)
-        if m.bias is not None: 
+        if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
-        # for fusion layer
+    # for fusion layer
             
-    if isinstance(m, (nn.ConvTranspose2d,)):
-        if m.weight.data.shape[:2] == torch.Size([1,1]):
-            torch.nn.init.normal_(m.weight,std=0.1)
-        
-        if m.bias is not None: 
-            torch.nn.init.zeros_(m.bias)
+    # if isinstance(m, (nn.ConvTranspose2d,)):
+    #     if m.weight.data.shape[:2] == torch.Size([1,1]):
+    #         torch.nn.init.normal_(m.weight,std=0.1)
+    #
+    #     if m.bias is not None:
+    #         torch.nn.init.zeros_(m.bias)
 
 
 def main():

@@ -180,9 +180,9 @@ class DexiNet(nn.Module):
         height, width = x.shape[-2:]
         slice_shape = (height, width)
         out_1 = self.slice(self.up_block_1(block_1), slice_shape)
-        out_2 = self.slice(self.up_block_2(block_2_down), slice_shape)
-        out_3 = self.slice(self.up_block_3(block_3_down), slice_shape)
-        out_4 = self.slice(self.up_block_4(block_4_down), slice_shape)
+        out_2 = self.slice(self.up_block_2(block_2), slice_shape)
+        out_3 = self.slice(self.up_block_3(block_3), slice_shape)
+        out_4 = self.slice(self.up_block_4(block_4), slice_shape)
         out_5 = self.slice(self.up_block_5(block_5), slice_shape)
         out_6 = self.slice(self.up_block_6(block_6), slice_shape)
         results = [out_1, out_2, out_3, out_4, out_5, out_6]
