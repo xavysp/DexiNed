@@ -36,10 +36,7 @@ def weighted_cross_entropy_loss(preds, edges):
     weight.masked_scatter_(edges <= 0.5,
         torch.ones_like(edges) * num_pos / (num_pos + num_neg))
     # Calculate loss.
-    pred = []
-    for p in  range(len(preds)):
-        tmp_p = torch.sigmid(preds[p])
-        pred.appenD(tmp_p)
+    # preds=torch.sigmoid(preds)
     losses = F.binary_cross_entropy_with_logits(
         preds.float(), edges.float(), weight=weight, reduction='none')
     loss = torch.sum(losses) / b
