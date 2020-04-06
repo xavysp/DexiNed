@@ -332,18 +332,17 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
             cv.imwrite(os.path.join(imgs_res_folder,'results.png'),vis_imgs)
 
 
-def save_image_batch_to_disk(tensor, output_dir, file_names, ext='.png'):
+def save_image_batch_to_disk(tensor, output_dir, file_names, arg=None):
     assert len(tensor.shape) == 4, tensor.shape
 
     for tensor_image, file_name in zip(tensor, file_names):
-        image_vis = tgm.utils.tensor_to_image(tensor_image)[..., 0]
-        image_vis = (image_vis * 255.).astype(np.uint8)
+        image_vis = tgm.utils.tensor_to_image(torch.sigmoid(tensor_image))[..., 0]
+        image_vis = (image_vis *255).astype(np.uint8)
         output_file_name = os.path.join(output_dir, file_name)
-        print(output_file_name)
         assert cv.imwrite(output_file_name, image_vis)
                 
 
-def validation(epoch, dataloader, model, device, output_dir):
+def validation(epoch, dataloader, model, device, output_dir, arg=None):
     model.eval()
     total_losses = []
 
@@ -353,11 +352,10 @@ def validation(epoch, dataloader, model, device, output_dir):
         file_names = sample_batched['file_names']
         
         output = model(images)
-        save_image_batch_to_disk(output[-1], output_dir, file_names)
+        save_image_batch_to_disk(output[-1], output_dir, file_names,arg=arg)
 
 
 def weight_init(m):
-    # torch.nn.init.xavier_uniform_(m.weight)
     if isinstance(m, (nn.Conv2d, )):
         torch.nn.init.xavier_uniform_(m.weight)
         if m.weight.data.shape[1]==torch.Size([1]):
@@ -368,13 +366,23 @@ def weight_init(m):
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
     # for fusion layer
-            
-    # if isinstance(m, (nn.ConvTranspose2d,)):
-    #     if m.weight.data.shape[:2] == torch.Size([1,1]):
-    #         torch.nn.init.normal_(m.weight,std=0.1)
-    #
-    #     if m.bias is not None:
-    #         torch.nn.init.zeros_(m.bias)
+    if isinstance(m, (nn.ConvTranspose2d,)):
+        torch.nn.init.xavier_uniform_(m.weight)
+        if m.weight.data.shape[1] == torch.Size([1]):
+            torch.nn.init.normal_(m.weight, std=0.1)
+
+        if m.bias is not None:
+            torch.nn.init.zeros_(m.bias)
+
+def transpose_weight_init(m):
+
+    if isinstance(m, (nn.ConvTranspose2d,)):
+        torch.nn.init.xavier_uniform_(m.weight)
+        if m.weight.data.shape[:2] == torch.Size([1,1]):
+            torch.nn.init.normal_(m.weight,std=0.1)
+
+        if m.bias is not None:
+            torch.nn.init.zeros_(m.bias)
 
 
 def main():
@@ -432,6 +440,7 @@ def main():
     model = DexiNet().to(device)
     # model = nn.DataParallel(model)
     model.apply(weight_init)
+    # model.
 
     # height, width = 400, 400
     # transformations_train = transforms.Compose([
@@ -466,6 +475,8 @@ def main():
         img_test_dir = os.path.join(output_dir_epoch,args.test_data+'_res')
         create_directory(output_dir_epoch)
         create_directory(img_test_dir)
+        # with torch.no_grad():
+        #     validation(epoch, dataloader_val, model, device, img_test_dir,arg=args)
 
         train(epoch, dataloader_train, model, criterion, optimizer, device,
               args.log_interval_vis, tb_writer, args=args)
@@ -473,7 +484,7 @@ def main():
         # lr_schd.step() # decay lr at the end of the epoch.
     
         with torch.no_grad():
-            validation(epoch, dataloader_val, model, device, img_test_dir)
+            validation(epoch, dataloader_val, model, device, img_test_dir,arg=args)
 
         try:
             net_state_dict = model.module.state_dict()
