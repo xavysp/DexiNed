@@ -183,7 +183,7 @@ def image_normalization(img, img_min=0, img_max=255):
     img = (img-np.min(img))*(img_max-img_min)/((np.max(img)-np.min(img))+epsilon)+img_min
     return img
 
-def restore_rgb(config,I):
+def restore_rgb(config,I, restore_rgb=False):
     """
     :param config: [args.channel_swap, args.mean_pixel_value]
     :param I: and image or a set of images
@@ -198,13 +198,15 @@ def restore_rgb(config,I):
             x = I[i,...]
             x = np.array(x, dtype=np.float32)
             x += config[1]
-            x = x[:, :, config[0]]
+            if restore_rgb:
+                x = x[:, :, config[0]]
             x = image_normalization(x)
             I[i,:,:,:]=x
     elif len(I.shape)==3 and I.shape[-1]==3:
         I = np.array(I, dtype=np.float32)
         I += config[1]
-        I = I[:, :, config[0]]
+        if restore_rgb:
+            I = I[:, :, config[0]]
         I = image_normalization(I)
     else:
         print("Sorry the input data size is out of our configuration")
@@ -317,10 +319,10 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
                 res_data.append(tmp)
             vis_imgs = visualize_result(res_data, arg=args)
             del tmp, res_data
-            vis_imgs = cv.resize(vis_imgs,(int(vis_imgs.shape[1]*0.7),int(vis_imgs.shape[0]*0.7)))
+            vis_imgs = cv.resize(vis_imgs,(int(vis_imgs.shape[1]*0.8),int(vis_imgs.shape[0]*0.8)))
             img_test = 'Epoch: {0} Sample {1}/{2} Loss: {3}' \
               .format(epoch, batch_id, len(dataloader), loss.item())
-            BLACK = (27, 128, 150)
+            BLACK = (0, 0, 255)
             font = cv.FONT_HERSHEY_SIMPLEX
             font_size = 1.1
             font_color = BLACK
