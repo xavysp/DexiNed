@@ -357,7 +357,11 @@ def validation(epoch, dataloader, model, device, output_dir, arg=None):
 
 def weight_init(m):
     if isinstance(m, (nn.Conv2d, )):
-        torch.nn.init.xavier_uniform_(m.weight)
+        # torch.nn.init.xavier_uniform_(m.weight)
+        # torch.nn.init.xavier_normal_(tensor, gain=1.0)
+        # torch.nn.init.normal_(0, 0.01)
+        #nn.init.xavier_uniform_(w, gain=nn.init.calculate_gain('relu'))
+        torch.nn.init.xavier_uniform_(m.weight,gain=nn.init.calculate_gain('relu'))
         if m.weight.data.shape[1]==torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
 #            print(m.weight)
@@ -367,23 +371,18 @@ def weight_init(m):
             torch.nn.init.zeros_(m.bias)
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
-        torch.nn.init.xavier_uniform_(m.weight)
+        # torch.nn.init.xavier_uniform_(m.weight)
+        torch.nn.init.xavier_uniform_(m.weight,gain=nn.init.calculate_gain('relu'))
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
 
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
-def transpose_weight_init(m):
-
-    if isinstance(m, (nn.ConvTranspose2d,)):
-        torch.nn.init.xavier_uniform_(m.weight)
-        if m.weight.data.shape[:2] == torch.Size([1,1]):
-            torch.nn.init.normal_(m.weight,std=0.1)
-
-        if m.bias is not None:
-            torch.nn.init.zeros_(m.bias)
-
+    # if isinstance(m,(nn.BatchNorm2d,)):
+    #     torch.nn.init.xavier_normal_(m.weight)
+        # if m.bias is not None:
+        #     torch.nn.init.zeros_(m.bias)
 
 def main():
     # Training settings
