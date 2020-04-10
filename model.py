@@ -5,14 +5,15 @@ import torch.nn.functional as F
 class _DenseLayer(nn.Sequential):
     def __init__(self, input_features, out_features):
         super(_DenseLayer, self).__init__()
-        self.add_module('norm1', nn.BatchNorm2d(input_features)),
-        self.add_module('relu1', nn.ReLU(inplace=True)),
+        self.add_module('relu2', nn.ReLU(inplace=True)),
         self.add_module('conv1', nn.Conv2d(input_features, out_features,
                         kernel_size=1, stride=1, bias=True)),
-        self.add_module('norm2', nn.BatchNorm2d(out_features)),
-        self.add_module('relu2', nn.ReLU(inplace=True)),
+        self.add_module('norm1', nn.BatchNorm2d(out_features)),
+        self.add_module('relu1', nn.ReLU(inplace=True)),
         self.add_module('conv2', nn.Conv2d(out_features, out_features,
                         kernel_size=3, stride=1, padding=1, bias=True)),
+        self.add_module('norm2', nn.BatchNorm2d(out_features))
+        # double check the norm1 comment if necessary and put norm after conv2
 
     def forward(self, x):
         x1, x2 = x
@@ -120,8 +121,10 @@ class DexiNet(nn.Module):
         self.side_4 = SingleConvBlock(512, 512, 1)
         self.side_5 = SingleConvBlock(512, 256, 1)
 
+        self.pre_dense_2 = SingleConvBlock(128, 256, 2) # by me, for left skip block4
         self.pre_dense_3 = SingleConvBlock(128, 256, 1)
         self.pre_dense_4 = SingleConvBlock(256, 512, 1)
+        self.pre_dense_5_0 = SingleConvBlock(256, 512, 2)
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
@@ -157,7 +160,7 @@ class DexiNet(nn.Module):
         block_3_side = self.side_3(block_3_add)
 
         # Block 4
-        block_4_pre_dense_256 = self.side_2(block_2_down)
+        block_4_pre_dense_256 = self.pre_dense_2(block_2_down)
         block_4_pre_dense = self.pre_dense_4(block_4_pre_dense_256 + block_3_down)
         block_4, _ = self.dblock_4([block_3_add, block_4_pre_dense])
         block_4_down = self.maxpool(block_4)
@@ -165,7 +168,7 @@ class DexiNet(nn.Module):
         block_4_side = self.side_4(block_4_add)
 
         # Block 5
-        block_5_pre_dense_512 = self.side_3(block_4_pre_dense_256)
+        block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense_256)
         block_5_pre_dense = self.pre_dense_5(block_5_pre_dense_512 + block_4_down )
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
         block_5_add = block_5 + block_4_side
