@@ -5,7 +5,7 @@ import torch.nn.functional as F
 class _DenseLayer(nn.Sequential):
     def __init__(self, input_features, out_features):
         super(_DenseLayer, self).__init__()
-        self.add_module('relu2', nn.ReLU(inplace=True)),
+        # self.add_module('relu2', nn.ReLU(inplace=True)),
         self.add_module('conv1', nn.Conv2d(input_features, out_features,
                         kernel_size=1, stride=1, bias=True)),
         self.add_module('norm1', nn.BatchNorm2d(out_features)),
