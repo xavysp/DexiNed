@@ -287,7 +287,7 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
               .format(epoch, batch_id, len(dataloader), loss.item()))
 
         if tb_writer is not None:
-            tb_writer.add_scalar('data/loss', loss.detach(), batch_id)
+            tb_writer.add_scalar('data/loss', loss.detach(), (len(dataloader)*epoch+batch_id))
 
         if batch_id % log_interval_vis == 0:
             #import ipdb;ipdb.set_trace()
