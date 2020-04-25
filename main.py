@@ -33,17 +33,23 @@ class testDataset(Dataset):
 
     def _build_index(self):
         sample_indices = []
+        if not self.arg.test_data == "CLASSIC":
+            list_name = os.path.join(self.data_root,self.arg.test_list)#os.path.abspath(self.data_root)
+            with open(list_name,'r') as f:
+                files = f.readlines()
 
-        list_name = os.path.join(self.data_root,self.arg.test_list)#os.path.abspath(self.data_root)
-        with open(list_name,'r') as f:
-            files = f.readlines()
+            files = [line.strip() for line in files]
 
-        files = [line.strip() for line in files]
+            pairs = [line.split() for line in files]
+            images_path = [line[0] for line in pairs]
+            labels_path = [line[1] for line in pairs]
+            sample_indices = [images_path,labels_path]
+        else:
 
-        pairs = [line.split() for line in files]
-        images_path = [line[0] for line in pairs]
-        labels_path = [line[1] for line in pairs]
-        sample_indices = [images_path,labels_path]
+            # for single image testing
+            images_path = os.listdir(self.data_root)
+            labels_path = None
+            sample_indices = [images_path, labels_path]
         return sample_indices
 
     def __len__(self):
@@ -53,49 +59,61 @@ class testDataset(Dataset):
         # get data sample
         # image_path, label_path = self.data_index[idx]
         image_path = self.data_index[0][idx]
-        label_path = self.data_index[1][idx]
-        file_name = os.path.basename(label_path)
+        label_path = self.data_index[1][idx] if not self.arg.test_data=="CLASSIC" else None
+        img_name = os.path.basename(image_path)
+        file_name = img_name[:-3]+"png"
 
         # base dir
         if self.arg.test_data.upper() == 'BIPED':
             img_dir = os.path.join(self.arg.input_val_dir,'imgs','test')
             gt_dir = os.path.join(self.arg.input_val_dir,'edge_maps','test')
+        elif self.arg.test_data.upper() == 'CLASSIC':
+            img_dir = self.arg.input_val_dir
+            gt_dir = None
         else:
             img_dir = self.arg.input_val_dir
             gt_dir = self.arg.input_val_dir
 
         # load data
         image = cv.imread(os.path.join(img_dir,image_path), cv.IMREAD_COLOR)
-        label = cv.imread(os.path.join(gt_dir,label_path), cv.IMREAD_COLOR)
-        im_shape =[label.shape[0],label.shape[1]]
+        if not self.arg.test_data == "CLASSIC":
+            label = cv.imread(os.path.join(gt_dir,label_path), cv.IMREAD_COLOR)
+        else:
+            label=None
+
+        im_shape =[image.shape[0],image.shape[1]]
         image, label = self.transform(img=image, gt=label)
 
         return dict(images=image, labels=label, file_names=file_name,image_shape=im_shape)
 
     def transform(self, img, gt):
 
-        gt = np.array(gt, dtype=np.float32)
-        if len(gt.shape) == 3:
-            gt = gt[:, :, 0]
         # gt[gt< 51] = 0 # test without gt discrimination
-        if img.shape[0]%16!=0 or img.shape[1]%16!=0:
-            img_width = ((img.shape[1]//16)+1)*16
-            img_height = ((img.shape[0]//16)+1)*16
-            img = cv.resize(img,(img_width,img_height))
-            gt = cv.resize(gt,(img_width,img_height))
+
         if img.shape[0]<512 or img.shape[1]<512:
             img = cv.resize(img, (512, 512))
-            gt = cv.resize(gt, (512, 512))
-        gt /= 255.
+            gt = cv.resize(gt, (512, 512)) if not self.arg.test_data=="CLASSIC" else None
+        elif img.shape[0]%16!=0 or img.shape[1]%16!=0:
+            img_width = ((img.shape[1] // 16) + 1) * 16
+            img_height = ((img.shape[0] // 16) + 1) * 16
+            img = cv.resize(img, (img_width, img_height))
+            gt = cv.resize(gt, (img_width, img_height)) if not self.arg.test_data=="CLASSIC" else None
+
         # if self.yita is not None:
         #     gt[gt >= self.yita] = 1
         img = np.array(img, dtype=np.float32)
         # if self.rgb:
         #     img = img[:, :, ::-1]  # RGB->BGR
-
+        if not self.arg.test_data=="CLASSIC":
+            gt = np.array(gt, dtype=np.float32)
+            if len(gt.shape) == 3:
+                gt = gt[:, :, 0]
+            gt /= 255.
+            gt = torch.from_numpy(np.array([gt])).float()
+        else:
+            gt=None
         img -= self.mean_bgr
         img = img.transpose((2, 0, 1))
-        gt = torch.from_numpy(np.array([gt])).float()
         img = torch.from_numpy(img.copy()).float()
 
         return img, gt
@@ -233,7 +251,7 @@ def restore_rgb(config,I, restore_rgb=False):
 
 def visualize_result(imgs_list, arg):
     """
-    function for tensorflow results
+    data 2 image in one matrix
     :param imgs_list: a list of prediction, gt and input data
     :param arg:
     :return: one image with the whole of imgs_list data
@@ -418,8 +436,8 @@ def weight_init(m):
 def main():
     # Training settings
     DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
-                    'PASCAL','NYUD']
-    TEST_DATA = DATASET_NAME[1]
+                    'PASCAL','NYUD','CLASSIC'] # 8
+    TEST_DATA = DATASET_NAME[8]
     data_inf = dataset_info(TEST_DATA)
 
     parser = argparse.ArgumentParser(description='Training application.')
@@ -506,7 +524,8 @@ def main():
         with torch.no_grad():
             for batch_id, sample_batched in enumerate(dataloader_val):
                 images = sample_batched['images'].to(device)
-                labels = sample_batched['labels'].to(device)
+                if not args.test_data == "CLASSIC":
+                    labels = sample_batched['labels'].to(device)
                 file_names = sample_batched['file_names']
                 image_shape = sample_batched['image_shape']
                 print("input image",len(images))
