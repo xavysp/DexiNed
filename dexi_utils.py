@@ -107,10 +107,10 @@ def dataset_info(dataset_name):
                   'file_name': 'test_rgb.lst',
                    'data_dir': '/opt/dataset/BIPED/edges',  # mean_rgb
                    'yita': 0.5},
-        'CLASSIC': {'img_height':3248,
-                  'img_width': 1296,
-                  'file_name': 'test_pair.lst',
-                  'mean_img': '/opt/dataset/CLASSIC',  # mean_rgb
+        'CLASSIC': {'img_height':512,
+                  'img_width': 512,
+                  'file_name': None,
+                  'data_dir': 'data',  # mean_rgb
                   'yita': 0.5},
         'DCD': {'img_height': 240,
                   'img_width': 360,
