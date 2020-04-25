@@ -438,7 +438,7 @@ def main():
     # Training settings
     DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                     'PASCAL','NYUD','CLASSIC'] # 8
-    TEST_DATA = DATASET_NAME[8]
+    TEST_DATA = DATASET_NAME[7]
     data_inf = dataset_info(TEST_DATA)
 
     parser = argparse.ArgumentParser(description='Training application.')
@@ -529,7 +529,7 @@ def main():
                     labels = sample_batched['labels'].to(device)
                 file_names = sample_batched['file_names']
                 image_shape = sample_batched['image_shape']
-                print("input image",len(images))
+                print("input image size: ",images.shape)
                 output = model(images)
                 save_image_batch_to_disk(output, output_dir, file_names,image_shape, arg=args)
 
