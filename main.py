@@ -1,10 +1,10 @@
 
 from __future__ import print_function
-import os
+import os, sys, time
 import argparse
 import cv2 as cv
 import numpy as np
-# import matplotlib.pyplot as plt
+import random # import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -17,46 +17,60 @@ import torchgeometry as tgm
 
 from model import DexiNet
 from losses import weighted_cross_entropy_loss
-# from dexi_utils import visualize_result
+from dexi_utils import cv_imshow, dataset_info
 
 
-class CidDataset(Dataset):
+class testDataset(Dataset):
     def __init__(self, data_root, arg = None):
         self.data_root = data_root
+        self.arg = arg
         self.transforms = transforms
         self.mean_bgr = arg.mean_pixel_values[0:3] if len(arg.mean_pixel_values)==4\
             else arg.mean_pixel_values
 
         self.data_index = self._build_index()
 
+
     def _build_index(self):
         sample_indices = []
-        data_root = os.path.abspath(self.data_root)
-        images_path = os.path.join(data_root, 'imgs')
-        labels_path = os.path.join(data_root, 'gt')
-        for file_name_ext in os.listdir(images_path):
-            file_name = file_name_ext[:-4]
-            sample_indices.append(
-                (os.path.join(images_path, file_name + '.png'),
-                 os.path.join(labels_path, file_name + '.png'),)
-            )
-            assert os.path.isfile(sample_indices[-1][0]), sample_indices[-1][0]
-            assert os.path.isfile(sample_indices[-1][1]), sample_indices[-1][1]
+
+        list_name = os.path.join(self.data_root,self.arg.test_list)#os.path.abspath(self.data_root)
+        with open(list_name,'r') as f:
+            files = f.readlines()
+
+        files = [line.strip() for line in files]
+
+        pairs = [line.split() for line in files]
+        images_path = [line[0] for line in pairs]
+        labels_path = [line[1] for line in pairs]
+        sample_indices = [images_path,labels_path]
         return sample_indices
 
     def __len__(self):
-        return len(self.data_index)
+        return len(self.data_index[0])
 
     def __getitem__(self, idx):
         # get data sample
-        image_path, label_path = self.data_index[idx]
-        file_name = os.path.basename(image_path)
-        
+        # image_path, label_path = self.data_index[idx]
+        image_path = self.data_index[0][idx]
+        label_path = self.data_index[1][idx]
+        file_name = os.path.basename(label_path)
+
+        # base dir
+        if self.arg.test_data.upper() == 'BIPED':
+            img_dir = os.path.join(self.arg.input_val_dir,'imgs','test')
+            gt_dir = os.path.join(self.arg.input_val_dir,'edge_maps','test')
+        else:
+            img_dir = self.arg.input_val_dir
+            gt_dir = self.arg.input_val_dir
+
         # load data
-        image = cv.imread(image_path, cv.IMREAD_COLOR)
-        label = cv.imread(label_path, cv.IMREAD_COLOR)
+        image = cv.imread(os.path.join(img_dir,image_path), cv.IMREAD_COLOR)
+        label = cv.imread(os.path.join(gt_dir,label_path), cv.IMREAD_COLOR)
+        im_shape =[label.shape[0],label.shape[1]]
         image, label = self.transform(img=image, gt=label)
-        return dict(images=image, labels=label, file_names=file_name)
+
+        return dict(images=image, labels=label, file_names=file_name,image_shape=im_shape)
 
     def transform(self, img, gt):
 
@@ -64,18 +78,27 @@ class CidDataset(Dataset):
         if len(gt.shape) == 3:
             gt = gt[:, :, 0]
         # gt[gt< 51] = 0 # test without gt discrimination
+        if img.shape[0]%16!=0 or img.shape[1]%16!=0:
+            img_width = ((img.shape[1]//16)+1)*16
+            img_height = ((img.shape[0]//16)+1)*16
+            img = cv.resize(img,(img_width,img_height))
+            gt = cv.resize(gt,(img_width,img_height))
+        if img.shape[0]<512 or img.shape[1]<512:
+            img = cv.resize(img, (512, 512))
+            gt = cv.resize(gt, (512, 512))
         gt /= 255.
         # if self.yita is not None:
         #     gt[gt >= self.yita] = 1
         img = np.array(img, dtype=np.float32)
         # if self.rgb:
         #     img = img[:, :, ::-1]  # RGB->BGR
+
         img -= self.mean_bgr
         img = img.transpose((2, 0, 1))
         gt = torch.from_numpy(np.array([gt])).float()
         img = torch.from_numpy(img.copy()).float()
-        return img, gt
 
+        return img, gt
 
 
 class BipedMyDataset(Dataset):
@@ -126,9 +149,6 @@ class BipedMyDataset(Dataset):
         image = cv.imread(image_path, cv.IMREAD_COLOR)
         label = cv.imread(label_path, cv.IMREAD_GRAYSCALE)
         image, label = self.transform(img=image, gt=label)
-        # if self.transforms is not None:
-        #     image = self.transforms(image)
-        #     label = self.transforms(label)
         return dict(images=image, labels=label)
 
     def transform(self, img, gt):
@@ -150,8 +170,6 @@ class BipedMyDataset(Dataset):
         #         img_scale = cv.resize(img, None, fx=scl, fy=scl, interpolation=cv.INTER_LINEAR)
         #         data.append(torch.from_numpy(img_scale.transpose((2, 0, 1))).float())
         #     return data, gt
-
-
         crop_size = self.arg.img_height if self.arg.img_height == self.arg.img_width else 400
 
         if self.arg.crop_img:
@@ -283,30 +301,13 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
         loss.backward()
         optimizer.step()
         if batch_id%5==0:
-            print('Epoch: {0} Sample {1}/{2} Loss: {3}' \
+            print(time.ctime(),'Epoch: {0} Sample {1}/{2} Loss: {3}' \
               .format(epoch, batch_id, len(dataloader), loss.item()))
 
         if tb_writer is not None:
             tb_writer.add_scalar('data/loss', loss.detach(), (len(dataloader)*epoch+batch_id))
 
         if batch_id % log_interval_vis == 0:
-            #import ipdb;ipdb.set_trace()
-            # log images
-            # images_vis = torchvision.utils.make_grid(images[:16], 4, 4)
-            # images_vis = tgm.utils.tensor_to_image(images_vis)
-            # cv.namedWindow('images', cv.WINDOW_NORMAL)
-            # cv.imshow('images', images_vis)
-            # # log ground truth
-            # labels_vis = torchvision.utils.make_grid(labels[:16], 4, 4)
-            # labels_vis = tgm.utils.tensor_to_image(labels_vis)
-            # cv.namedWindow('edges', cv.WINDOW_NORMAL)
-            # cv.imshow('edges', labels_vis)
-            # # log prediction
-            # edges_vis = torchvision.utils.make_grid(preds_list[-1][:16], 4, 4)
-            # edges_vis = tgm.utils.tensor_to_image(edges_vis * 255.).astype(np.uint8)
-            # cv.namedWindow('edges_pred', cv.WINDOW_NORMAL)
-            # cv.imshow('edges_pred', edges_vis)
-            # cv.waitKey(3)
             res_data = []
             img = images.cpu().numpy()
             res_data.append(img)
@@ -332,15 +333,55 @@ def train(epoch, dataloader, model, criterion, optimizer, device,
             cv.imwrite(os.path.join(imgs_res_folder,'results.png'),vis_imgs)
 
 
-def save_image_batch_to_disk(tensor, output_dir, file_names, arg=None):
-    assert len(tensor.shape) == 4, tensor.shape
+def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None,arg=None):
 
-    for tensor_image, file_name in zip(tensor, file_names):
-        image_vis = tgm.utils.tensor_to_image(torch.sigmoid(tensor_image))[..., 0]
-        image_vis = (image_vis *255).astype(np.uint8)
-        output_file_name = os.path.join(output_dir, file_name)
-        assert cv.imwrite(output_file_name, image_vis)
-                
+    os.makedirs(output_dir,exist_ok=True)
+    if not arg.is_testing:
+        assert len(tensor.shape) == 4, tensor.shape
+        for tensor_image, file_name in zip(tensor, file_names):
+            image_vis = tgm.utils.tensor_to_image(torch.sigmoid(tensor_image))[..., 0]
+            image_vis = (255.0*(1.0- image_vis)).astype(np.uint8) #
+            # image_vis = (255.0*image_vis).astype(np.uint8) #
+            output_file_name = os.path.join(output_dir, file_name)
+            assert cv.imwrite(output_file_name, image_vis)
+    else:
+        output_dir_f = os.path.join(output_dir,'f')
+        output_dir_a = os.path.join(output_dir,'a')
+        os.makedirs(output_dir_f, exist_ok=True)
+        os.makedirs(output_dir_a,exist_ok=True)
+        # 255.0 * (1.0 - em_a)
+        edge_maps = []
+        for i in tensor:
+            tmp = torch.sigmoid(i).cpu().detach().numpy()
+            edge_maps.append(tmp)
+        # edge_maps.append(tmp)
+        tensor = np.array(edge_maps)
+        idx =0
+        image_shape = [x.cpu().detach().numpy() for x in img_shape]
+        image_shape = [[y, x] for x, y in zip(image_shape[0], image_shape[1])]
+        for i_shape, file_name in zip(image_shape,file_names):
+            tmp = tensor[:,idx,...]
+            tmp = np.transpose(np.squeeze(tmp),[0,1,2])
+            preds = []
+            for i in range(tmp.shape[0]):
+                tmp_img = tmp[i]
+                tmp_img[tmp_img<0.0] = 0.0
+                tmp_img =255.0 * (1.0 - tmp_img)
+                if not tmp_img.shape[1]==i_shape[0] or not tmp_img.shape[0]==i_shape[1]:
+                    tmp_img = cv.resize(tmp_img,(i_shape[0],i_shape[1]))
+                preds.append(tmp_img)
+                # cv_imshow('img',np.uint8(tmp_img))
+                if i==6:
+                    fuse = tmp_img
+            average = np.array(preds,dtype=np.float32)
+            average = np.uint8(np.mean(average,axis=0))
+            # cv_imshow('img',average)
+            output_file_name_f = os.path.join(output_dir_f, file_name)
+            output_file_name_a = os.path.join(output_dir_a, file_name)
+            assert cv.imwrite(output_file_name_f, fuse)
+            assert cv.imwrite(output_file_name_a, np.uint8(average))
+            idx+=1
+        
 
 def validation(epoch, dataloader, model, device, output_dir, arg=None):
     model.eval()
@@ -350,58 +391,63 @@ def validation(epoch, dataloader, model, device, output_dir, arg=None):
         images = sample_batched['images'].to(device)
         labels = sample_batched['labels'].to(device)
         file_names = sample_batched['file_names']
-        
         output = model(images)
-        save_image_batch_to_disk(output[-1], output_dir, file_names,arg=arg)
+        save_image_batch_to_disk(output[-1], output_dir, file_names, arg=arg)
 
 
 def weight_init(m):
     if isinstance(m, (nn.Conv2d, )):
-        # torch.nn.init.xavier_uniform_(m.weight)
-        # torch.nn.init.xavier_normal_(tensor, gain=1.0)
-        # torch.nn.init.normal_(0, 0.01)
-        #nn.init.xavier_uniform_(w, gain=nn.init.calculate_gain('relu'))
-        torch.nn.init.xavier_uniform_(m.weight,gain=nn.init.calculate_gain('relu'))
+
+        torch.nn.init.normal_(m.weight,mean=0, std=0.01)
         if m.weight.data.shape[1]==torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
-#            print(m.weight)
         if m.weight.data.shape==torch.Size([1,6,1,1]):
             torch.nn.init.constant_(m.weight,0.2)
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
-        # torch.nn.init.xavier_uniform_(m.weight)
-        torch.nn.init.xavier_uniform_(m.weight,gain=nn.init.calculate_gain('relu'))
+
+        torch.nn.init.normal_(m.weight,mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
 
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
-    # if isinstance(m,(nn.BatchNorm2d,)):
-    #     torch.nn.init.xavier_normal_(m.weight)
-        # if m.bias is not None:
-        #     torch.nn.init.zeros_(m.bias)
-
 def main():
     # Training settings
+    DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
+                    'PASCAL','NYUD']
+    TEST_DATA = DATASET_NAME[1]
+    data_inf = dataset_info(TEST_DATA)
+
     parser = argparse.ArgumentParser(description='Training application.')
     # Data parameters
     parser.add_argument('--input-dir', type=str,default='/opt/dataset/BIPED/edges',
                         help='the path to the directory with the input data.')
-    parser.add_argument('--input-val-dir', type=str,default='/opt/dataset/CID',
+    parser.add_argument('--input-val-dir', type=str,default=data_inf['data_dir'],
                         help='the path to the directory with the input data for validation.')
-    parser.add_argument('--output-dir', type=str, default='checkpoints',
+    parser.add_argument('--output_dir', type=str, default='checkpoints',
                         help='the path to output the results.')
-    parser.add_argument('--test_data', type=str, default='CID',
+    parser.add_argument('--test_data', type=str, default=TEST_DATA,
                         help='Name of the dataset.')
+    parser.add_argument('--test_list', type=str, default=data_inf['file_name'],
+                        help='Name of the dataset.')
+    parser.add_argument('--is_testing', type=bool, default=True,
+                        help='Just for testing')
+    parser.add_argument('--use_prev_trained', type=bool, default=True,
+                        help='use previous trained data') # Just for test
+    parser.add_argument('--checkpoint_data', type=str, default='24/24_model.pth',
+                        help='Just for testing') #  '19/19_*.pht'
+    parser.add_argument('--res_dir', type=str, default='result',
+                        help='Result directory')
     parser.add_argument('--log-interval-vis', type=int, default=50,
                         help='how many batches to wait before logging training status')
     # Optimization parameters
     parser.add_argument('--optimizer', type=str, choices=['adam', 'sgd'], default='adam',
                         help='the optimization solver to use (default: adam)')
-    parser.add_argument('--num-epochs', type=int, default=20, metavar='N',
+    parser.add_argument('--num-epochs', type=int, default=25, metavar='N',
                         help='number of training epochs (default: 100)')
     # parser.add_argument('--lr', type=float, default=1e-3, metavar='LR',
     #                     help='learning rate (default: 1e-3)')
@@ -429,7 +475,7 @@ def main():
     args = parser.parse_args()
 
     tb_writer = None
-    if args.tensorboard:
+    if args.tensorboard and not args.is_testing:
         from tensorboardX import SummaryWriter # previous torch version
         # from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
         tb_writer = SummaryWriter(log_dir=args.output_dir)
@@ -439,27 +485,36 @@ def main():
     model = DexiNet().to(device)
     # model = nn.DataParallel(model)
     model.apply(weight_init)
-    # model.
 
-    # height, width = 400, 400
-    # transformations_train = transforms.Compose([
-    #     transforms.Lambda(lambda img: cv.resize(img, (width, height))),
-    #     tgm.utils.image_to_tensor,
-    #     transforms.Lambda(lambda tensor: (tensor.float()-arg.mean_pixel_values[0:3]) / 255.),
-    # ])
-    # transformations_val = transforms.Compose([
-    #     tgm.utils.image_to_tensor,
-    #     transforms.Lambda(lambda tensor: (tensor.float()-arg.mean_pixel_values[0:3]) / 255.),
-    # ])
+    if not args.is_testing:
 
-    dataset_train = BipedMyDataset(args.input_dir, train_mode='train',
-                                  arg=args)
-    dataset_val = CidDataset(args.input_val_dir, arg=args)
+        dataset_train = BipedMyDataset(args.input_dir, train_mode='train',
+                                      arg=args)
 
-    dataloader_train = DataLoader(dataset_train, batch_size=args.batch_size,
-                                  shuffle=True, num_workers=args.num_workers)
+        dataloader_train = DataLoader(dataset_train, batch_size=args.batch_size,
+                                      shuffle=True, num_workers=args.num_workers)
+    dataset_val = testDataset(args.input_val_dir, arg=args)
     dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size,
                                 shuffle=False, num_workers=args.num_workers)
+    # for testing
+    if args.is_testing:
+        model.load_state_dict(torch.load(os.path.join(args.output_dir,args.checkpoint_data)))
+
+        model.eval()
+
+        output_dir = os.path.join(args.res_dir, "BIPED2" + args.test_data)
+        with torch.no_grad():
+            for batch_id, sample_batched in enumerate(dataloader_val):
+                images = sample_batched['images'].to(device)
+                labels = sample_batched['labels'].to(device)
+                file_names = sample_batched['file_names']
+                image_shape = sample_batched['image_shape']
+                print("input image",len(images))
+                output = model(images)
+                save_image_batch_to_disk(output, output_dir, file_names,image_shape, arg=args)
+
+        print("End testing in dataset:",args.test_data)
+        sys.exit()
 
     criterion = weighted_cross_entropy_loss
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
@@ -476,7 +531,6 @@ def main():
         create_directory(img_test_dir)
         # with torch.no_grad():
         #     validation(epoch, dataloader_val, model, device, img_test_dir,arg=args)
-
         train(epoch, dataloader_train, model, criterion, optimizer, device,
               args.log_interval_vis, tb_writer, args=args)
 

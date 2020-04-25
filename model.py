@@ -17,7 +17,8 @@ class _DenseLayer(nn.Sequential):
 
     def forward(self, x):
         x1, x2 = x
-        new_features = super(_DenseLayer, self).forward(x1)
+        # maybe I should put here a RELU
+        new_features = super(_DenseLayer, self).forward(x1) # F.relu()
         return 0.5 * (new_features + x2), x2
 
 class _DenseBlock(nn.Sequential):
@@ -189,7 +190,7 @@ class DexiNet(nn.Module):
         out_5 = self.slice(self.up_block_5(block_5), slice_shape)
         out_6 = self.slice(self.up_block_6(block_6), slice_shape)
         results = [out_1, out_2, out_3, out_4, out_5, out_6]
-
+        # print(out_1.shape)
         # concatenate multiscale outputs
         block_cat = torch.cat(results, dim=1)  # Bx6xHxW
         block_cat = self.block_cat(block_cat)  # Bx1xHxW

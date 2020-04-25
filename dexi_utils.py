@@ -63,3 +63,60 @@ def visualize_result(imgs_list, arg):
             else:
                 pass
     return imgs
+
+def cv_imshow(title='image',img=None):
+
+    cv.imshow(title,img)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+def dataset_info(dataset_name):
+    config = {
+        'BSDS': {'img_height':321,
+                 'img_width':481,
+                 'file_name': 'test_pair.lst',
+                 'data_dir': '/opt/dataset/BSDS',  # mean_rgb
+                    'yita': 0.5},
+        'BSDS300': {'img_height': 321,
+                 'img_width': 481,
+                'file_name': 'test_pair.lst',
+                 'data_dir': '/opt/dataset/BSDS300',  # NIR
+                 'yita': 0.5},
+        'PASCAL': {'img_height':375,
+                    'img_width':500,
+                   'file_name': 'test_pair.lst',
+                   'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
+                           'yita': 0.3},
+        'CID': {'img_height':512,
+                   'img_width':512,
+                'file_name': 'test_pair.lst',
+                   'data_dir': '/opt/dataset/CID',  # mean_rgb
+                   'yita': 0.3},
+        'NYUD': {'img_height':425,
+                    'img_width':560,
+                 'file_name': 'test_pair.lst',
+                    'data_dir': '/opt/dataset/NYUD',  # mean_rgb
+                       'yita': 0.5},
+        'MULTICUE': {'img_height':720,
+                    'img_width':1280,
+                     'file_name': 'test_pair.lst',
+                     'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
+                          'yita': 0.3},
+        'BIPED': {'img_height': 720,
+                   'img_width': 1280,
+                  'file_name': 'test_rgb.lst',
+                   'data_dir': '/opt/dataset/BIPED/edges',  # mean_rgb
+                   'yita': 0.5},
+        'CLASSIC': {'img_height':3248,
+                  'img_width': 1296,
+                  'file_name': 'test_pair.lst',
+                  'mean_img': '/opt/dataset/CLASSIC',  # mean_rgb
+                  'yita': 0.5},
+        'DCD': {'img_height': 240,
+                  'img_width': 360,
+                  'file_name':'test_pair.lst',
+                  'data_dir': '/opt/dataset/DCD',  # mean_rgb
+                  'yita': 0.2}
+    }
+    data_info = config[dataset_name]
+    return data_info
