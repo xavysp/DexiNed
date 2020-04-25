@@ -111,7 +111,8 @@ class testDataset(Dataset):
             gt /= 255.
             gt = torch.from_numpy(np.array([gt])).float()
         else:
-            gt=None
+            gt = np.zeros((img.shape[:2]))
+            gt=torch.from_numpy(np.array([gt])).float()
         img -= self.mean_bgr
         img = img.transpose((2, 0, 1))
         img = torch.from_numpy(img.copy()).float()
