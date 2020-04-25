@@ -11,7 +11,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
-import torchvision
 from torchvision.transforms import transforms
 import torchgeometry as tgm
 
@@ -89,15 +88,21 @@ class testDataset(Dataset):
     def transform(self, img, gt):
 
         # gt[gt< 51] = 0 # test without gt discrimination
-
-        if img.shape[0]<512 or img.shape[1]<512:
+        if self.arg.test_data=="CLASSIC":
+            img_height = img.shape[0] if img.shape[0] % 16 == 0 else ((img.shape[0] // 16) + 1) * 16
+            img_width = img.shape[1] if img.shape[1] % 16 == 0 else ((img.shape[1] // 16) + 1) * 16
+            print('Real-size:',img.shape, "Ideal size:",[img_height,img_width])
+            img = cv.resize(img, (self.arg.test_im_width,self.arg.test_im_height))
+            gt = None
+        elif img.shape[0]<512 or img.shape[1]<512:
             img = cv.resize(img, (512, 512))
-            gt = cv.resize(gt, (512, 512)) if not self.arg.test_data=="CLASSIC" else None
+            gt = cv.resize(gt, (512, 512))
         elif img.shape[0]%16!=0 or img.shape[1]%16!=0:
             img_width = ((img.shape[1] // 16) + 1) * 16
             img_height = ((img.shape[0] // 16) + 1) * 16
             img = cv.resize(img, (img_width, img_height))
-            gt = cv.resize(gt, (img_width, img_height)) if not self.arg.test_data=="CLASSIC" else None
+            gt = cv.resize(gt, (img_width, img_height))
+
 
         # if self.yita is not None:
         #     gt[gt >= self.yita] = 1
@@ -435,12 +440,12 @@ def weight_init(m):
             torch.nn.init.zeros_(m.bias)
 
 def main():
-    # Training settings
+    # Testing settings
     DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                     'PASCAL','NYUD','CLASSIC'] # 8
-    TEST_DATA = DATASET_NAME[7]
+    TEST_DATA = DATASET_NAME[8]
     data_inf = dataset_info(TEST_DATA)
-
+    # training settings
     parser = argparse.ArgumentParser(description='Training application.')
     # Data parameters
     parser.add_argument('--input-dir', type=str,default='/opt/dataset/BIPED/edges',
@@ -459,6 +464,10 @@ def main():
                         help='use previous trained data') # Just for test
     parser.add_argument('--checkpoint_data', type=str, default='24/24_model.pth',
                         help='Just for testing') #  '19/19_*.pht'
+    parser.add_argument('--test_im_width', type=int, default=data_inf['img_width'],
+                        help='image height for testing')
+    parser.add_argument('--test_im_height', type=int, default=data_inf['img_height'],
+                        help=' image height for testing')
     parser.add_argument('--res_dir', type=str, default='result',
                         help='Result directory')
     parser.add_argument('--log-interval-vis', type=int, default=50,
@@ -499,6 +508,7 @@ def main():
         # from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
         tb_writer = SummaryWriter(log_dir=args.output_dir)
     print(" **** You have available ", torch.cuda.device_count(), "GPUs!")
+    print("Pytorch version: ", torch.__version__)
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     device = torch.device('cuda')
     model = DexiNet().to(device)
