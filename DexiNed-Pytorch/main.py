@@ -540,7 +540,7 @@ def main():
                 output = model(images)
                 save_image_batch_to_disk(output, output_dir, file_names,image_shape, arg=args)
 
-        print("End testing in dataset:",args.test_data)
+        print("Testing ended in ",args.test_data, "dataset")
         sys.exit()
 
     criterion = weighted_cross_entropy_loss
