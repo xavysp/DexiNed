@@ -268,8 +268,7 @@ def augment_data(args):
     imgs_flipped = True
     imgs_gamma_corrected = True
 
-    # degrees = [8, 13, 20, 30, 45, 55, 60,72, 90, 101, 111, 122, 135,160, 170, 180,
-    #            190, 203, 215, 225, 237,252,261,270, 287, 330,311,323,337,350]
+    # degrees
     #          [19, 46, 57,  90,  114,   138, 161, 180,  207, 230,   247   270,  285,  322, 342]
     degrees = [19, 23*2, 19*3, 90, 19*6, 23*6,23*7,180, 23*9, 23*10,19*13, 270, 19*15,23*14,19*18]
     # if data_for=='train':
@@ -1045,7 +1044,7 @@ def data_parser(args):
 # ************** for testing **********************
     elif args.model_state=='test':
         base_dir = os.path.join(args.dataset_dir,args.test_dataset,'edges')\
-            if args.test_dataset.lower()=='BIPED' else os.path.join(args.dataset_dir,args.test_dataset)
+            if args.test_dataset.upper()=='BIPED' else os.path.join(args.dataset_dir,args.test_dataset)
 
         if args.test_dataset.upper() == "BIPED":
             test_files_name = args.test_list
@@ -1124,14 +1123,12 @@ def get_batch(arg,file_list, batch=None, use_batch=True):
 
             y = cv.cvtColor(y, cv.COLOR_BGR2GRAY)# np.array(y.convert('L'), dtype=np.float32)
             y = np.array(y, dtype=np.float32)
-            if arg.train_dataset.lower()=='biped':
-                y = image_normalization(y)
-                y[y < 51] = 0  # first 100
-                # y[y >= 100] = 255.0 #  first 100 and this uncomented [v4]
-            else:
-                y = image_normalization(y)
-                y[y<107]=0 # first nothing second <50 third <30
+            if arg.train_dataset.lower()!='biped':
+                y[y < 107] = 0  # first nothing second <50 third <30
                 y[y >= 107] = 255.0
+            # else:
+                # y[y < 51] = 0  # first 100
+
             if arg.target_regression:
                 bin_y = y/255.0
             else:
