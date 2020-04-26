@@ -1,3 +1,5 @@
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-towards-a/edge-detection-on-biped)](https://paperswithcode.com/sota/edge-detection-on-biped?p=dense-extreme-inception-network-towards-a)
+
 # Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection (DexiNed)
 
 <!-- ```diff
