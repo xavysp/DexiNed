@@ -10,17 +10,18 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 
 ## Table of Contents
 
-* [Geting Started](#geting-started)
+* [Getting Started](#getting-started)
 * [Datasets](#datasets)
 * [Performance](#performance)
 * [Citation](#citation)
 
-# Geting Started
+# Getting Started
 
  Before starting to use this model,  there are some requirements to fullfill.
  
 ## Requirements
 
+* [Python 3.7](https://www.python.org/downloads/release/python-370/g)
 * [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
@@ -61,7 +62,7 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: DexiNed/checkpoints/(here the checkpoints from Drive), then run as follow:
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
 
     python run_model.py --image_width=512 --image_height=512
 Make sure that in run_model.py the test setting be as:
@@ -78,7 +79,7 @@ Make sure that in run_model.py the train setting be as:
 
 ## Dataset used for Training
 
-BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download [here](https://xavysp.github.io/MBIPED/)
+BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped)
 
 ## Datasets used for Testing
 
@@ -90,17 +91,25 @@ Non-edge detection datasets
 * [CID](http://www.cs.rug.nl/~imaging/databases/contour_database/contour_database.html) <!-- * [DCD](http://www.cs.cmu.edu/~mengtial/proj/sketch/)-->, [BSDS300](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [BSDS500](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), [NYUD](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html), and [PASCAL-context](https://cs.stanford.edu/~roozbeh/pascal-context/)
 
 # Performance
+
+The results below are from the last version of BIPEP. After WACV20, the BIPED images have been again checked and added annotations. All of those models have been trained again. 
+
 <center>
 
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
-| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.732` | `.745` | `.786` |
-| [HED](https://github.com/s9xie/hed)      | `.853` | `.863` | `.911` |
-| [RCF](https://github.com/yun-liu/rcf)      | `.863` | `.874` | `.914` |
-| [BDCN](https://github.com/pkuCactus/BDCN)     | `.869` | `.878` | `.918` |
-| DexiNed(Ours)| `.874` | `.884` | `.916` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection) before     | `.717` | `.731` | `.756` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.000` | `.000` | `.000` |
+| [HED](https://github.com/s9xie/hed) before     | `.823` | `.847` | `.869` |
+| [HED](https://github.com/s9xie/hed)     | `.000` | `.000` | `.000` |
+| [RCF](https://github.com/yun-liu/rcf) before     | `.843` | `.859` | `.882` |
+| [RCF](https://github.com/yun-liu/rcf)      | `.000` | `.000` | `.000` |
+| [BDCN](https://github.com/pkuCactus/BDCN) before    | `.839` | `.854` | `.887` |
+| [BDCN](https://github.com/pkuCactus/BDCN)     | `.000` | `.000` | `.000` |
+| DexiNed(WACV'20)| `.859` | `.867` | `.905` |
+| DexiNed(Ours)| `.000` | `.000` | `.000` |
 </center>
-Evaluation performed to BIPED dataset
+Evaluation performed to BIPED dataset. We will update the result soon.
 
 # Citation
 Please cite our paper if you find helpful,
