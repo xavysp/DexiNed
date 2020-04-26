@@ -9,16 +9,16 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
 ## Table of Contents
-* [Getting Started (PyTorch)](#getting-started-pytorch)
-* [Getting Started (TensorFlow)](#getting-started-tensorflow)
+* [PyTorch](#pytorch)
+* [TensorFlow](#tensorflow)
 * [Datasets](#datasets)
 * [Performance](#performance)
 * [Citation](#citation)
 
-## Getting Started PyTorch
+# PyTorch
 To test DexiNed in PyTorch please refer to [DexiNed-Pytorch](https://github.com/xavysp/DexiNed/tree/master/DexiNed-Pytorch) directory
 
-# Getting Started TensorFlow
+# TensorFlow
 
  Before starting to use this model,  there are some requirements to fullfill.
  
