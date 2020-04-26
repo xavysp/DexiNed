@@ -20,11 +20,19 @@ class m_tester():
                 self.model = dexined(self.args)
             else:
                 print_error("Error setting model, {}".format(self.args.model_name))
+            if self.args.trained_model_dir is None:
+                meta_model_file = os.path.join(
+                    self.args.checkpoint_dir, os.path.join(
+                        self.args.model_name + '_' + self.args.train_dataset,
+                        os.path.join('train',
+                                     '{}-{}'.format(self.args.model_name, self.args.test_snapshot))))
+            else:
+                meta_model_file = os.path.join(
+                    self.args.checkpoint_dir, os.path.join(
+                        self.args.model_name + '_' + self.args.train_dataset,
+                        os.path.join(self.args.trained_model_dir,
+                                     '{}-{}'.format(self.args.model_name, self.args.test_snapshot))))
 
-            meta_model_file = os.path.join(
-                self.args.checkpoint_dir, os.path.join(
-                    self.args.model_name+'_'+self.args.train_dataset,
-                    os.path.join('train', '{}-{}'.format(self.args.model_name,self.args.test_snapshot))))
 
             saver = tf.train.Saver()
             saver.restore(session, meta_model_file)
@@ -118,6 +126,7 @@ class m_tester():
             em_a.save(os.path.join(resa_dir, tmp_name + '.png'))
             em_maps =tensor_norm_01(em_maps)
             save_variable_h5(os.path.join(all_dir, tmp_name + '.h5'), np.float16(em_maps))
+
 
         else:
             pass

@@ -2,7 +2,6 @@
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import functools
 
 from models.dexined import dexined
 from utls.utls import *
@@ -147,3 +146,5 @@ class m_trainer():
         saver.save(sess, os.path.join(checkpoint_dir, self.args.model_name), global_step=idx)
         print("Final Weights saved", idx, " Current Loss", loss)
         self.model.train_writer.close()
+        sess.close()
+

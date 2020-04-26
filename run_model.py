@@ -23,11 +23,12 @@ def config_model():
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
-    parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
+    parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID','DCD'])
     parser.add_argument('--dataset_dir',default=None,type=str) # default:'/opt/dataset/'
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
     parser.add_argument('--test_list', default='test_pair.lst',type=str) # for NYUD&BSDS:test_pair.lst, ssmihd: msi_test.lst/vis_test.lst
+    parser.add_argument('--trained_model_dir', default='trainV2_RN',type=str) # 'trainV2_RN'
     # SSMIHD_RGBN msi_valid_list.txt and msi_test_list.txt is for unified test
     parser.add_argument('--use_nir', default=False, type=bool)
     parser.add_argument('--use_dataset', default=False, type=bool) # test: dataset TRUE single image FALSE
@@ -50,7 +51,7 @@ def config_model():
     parser.add_argument('--max_iterations', default=150000, type=int) # 100000
     parser.add_argument('--learning_decay_interval',default=25000, type=int) # 25000
     parser.add_argument('--loss_weights', default=1.0, type=float)
-    parser.add_argument('--save_interval', default=10000, type=int)  # 50000
+    parser.add_argument('--save_interval', default=20000, type=int)  # 50000
     parser.add_argument('--val_interval', default=30, type=int)
     parser.add_argument('--use_subpixel', default=None, type=bool)  # None=upsampling with transp conv
     parser.add_argument('--deep_supervision', default=True, type= bool)
@@ -62,15 +63,15 @@ def config_model():
     parser.add_argument('--use_trained_model', default=True,type=bool) # for vvg16
     parser.add_argument('--use_previous_trained', default=False, type=bool)
     # image configuration
-    parser.add_argument('--image_width', default=960, type=int) # 480 NYUD=560 BIPED=1280 default 400
+    parser.add_argument('--image_width', default=960, type=int) # 480 NYUD=560 BIPED=1280 default 400 other 448
     parser.add_argument('--image_height', default=560, type=int) # 480 for NYUD 425 BIPED=720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
-    parser.add_argument('--test_snapshot', default=149736, type=int) #  old: 149736
+    parser.add_argument('--test_snapshot', default=149999, type=int) #  BIPED: 149736 BSDS:101179
+    #DexiNedv1=149736,DexiNedv2=149999
     parser.add_argument('--testing_threshold', default=0.0, type=float)
     parser.add_argument('--base_dir_results',default=None,type=str) # default: '/opt/results/edges'
     args = parser.parse_args()
-
     return args
 
 def get_session(gpu_fraction):
@@ -109,7 +110,7 @@ def main(args):
 
     if args.model_state=='test':
 
-        if args.test_dataset=="SSMIHD":
+        if args.test_dataset=="BIPED":
             if args.image_width >700:
                 pass
             else:
@@ -118,6 +119,7 @@ def main(args):
         tester = m_tester(args)
         tester.setup(sess)
         tester.run(sess)
+        sess.close()
 
     if args.model_state=="None":
         print("Sorry the model state is {}".format(args.model_state))
