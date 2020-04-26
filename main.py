@@ -365,7 +365,6 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None,arg=
         for tensor_image, file_name in zip(tensor, file_names):
             image_vis = tgm.utils.tensor_to_image(torch.sigmoid(tensor_image))[..., 0]
             image_vis = (255.0*(1.0- image_vis)).astype(np.uint8) #
-            # image_vis = (255.0*image_vis).astype(np.uint8) #
             output_file_name = os.path.join(output_dir, file_name)
             assert cv.imwrite(output_file_name, image_vis)
     else:
@@ -394,12 +393,10 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None,arg=
                 if not tmp_img.shape[1]==i_shape[0] or not tmp_img.shape[0]==i_shape[1]:
                     tmp_img = cv.resize(tmp_img,(i_shape[0],i_shape[1]))
                 preds.append(tmp_img)
-                # cv_imshow('img',np.uint8(tmp_img))
                 if i==6:
                     fuse = tmp_img
             average = np.array(preds,dtype=np.float32)
             average = np.uint8(np.mean(average,axis=0))
-            # cv_imshow('img',average)
             output_file_name_f = os.path.join(output_dir_f, file_name)
             output_file_name_a = os.path.join(output_dir_a, file_name)
             assert cv.imwrite(output_file_name_f, fuse)
