@@ -114,7 +114,7 @@ def main(args):
             if args.image_width >700:
                 pass
             else:
-                print(' image size is not setted in non augmented data')
+                print(' image size is not set in non augmented data')
                 sys.exit()
         tester = m_tester(args)
         tester.setup(sess)
