@@ -27,7 +27,7 @@ To test DexiNed in PyTorch please refer to [DexiNed-Pytorch](https://github.com/
 ## Requirements
 
 * [Python 3.7](https://www.python.org/downloads/release/python-370/g)
-* [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
+* [TensorFlow>=1.8 <=1.15.2](https://www.tensorflow.org) (tested on such versions)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
 * Other package like Numpy, h5py, PIL. 
@@ -84,7 +84,7 @@ Make sure that in run_model.py the train setting be as:
 
 ## Dataset used for Training
 
-BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped)
+BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped). The BIPED dataset has been updated, adding more annotations and correcting few mistakes, so those links have the renewed version of BIPED, if you want the older version you may ask us by email. The last performance (table below) will be updated soon. 
 
 ## Datasets used for Testing
 
