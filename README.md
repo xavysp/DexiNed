@@ -117,7 +117,12 @@ The results below are from the last version of BIPEP. After WACV20, the BIPED im
 Evaluation performed to BIPED dataset. We will update the result soon.
 
 # Citation
-Please cite our paper if you find helpful,
+
+If you like DexiNed, why not starring the project on GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/xavysp/DexiNed.svg?style=social&label=Star&maxAge=3600)](https://GitHub.com/xavysp/DexiNed/stargazers/)
+
+Please cite our paper if you find helpful in your academic/scientific publication,
 ```
 @InProceedings{soria2020dexined,
     title={Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection},
