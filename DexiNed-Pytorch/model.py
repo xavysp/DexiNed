@@ -1,24 +1,26 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
 
-class _DenseLayer(nn.Sequential):
+class _DenseLayer(nn.Module):
     def __init__(self, input_features, out_features):
         super(_DenseLayer, self).__init__()
         # self.add_module('relu2', nn.ReLU(inplace=True)),
-        self.add_module('conv1', nn.Conv2d(input_features, out_features,
-                        kernel_size=1, stride=1, bias=True)),
-        self.add_module('norm1', nn.BatchNorm2d(out_features)),
-        self.add_module('relu1', nn.ReLU(inplace=True)),
-        self.add_module('conv2', nn.Conv2d(out_features, out_features,
-                        kernel_size=3, stride=1, padding=1, bias=True)),
-        self.add_module('norm2', nn.BatchNorm2d(out_features))
+        self.layers = nn.Sequential(OrderedDict([
+            ('conv1', nn.Conv2d(input_features, out_features,
+                                kernel_size=1, stride=1, bias=True)),
+            ('norm1', nn.BatchNorm2d(out_features)),
+            ('relu1', nn.ReLU(inplace=True)),
+            ('conv2', nn.Conv2d(out_features, out_features,
+                                kernel_size=3, stride=1, padding=1, bias=True)),
+            ('norm2', nn.BatchNorm2d(out_features))]))
         # double check the norm1 comment if necessary and put norm after conv2
 
     def forward(self, x):
         x1, x2 = x
         # maybe I should put here a RELU
-        new_features = super(_DenseLayer, self).forward(x1) # F.relu()
+        new_features = self.layers(x1) # F.relu()
         return 0.5 * (new_features + x2), x2
 
 class _DenseBlock(nn.Sequential):
@@ -198,7 +200,6 @@ class DexiNet(nn.Module):
         # return results
         results.append(block_cat)
         return results
-
 
 if __name__ == '__main__':
     batch_size = 8
