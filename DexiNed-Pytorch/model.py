@@ -32,17 +32,11 @@ class _DenseBlock(nn.Sequential):
             input_features = out_features
 
 class UpConvBlock(nn.Module):
-    def __init__(self, in_features, up_scale, mode='deconv'):
+    def __init__(self, in_features, up_scale):
         super(UpConvBlock, self).__init__()
-        self.up_factor = 2
         self.constant_features = 16
 
-        layers = None
-        if mode == 'deconv':
-            layers = self.make_deconv_layers(in_features, up_scale)
-        elif mode == 'pixel_shuffle':
-            layers = self.make_pixel_shuffle_layers(in_features, up_scale)
-        assert layers is not None, layers
+        layers = self.make_deconv_layers(in_features, up_scale)
         self.features = nn.Sequential(*layers)
 
     def make_deconv_layers(self, in_features, up_scale):
@@ -54,19 +48,6 @@ class UpConvBlock(nn.Module):
             layers.append(nn.ReLU(inplace=True))
             layers.append(nn.ConvTranspose2d(
                 out_features, out_features, kernel_size, stride=2))
-            in_features = out_features
-        return layers
-
-    def make_pixel_shuffle_layers(self, in_features, up_scale):
-        layers = []
-        for i in range(up_scale):
-            kernel_size = 2 ** (i + 1)
-            out_features = self.compute_out_features(i, up_scale)
-            in_features = int(in_features / (self.up_factor ** 2))
-            layers.append(nn.PixelShuffle(self.up_factor))
-            layers.append(nn.Conv2d(in_features, out_features, 1))
-            if i < up_scale:
-                layers.append(nn.ReLU(inplace=True))
             in_features = out_features
         return layers
 
