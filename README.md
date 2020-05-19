@@ -67,12 +67,12 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files into the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
 
     python run_model.py --image_width=512 --image_height=512
 Make sure that in run_model.py the test setting be as:
 ```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
-DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc.
+DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will get data_list.zip, train_1.zip, and train_2.zip. The train_2  contains our last checkpoint trained with the updated BIPED; train_1 has checkpoints with the results presented in WACV'20, and data_list has a list of MDBD dataset images used for testing, if you choose another random list of images, you probably get a better or worst result, I think is not fair.**
 
 ## Train
 
