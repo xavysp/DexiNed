@@ -1,11 +1,16 @@
 from tensorflow.keras import callbacks
-from tensorflow.keras import layers
-from tensorflow.keras import optimizers
+from tensorflow.keras import layers, regularizers
+from tensorflow.keras import optimizers, metrics, losses
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
 from tensorflow import keras
 import tensorflow as tf
+
+
+l2 = regularizers.l2
+K.clear_session()
+weight_init = tf.initializers.glorot_uniform()
 
 class _DenseLayer(layers.Layer):
     """_DenseBlock model.
@@ -14,17 +19,22 @@ class _DenseLayer(layers.Layer):
          out_features: number of output features
     """
 
-    def __init__(self,
-                 out_features,
+    def __init__(self, out_features,weight_decay=1e4,
 	         **kwargs):
         super(_DenseLayer, self).__init__(**kwargs)
         self.layers = []
         self.layers.append(tf.keras.Sequential(
             [
-                layers.Conv2D(filters=out_features, kernel_size=1, strides=1, padding='same', activation=None),
+                layers.Conv2D(
+                    filters=out_features, kernel_size=(3,3), strides=(1,1), padding='same',
+                    use_bias=True, kernel_initializer=weight_init,
+                kernel_regularizer=l2(weight_decay)),
                 layers.BatchNormalization(),
                 layers.ReLU(),
-                layers.Conv2D(filters=out_features, kernel_size=3, strides=1, padding='same', activation=None),
+                layers.Conv2D(
+                    filters=out_features, kernel_size=(3,3), strides=(1,1), padding='same',
+                    use_bias=True, kernel_initializer=weight_init,
+                    kernel_regularizer=l2(weight_decay)),
                 layers.BatchNormalization(),
             ]))
 
@@ -67,8 +77,7 @@ class UpConvBlock(layers.Layer):
          up_scale: int
     """
 
-    def __init__(self,
-                 up_scale,
+    def __init__(self, up_scale,weight_decay=1e4,
                  **kwargs):
         super(UpConvBlock, self).__init__(**kwargs)
         constant_features = 16
@@ -77,8 +86,25 @@ class UpConvBlock(layers.Layer):
         total_up_scale = 2 ** up_scale
         for i in range(up_scale):
             out_features = 1 if i == up_scale-1 else constant_features
-            features.append(layers.Conv2D(filters=out_features, kernel_size=1, strides=1, padding='same', activation='relu'))
-            features.append(layers.Conv2DTranspose(out_features, total_up_scale, strides=2, padding='same', activation=None))
+            if i==up_scale-1:
+                features.append(layers.Conv2D(
+                    filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
+                    activation='relu', kernel_initializer=tf.random_normal_initializer(mean=0.),
+                    kernel_regularizer=l2(weight_decay)))
+                features.append(layers.Conv2DTranspose(
+                    out_features, total_up_scale, strides=(2,2), padding='same', activation=None,
+                    kernel_initializer=tf.random_normal_initializer(stddev=0.1),
+                    kernel_regularizer=l2(weight_decay)))
+            else:
+
+                features.append(layers.Conv2D(
+                    filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
+                    activation='relu',kernel_initializer=weight_init,
+                kernel_regularizer=l2(weight_decay)))
+                features.append(layers.Conv2DTranspose(
+                    out_features, kernel_size=(total_up_scale,total_up_scale),
+                    strides=(2,2), padding='same',
+                    kernel_initializer=weight_init, kernel_regularizer=l2(weight_decay)))
 
         self.features = keras.Sequential(features)
 
@@ -94,16 +120,27 @@ class SingleConvBlock(layers.Layer):
          stride: stride per convolution
     """
 
-    def __init__(self,
-                 out_features,
-                 stride,
-                 **kwargs):
+    def __init__(self, out_features, k_size=(1,1),stride=(1,1),weight_decay=1e4,
+                 use_bs=False, use_act=False,w_init=None,**kwargs):
         super(SingleConvBlock, self).__init__(**kwargs)
-        self.conv = layers.Conv2D(filters=out_features, kernel_size=(1, 1), strides=(stride, stride), padding='valid', activation=None)
-        self.bn = layers.BatchNormalization()
+        self.use_bn = use_bs
+        self.use_act = use_act
+        self.conv = layers.Conv2D(
+            filters=out_features, kernel_size=k_size, strides=stride,
+            padding='same', use_bias=True,kernel_initializer=w_init,
+            kernel_regularizer=l2(weight_decay))
+        if self.use_bn:
+            self.bn = layers.BatchNormalization()
+        if self.use_act:
+            self.relu = layers.ReLU()
 
     def call(self, inputs):
-        return self.bn(self.conv(inputs))
+        x =self.conv(inputs)
+        if self.use_bn:
+            x = self.bn(x)
+        if self.use_act:
+            x = self.relu(x)
+        return x
 
 
 class DoubleConvBlock(layers.Layer):
@@ -115,15 +152,20 @@ class DoubleConvBlock(layers.Layer):
          stride: stride per mid-layer convolution
     """
 
-    def __init__(self,
-                 mid_features,
-                 out_features,
-                 stride=1,
-                 **kwargs):
+    def __init__(self, mid_features, out_features=None, stride=(1,1),
+                 weight_decay=1e4, **kwargs):
         super(DoubleConvBlock, self).__init__(**kwargs)
-        self.conv1 = layers.Conv2D(filters=mid_features, kernel_size=(3, 3), strides=stride, padding='same', activation=None)
+        out_features = mid_features if out_features is None else out_features
+        self.conv1 = layers.Conv2D(
+            filters=mid_features, kernel_size=(3, 3), strides=stride, padding='same',
+        use_bias=True, kernel_initializer=weight_init,
+        kernel_regularizer=l2(weight_decay))
         self.bn1 = layers.BatchNormalization()
-        self.conv2 = layers.Conv2D(filters=out_features, kernel_size=(3, 3), padding='same', activation=None)
+
+        self.conv2 = layers.Conv2D(
+            filters=out_features, kernel_size=(3, 3), padding='same',strides=(1,1),
+        use_bias=True, kernel_initializer=weight_init,
+        kernel_regularizer=l2(weight_decay))
         self.bn2 = layers.BatchNormalization()
         self.relu = layers.ReLU()
 
@@ -137,32 +179,46 @@ class DoubleConvBlock(layers.Layer):
         return self.relu(x)
 
 
-class DexiNet(tf.keras.Model):
+class DexiNed(tf.keras.Model):
     """DexiNet model."""
 
-    def __init__(self,
+    def __init__(self,rgb_mean=None,
                  **kwargs):
-        super(DexiNet, self).__init__(**kwargs)
-        self.block_1 = DoubleConvBlock(32, 64, stride=2)
-        self.block_2 = DoubleConvBlock(128, 128)
+        super(DexiNed, self).__init__(**kwargs)
+        self.rgbn_mean = rgb_mean
+        self.block_1 = DoubleConvBlock(32, 64, stride=(2,2))
+        self.block_2 = DoubleConvBlock(128)
         self.dblock_3 = _DenseBlock(2, 256)
         self.dblock_4 = _DenseBlock(3, 512)
         self.dblock_5 = _DenseBlock(3, 512)
         self.dblock_6 = _DenseBlock(3, 256)
         self.maxpool = layers.MaxPool2D(pool_size=(3, 3), strides=2, padding='same')
 
-        self.side_1 = SingleConvBlock(128, 2)
-        self.side_2 = SingleConvBlock(256, 2)
-        self.side_3 = SingleConvBlock(512, 2)
-        self.side_4 = SingleConvBlock(512, 1)
-        self.side_5 = SingleConvBlock(256, 1)
+        # first skip connection
+        self.side_1 = SingleConvBlock(128,k_size=(1,1),stride=(2,2),use_bs=True,
+                                      w_init=weight_init)
+        self.side_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),use_bs=True,
+                                      w_init=weight_init)
+        self.side_3 = SingleConvBlock(512,k_size=(1,1),stride=(2,2),use_bs=True,
+                                      w_init=weight_init)
+        self.side_4 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
+                                      w_init=weight_init)
+        # self.side_5 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
+        #                               w_init=weight_init)
 
-        self.pre_dense_2 = SingleConvBlock(256, 2)
-        self.pre_dense_3 = SingleConvBlock(256, 1)
-        self.pre_dense_4 = SingleConvBlock(512, 1)
-        self.pre_dense_5_0 = SingleConvBlock(512, 2)
-        self.pre_dense_5 = SingleConvBlock(512, 1)
-        self.pre_dense_6 = SingleConvBlock(256, 1)
+
+        self.pre_dense_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),use_bs=True,
+                                      w_init=weight_init)
+        self.pre_dense_3 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
+                                      w_init=weight_init)
+        self.pre_dense_4 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
+                                      w_init=weight_init)
+        self.pre_dense_5_0 = SingleConvBlock(512, k_size=(1,1),stride=(2,2),use_bs=True,
+                                      w_init=weight_init)
+        self.pre_dense_5 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
+                                      w_init=weight_init)
+        self.pre_dense_6 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
+                                      w_init=weight_init)
 
         self.up_block_1 = UpConvBlock(1)
         self.up_block_2 = UpConvBlock(1)
@@ -171,7 +227,9 @@ class DexiNet(tf.keras.Model):
         self.up_block_5 = UpConvBlock(4)
         self.up_block_6 = UpConvBlock(4)
 
-        self.block_cat = layers.Conv2D(filters=1, kernel_size=(1, 1), strides=(1, 1), padding='same', activation=None)
+        self.block_cat = SingleConvBlock(
+            1,k_size=(1,1),stride=(1,1),
+            w_init=tf.constant_initializer(1/5))
 
 
     def slice(self, tensor, slice_shape):
@@ -181,14 +239,15 @@ class DexiNet(tf.keras.Model):
 
     def call(self, x):
         # Block 1
+        x = x-self.rgbn_mean[:-1]
         block_1 = self.block_1(x)
         block_1_side = self.side_1(block_1)
 
         # Block 2
         block_2 = self.block_2(block_1)
-        block_2_down = self.maxpool(block_2)
+        block_2_down = self.maxpool(block_2) # the key for the second skip connec...
         block_2_add = block_2_down + block_1_side
-        block_2_side = self.side_2(block_2_add)#
+        block_2_side = self.side_2(block_2_add) #
 
         # Block 3
         block_3_pre_dense = self.pre_dense_3(block_2_down)
@@ -218,12 +277,12 @@ class DexiNet(tf.keras.Model):
         # upsampling blocks
         height, width = x.shape[1:3]
         slice_shape = (height, width)
-        out_1 = self.slice(self.up_block_1(block_1), slice_shape)
-        out_2 = self.slice(self.up_block_2(block_2), slice_shape)
-        out_3 = self.slice(self.up_block_3(block_3), slice_shape)
-        out_4 = self.slice(self.up_block_4(block_4), slice_shape)
-        out_5 = self.slice(self.up_block_5(block_5), slice_shape)
-        out_6 = self.slice(self.up_block_6(block_6), slice_shape)
+        out_1 = self.up_block_1(block_1) # self.slice(, slice_shape)
+        out_2 = self.up_block_2(block_2)
+        out_3 = self.up_block_3(block_3)
+        out_4 = self.up_block_4(block_4)
+        out_5 = self.up_block_5(block_5)
+        out_6 = self.up_block_6(block_6)
         results = [out_1, out_2, out_3, out_4, out_5, out_6]
 
         # concatenate multiscale outputs
@@ -234,15 +293,14 @@ class DexiNet(tf.keras.Model):
 
         return results
 
-
-def main(epochs):
-    batch_size = 8
-    input = tf.random.uniform((batch_size, 400, 400, 3))
-    target = tf.random.uniform((batch_size, 400, 400, 1))
-    model = DexiNet()
-    model.compile(optimizer='Adam', loss='mse')
-    model.fit(input, target, epochs)
-
-
-if __name__ == '__main__':
-    main(20000)
+# def main(epochs):
+#     batch_size = 8
+#     input = tf.random.uniform((batch_size, 400, 400, 3))
+#     target = tf.random.uniform((batch_size, 400, 400, 1))
+#     model = DexiNed()
+#     model.compile(optimizer='Adam', loss='mse')
+#     model.fit(input, target, epochs)
+#
+#
+# if __name__ == '__main__':
+#     main(20000)
