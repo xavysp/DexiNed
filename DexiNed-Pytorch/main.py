@@ -507,7 +507,7 @@ def main():
     print(" **** You have available ", torch.cuda.device_count(), "GPUs!")
     print("Pytorch version: ", torch.__version__)
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    device = torch.device('cuda')
+    device = torch.device('cpu' if torch.cuda.device_count() == 0 else 'cuda')
     model = DexiNet().to(device)
     # model = nn.DataParallel(model)
     model.apply(weight_init)
@@ -524,7 +524,7 @@ def main():
                                 shuffle=False, num_workers=args.num_workers)
     # for testing
     if args.is_testing:
-        model.load_state_dict(torch.load(os.path.join(args.output_dir,args.checkpoint_data)))
+        model.load_state_dict(torch.load(os.path.join(args.output_dir,args.checkpoint_data), map_location=device))
 
         model.eval()
 

@@ -1,3 +1,5 @@
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-towards-a/edge-detection-on-biped)](https://paperswithcode.com/sota/edge-detection-on-biped?p=dense-extreme-inception-network-towards-a)
+
 # Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection (DexiNed)
 
 <!-- ```diff
@@ -9,20 +11,23 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
 ## Table of Contents
-
-* [Getting Started](#getting-started)
+* [PyTorch](#pytorch)
+* [TensorFlow](#tensorflow)
 * [Datasets](#datasets)
 * [Performance](#performance)
 * [Citation](#citation)
 
-# Getting Started
+# PyTorch
+To test DexiNed in PyTorch please refer to [DexiNed-Pytorch](https://github.com/xavysp/DexiNed/tree/master/DexiNed-Pytorch) directory
+
+# TensorFlow
 
  Before starting to use this model,  there are some requirements to fullfill.
  
 ## Requirements
 
 * [Python 3.7](https://www.python.org/downloads/release/python-370/g)
-* [TensorFlow>=1.8 <=1.13.1](https://www.tensorflow.org) (tested on such versions)
+* [TensorFlow>=1.8 <=1.15.2](https://www.tensorflow.org) (tested on such versions)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
 * Other package like Numpy, h5py, PIL. 
@@ -62,12 +67,12 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files intro the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint from Drive](https://drive.google.com/open?id=1fLBpOrSXC2VOWUvDtNGyrHcuB2IB-4_D) and save those files into the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
 
     python run_model.py --image_width=512 --image_height=512
 Make sure that in run_model.py the test setting be as:
 ```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
-DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc.
+DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will get data_list.zip, train_1.zip, and train_2.zip. The train_2  contains our last checkpoint trained with the updated BIPED; train_1 has checkpoints with the results presented in WACV'20, and data_list has a list of MDBD dataset images used for testing, if you choose another random list of images, you probably get a better or worst result, I think is not fair.**
 
 ## Train
 
@@ -79,7 +84,7 @@ Make sure that in run_model.py the train setting be as:
 
 ## Dataset used for Training
 
-BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped)
+BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped). The BIPED dataset has been updated, adding more annotations and correcting few mistakes, so those links have the renewed version of BIPED, if you want the older version you may ask us by email. The last performance (table below) will be updated soon. 
 
 ## Datasets used for Testing
 
@@ -112,7 +117,12 @@ The results below are from the last version of BIPEP. After WACV20, the BIPED im
 Evaluation performed to BIPED dataset. We will update the result soon.
 
 # Citation
-Please cite our paper if you find helpful,
+
+If you like DexiNed, why not starring the project on GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/xavysp/DexiNed.svg?style=social&label=Star&maxAge=3600)](https://GitHub.com/xavysp/DexiNed/stargazers/)
+
+Please cite our paper if you find helpful in your academic/scientific publication,
 ```
 @InProceedings{soria2020dexined,
     title={Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection},
