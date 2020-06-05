@@ -23,7 +23,7 @@ class dexined():
     def __init__(self, args):
 
         self.args = args
-        self.utw= self.args.use_trained_model
+        self.utw = self.args.use_trained_model
         self.img_height =args.image_height
         self.img_width =args.image_width
         if args.model_state=='test':
@@ -38,13 +38,14 @@ class dexined():
 
     def define_model(self, is_training=True):
         """ DexiNed architecture
-
         DexiNed is composed by six blocks, the two first blocks have two convolutional layers
         the rest of the blocks is composed by sub blocks and they have 2, 3, 3, 3 sub blocks
         """
         start_time = time.time()
         use_subpixel=self.args.use_subpixel
         weight_init =tf.random_normal_initializer(mean=0.0, stddev=0.01)
+        # weight_init = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
+        # weight_init = None  # None = tf.initializers.glorot_uniform()
         with tf.variable_scope('Xpt') as sc:
 
             # ------------------------- Block1 ----------------------------------------
@@ -278,7 +279,7 @@ class dexined():
             scale=2
             sub_net=inputs
             output_filters=16
-            if not sub_pixel:
+            if sub_pixel is None:
                 # Upsampling by transpose_convolution
                 while (scale<=upscale):
                     if scale==upscale:
@@ -313,7 +314,7 @@ class dexined():
                     i += 1
                     scale=2**i
 
-            elif sub_pixel is None:
+            elif sub_pixel is False:
                 # Upsampling by bilinear interpolation
                 while (scale <= upscale):
 
@@ -349,7 +350,7 @@ class dexined():
                     i += 1
                     scale = 2 ** i
 
-            elif sub_pixel:
+            elif sub_pixel is True:
                 # Upsampling by subPixel convolution
                 while (scale <= upscale):
                     if scale == upscale:
