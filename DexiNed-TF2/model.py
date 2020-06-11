@@ -9,8 +9,11 @@ import tensorflow as tf
 
 
 l2 = regularizers.l2
+w_decay=None #0.0#2e-4#1e-3, 2e-4 # please define weight decay
 K.clear_session()
-weight_init = tf.initializers.glorot_uniform()
+# weight_init = tf.initializers.RandomNormal(mean=0.,stddev=0.01)
+weight_init = tf.initializers.glorot_normal()
+
 
 class _DenseLayer(layers.Layer):
     """_DenseBlock model.
@@ -19,24 +22,25 @@ class _DenseLayer(layers.Layer):
          out_features: number of output features
     """
 
-    def __init__(self, out_features,weight_decay=1e4,
-	         **kwargs):
+    def __init__(self, out_features,**kwargs):
         super(_DenseLayer, self).__init__(**kwargs)
+        k_reg = None if w_decay is None else l2(w_decay)
         self.layers = []
         self.layers.append(tf.keras.Sequential(
             [
+                layers.ReLU(),
                 layers.Conv2D(
                     filters=out_features, kernel_size=(3,3), strides=(1,1), padding='same',
                     use_bias=True, kernel_initializer=weight_init,
-                kernel_regularizer=l2(weight_decay)),
+                kernel_regularizer=k_reg),
                 layers.BatchNormalization(),
                 layers.ReLU(),
                 layers.Conv2D(
                     filters=out_features, kernel_size=(3,3), strides=(1,1), padding='same',
                     use_bias=True, kernel_initializer=weight_init,
-                    kernel_regularizer=l2(weight_decay)),
+                    kernel_regularizer=k_reg),
                 layers.BatchNormalization(),
-            ]))
+            ])) # first relu can be not needed
 
 
     def call(self, inputs):
@@ -58,8 +62,7 @@ class _DenseBlock(layers.Layer):
 
     def __init__(self,
                  num_layers,
-                 out_features,
-                 **kwargs):
+                 out_features,**kwargs):
         super(_DenseBlock, self).__init__(**kwargs)
         self.layers = [_DenseLayer(out_features) for i in range(num_layers)]
 
@@ -77,11 +80,10 @@ class UpConvBlock(layers.Layer):
          up_scale: int
     """
 
-    def __init__(self, up_scale,weight_decay=1e4,
-                 **kwargs):
+    def __init__(self, up_scale,**kwargs):
         super(UpConvBlock, self).__init__(**kwargs)
         constant_features = 16
-
+        k_reg = None if w_decay is None else l2(w_decay)
         features = []
         total_up_scale = 2 ** up_scale
         for i in range(up_scale):
@@ -89,22 +91,23 @@ class UpConvBlock(layers.Layer):
             if i==up_scale-1:
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
-                    activation='relu', kernel_initializer=tf.random_normal_initializer(mean=0.),
-                    kernel_regularizer=l2(weight_decay)))
+                    activation='relu', kernel_initializer=weight_init,
+                    kernel_regularizer=k_reg,use_bias=True)) #tf.initializers.TruncatedNormal(mean=0.)
                 features.append(layers.Conv2DTranspose(
-                    out_features, total_up_scale, strides=(2,2), padding='same', activation=None,
-                    kernel_initializer=tf.random_normal_initializer(stddev=0.1),
-                    kernel_regularizer=l2(weight_decay)))
+                    out_features, kernel_size=(total_up_scale,total_up_scale),
+                    strides=(2,2), padding='same',
+                    kernel_initializer=tf.initializers.TruncatedNormal(stddev=0.1),
+                    kernel_regularizer=k_reg,use_bias=True))
             else:
 
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
                     activation='relu',kernel_initializer=weight_init,
-                kernel_regularizer=l2(weight_decay)))
+                kernel_regularizer=k_reg,use_bias=True))
                 features.append(layers.Conv2DTranspose(
                     out_features, kernel_size=(total_up_scale,total_up_scale),
-                    strides=(2,2), padding='same',
-                    kernel_initializer=weight_init, kernel_regularizer=l2(weight_decay)))
+                    strides=(2,2), padding='same', use_bias=True,
+                    kernel_initializer=weight_init, kernel_regularizer=k_reg))
 
         self.features = keras.Sequential(features)
 
@@ -120,15 +123,17 @@ class SingleConvBlock(layers.Layer):
          stride: stride per convolution
     """
 
-    def __init__(self, out_features, k_size=(1,1),stride=(1,1),weight_decay=1e4,
-                 use_bs=False, use_act=False,w_init=None,**kwargs):
+    def __init__(self, out_features, k_size=(1,1),stride=(1,1),
+                 use_bs=False, use_act=False,w_init=None,
+                 bias_init=tf.constant_initializer(0.0),**kwargs): # 'zeros'
         super(SingleConvBlock, self).__init__(**kwargs)
         self.use_bn = use_bs
         self.use_act = use_act
+        k_reg = None if w_decay is None else l2(w_decay)
         self.conv = layers.Conv2D(
             filters=out_features, kernel_size=k_size, strides=stride,
             padding='same', use_bias=True,kernel_initializer=w_init,
-            kernel_regularizer=l2(weight_decay))
+            kernel_regularizer=k_reg, bias_initializer=bias_init)
         if self.use_bn:
             self.bn = layers.BatchNormalization()
         if self.use_act:
@@ -153,19 +158,23 @@ class DoubleConvBlock(layers.Layer):
     """
 
     def __init__(self, mid_features, out_features=None, stride=(1,1),
-                 weight_decay=1e4, **kwargs):
+                 use_bn=True,use_act=True,**kwargs):
         super(DoubleConvBlock, self).__init__(**kwargs)
+        self.use_bn =use_bn
+        self.use_act =use_act
         out_features = mid_features if out_features is None else out_features
+        k_reg = None if w_decay is None else l2(w_decay)
+
         self.conv1 = layers.Conv2D(
             filters=mid_features, kernel_size=(3, 3), strides=stride, padding='same',
         use_bias=True, kernel_initializer=weight_init,
-        kernel_regularizer=l2(weight_decay))
+        kernel_regularizer=k_reg)
         self.bn1 = layers.BatchNormalization()
 
         self.conv2 = layers.Conv2D(
             filters=out_features, kernel_size=(3, 3), padding='same',strides=(1,1),
         use_bias=True, kernel_initializer=weight_init,
-        kernel_regularizer=l2(weight_decay))
+        kernel_regularizer=k_reg)
         self.bn2 = layers.BatchNormalization()
         self.relu = layers.ReLU()
 
@@ -175,8 +184,9 @@ class DoubleConvBlock(layers.Layer):
         x = self.relu(x)
         x = self.conv2(x)
         x = self.bn2(x)
-
-        return self.relu(x)
+        if self.use_act:
+            x = self.relu(x)
+        return x
 
 
 class DexiNed(tf.keras.Model):
@@ -186,8 +196,8 @@ class DexiNed(tf.keras.Model):
                  **kwargs):
         super(DexiNed, self).__init__(**kwargs)
         self.rgbn_mean = rgb_mean
-        self.block_1 = DoubleConvBlock(32, 64, stride=(2,2))
-        self.block_2 = DoubleConvBlock(128)
+        self.block_1 = DoubleConvBlock(32, 64, stride=(2,2),use_act=False)
+        self.block_2 = DoubleConvBlock(128,use_act=False)
         self.dblock_3 = _DenseBlock(2, 256)
         self.dblock_4 = _DenseBlock(3, 512)
         self.dblock_5 = _DenseBlock(3, 512)
@@ -207,14 +217,14 @@ class DexiNed(tf.keras.Model):
         #                               w_init=weight_init)
 
 
-        self.pre_dense_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),use_bs=True,
-                                      w_init=weight_init)
+        self.pre_dense_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),
+                                      w_init=weight_init) # use_bn=True
         self.pre_dense_3 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
         self.pre_dense_4 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
-        self.pre_dense_5_0 = SingleConvBlock(512, k_size=(1,1),stride=(2,2),use_bs=True,
-                                      w_init=weight_init)
+        self.pre_dense_5_0 = SingleConvBlock(512, k_size=(1,1),stride=(2,2),
+                                      w_init=weight_init) # use_bn=True
         self.pre_dense_5 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
         self.pre_dense_6 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
@@ -293,14 +303,38 @@ class DexiNed(tf.keras.Model):
 
         return results
 
-# def main(epochs):
-#     batch_size = 8
-#     input = tf.random.uniform((batch_size, 400, 400, 3))
-#     target = tf.random.uniform((batch_size, 400, 400, 1))
-#     model = DexiNed()
-#     model.compile(optimizer='Adam', loss='mse')
-#     model.fit(input, target, epochs)
-#
-#
-# if __name__ == '__main__':
-#     main(20000)
+
+def pre_process_binary_cross_entropy(bc_loss,input, label,arg, use_tf_loss=False):
+    # preprocess data
+    y = label
+    loss = 0
+    w_loss=1.0
+    preds = []
+    for tmp_p in input:
+        # tmp_p = input[i]
+
+        # loss processing
+        tmp_y = tf.cast(y, dtype=tf.float32)
+        mask = tf.dtypes.cast(tmp_y > 0., tf.float32)
+        b,h,w,c=mask.get_shape()
+        positives = tf.math.reduce_sum(mask, axis=[1, 2, 3], keepdims=True)
+        # positives = tf.math.reduce_sum(mask)
+        negatives = h*w*c-positives
+        # negatives = tf.math.reduce_sum(1. - tmp_y)
+
+        beta2 = positives / (negatives + positives) # negatives in hed
+        beta = negatives/ (positives + negatives) # positives in hed
+        # pos_w = beta/(1-beta)
+        pos_w = tf.where(tf.greater(y, 0.0), beta, beta2)
+        # pos_w = tf.where(tf.equal(mask, 0.0), beta, beta2)
+        logits = tf.sigmoid(tmp_p)
+
+        l_cost = bc_loss(y_true=tmp_y, y_pred=logits,
+                         sample_weight=pos_w)
+
+        # cost = tf.math.reduce_mean(cost * (1 - beta))
+        # l_cost= tf.where(tf.equal(positives, 0.0), 0.0, cost)
+
+        preds.append(logits)
+        loss += (l_cost*w_loss)
+    return preds, loss
