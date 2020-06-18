@@ -63,7 +63,7 @@ class DataLoader(tf.keras.utils.Sequence):
         # split training and validation, val=10%
         if self.is_training and self.is_val:
             input_path = input_path[int(0.9 * len(input_path)):]
-            gt_path = gt_path[int(0.9 * len(input_path)):]
+            gt_path = gt_path[int(0.9 * len(gt_path)):]
         elif self.is_training:
             input_path = input_path[:int(0.9 * len(input_path))]
             gt_path = gt_path[:int(0.9 * len(gt_path))]
@@ -103,8 +103,16 @@ class DataLoader(tf.keras.utils.Sequence):
         return x,y
 
     def __data_generation(self,x_path,y_path):
+        if self.args.scale is not None and self.args.model_state.lower()!='train':
+            scl= self.args.scale
+            scl_h = int(self.dim_h*scl) if (self.dim_h*scl)%16==0 else \
+                int(((self.dim_h*scl) // 16 + 1) * 16)
+            scl_w = int(self.dim_w * scl) if (self.dim_w * scl) % 16 == 0 else \
+                int(((self.dim_h * scl) // 16 + 1) * 16)
 
-        x = np.empty((self.bs, self.dim_h, self.dim_w, 3), dtype="float32")
+            x = np.empty((self.bs, scl_h, scl_w, 3), dtype="float32")
+        else:
+            x = np.empty((self.bs, self.dim_h, self.dim_w, 3), dtype="float32")
         y = np.empty((self.bs, self.dim_h, self.dim_w, 1), dtype="float32")
 
         for i,tmp_data in enumerate(x_path):
@@ -135,8 +143,15 @@ class DataLoader(tf.keras.utils.Sequence):
         else:
             if self.dim_w!=w and self.dim_h!=h:
                 tmp_x = cv.resize(tmp_x, (self.dim_w, self.dim_h))
-                if tmp_y is not None:
-                    tmp_y = cv.resize(tmp_y, (self.dim_w, self.dim_h))
+            if self.args.scale is not None:
+                scl = self.args.scale
+                scl_h = int(self.dim_h * scl) if (self.dim_h * scl) % 16 == 0 else \
+                    int(((self.dim_h * scl) // 16 + 1) * 16)
+                scl_w = int(self.dim_w * scl) if (self.dim_w * scl) % 16 == 0 else \
+                    int(((self.dim_h * scl) // 16 + 1) * 16)
+                tmp_x = cv.resize(tmp_x,dsize=(scl_w,scl_h))
+            if tmp_y is not None:
+                tmp_y = cv.resize(tmp_y, (self.dim_w, self.dim_h))
 
         if tmp_y is not None:
             tmp_y = np.expand_dims(np.float32(tmp_y)/255.,axis=-1)
@@ -211,10 +226,10 @@ def dataset_info(dataset_name, is_linux=False):
                      'test_list': 'test_pair.lst',
                      'data_dir': '../../dataset/BSDS',  # mean_rgb
                      'yita': 0.5},
-            'BSDS300': {'img_height': 321,
-                        'img_width': 481,
+            'BSDS300': {'img_height': 512,#321
+                        'img_width': 512,#481
                         'test_list': 'test_pair.lst',
-                        'data_dir': '/opt/dataset/BSDS300',  # NIR
+                        'data_dir': '../../dataset/BSDS300',  # NIR
                         'yita': 0.5},
             'PASCAL': {'img_height': 375,
                        'img_width': 500,
@@ -234,7 +249,7 @@ def dataset_info(dataset_name, is_linux=False):
             'MULTICUE': {'img_height': 720,
                          'img_width': 1280,
                          'test_list': 'test_pair.lst',
-                         'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
+                         'data_dir': '../../dataset/MULTICUE',  # mean_rgb
                          'yita': 0.3},
             'BIPED': {'img_height': 720,#720
                       'img_width': 1280,#1280
