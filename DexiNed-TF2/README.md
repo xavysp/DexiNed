@@ -29,7 +29,7 @@ To train DexiNed-TF2 is similar to training in Tensorflow. For more details see 
 
 To summarize: firstly you should download and unzip the BIPED dataset hosted in [Kaggle](https://www.kaggle.com/xavysp/biped). Secondly, augment the dataset with [this ripo](https://github.com/xavysp/MBIPED). Once the BIPED is augmented run.
 
-If you want to use just for testing with single images please choice "Classic" dataset, make a dir "data" into DexiNed-TF2, and leave the images for testing into "data" dir and run in "test" mode. You will find the models [Here](https://drive.google.com/file/d/19Gwa6egqzNolvX4eUoXn-SjRKzxB68AA/view?usp=sharing)
+If you want to use just for testing with single images please choice "Classic" dataset, make a dir "data" into DexiNed-TF2, and leave the images for testing into "data" dir and run in "test" mode. You will find the model's weights [Here](https://drive.google.com/file/d/19Gwa6egqzNolvX4eUoXn-SjRKzxB68AA/view?usp=sharing)
  
  # Citation
 Please cite our paper if you find helpful,
