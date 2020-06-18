@@ -21,7 +21,7 @@ in_linux=True if platform.system()=="Linux" else False
 
 DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                 'PASCAL','NYUD','CLASSIC'] # 8
-TEST_DATA = DATASET_NAME[1]
+TEST_DATA = DATASET_NAME[-1]
 TRAIN_DATA = DATASET_NAME[0]
 test_data_inf = dataset_info(TEST_DATA, is_linux=in_linux)
 train_data_inf = dataset_info(TRAIN_DATA, is_linux=in_linux)
@@ -44,7 +44,7 @@ parser.add_argument("--max_epochs", type=int,default=24, help="number of trainin
 parser.add_argument("--summary_freq", type=int, default=100, help="update summaries every summary_freq steps")
 parser.add_argument("--progress_freq", type=int, default=50, help="display progress every progress_freq steps")
 parser.add_argument("--display_freq", type=int, default=10, help="write current training images every display_freq steps")
-parser.add_argument("--save_freq", type=int, default=500, help="save model every save_freq steps, 0 to disable")
+parser.add_argument("--scale", type=float, default=None, help="scale image before fed DexiNed.0.5, 1.5 ")
 
 parser.add_argument("--batch_size", type=int, default=8, help="number of images in batch")
 parser.add_argument("--test_bs", type=int, default=1, help="number of images in test batch")

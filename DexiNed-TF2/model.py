@@ -9,11 +9,11 @@ import tensorflow as tf
 
 
 l2 = regularizers.l2
-w_decay=None #0.0#2e-4#1e-3, 2e-4 # please define weight decay
+w_decay=1e-3 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
 K.clear_session()
 # weight_init = tf.initializers.RandomNormal(mean=0.,stddev=0.01)
-weight_init = tf.initializers.glorot_normal()
-
+# weight_init = tf.initializers.glorot_normal()
+weight_init = tf.initializers.glorot_uniform()
 
 class _DenseLayer(layers.Layer):
     """_DenseBlock model.
@@ -91,13 +91,13 @@ class UpConvBlock(layers.Layer):
             if i==up_scale-1:
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
-                    activation='relu', kernel_initializer=weight_init,
+                    activation='relu', kernel_initializer=tf.initializers.TruncatedNormal(stddev=0.1),
                     kernel_regularizer=k_reg,use_bias=True)) #tf.initializers.TruncatedNormal(mean=0.)
                 features.append(layers.Conv2DTranspose(
                     out_features, kernel_size=(total_up_scale,total_up_scale),
                     strides=(2,2), padding='same',
                     kernel_initializer=tf.initializers.TruncatedNormal(stddev=0.1),
-                    kernel_regularizer=k_reg,use_bias=True))
+                    kernel_regularizer=k_reg,use_bias=True)) # stddev=0.1
             else:
 
                 features.append(layers.Conv2D(
@@ -124,16 +124,15 @@ class SingleConvBlock(layers.Layer):
     """
 
     def __init__(self, out_features, k_size=(1,1),stride=(1,1),
-                 use_bs=False, use_act=False,w_init=None,
-                 bias_init=tf.constant_initializer(0.0),**kwargs): # 'zeros'
+                 use_bs=False, use_act=False,w_init=None,**kwargs): # bias_init=tf.constant_initializer(0.0)
         super(SingleConvBlock, self).__init__(**kwargs)
         self.use_bn = use_bs
         self.use_act = use_act
         k_reg = None if w_decay is None else l2(w_decay)
         self.conv = layers.Conv2D(
             filters=out_features, kernel_size=k_size, strides=stride,
-            padding='same', use_bias=True,kernel_initializer=w_init,
-            kernel_regularizer=k_reg, bias_initializer=bias_init)
+            padding='same',kernel_initializer=w_init,
+            kernel_regularizer=k_reg)#, use_bias=True, bias_initializer=bias_init
         if self.use_bn:
             self.bn = layers.BatchNormalization()
         if self.use_act:
@@ -303,6 +302,18 @@ class DexiNed(tf.keras.Model):
 
         return results
 
+def weighted_cross_entropy_loss(input, label):
+    y = tf.cast(label,dtype=tf.float32)
+    negatives = tf.math.reduce_sum(1.-y)
+    positives = tf.math.reduce_sum(y)
+
+    beta = negatives/(negatives + positives)
+    pos_w = beta/(1-beta)
+    cost = tf.nn.weighted_cross_entropy_with_logits(
+    labels=label, logits=input, pos_weight=pos_w, name=None)
+    cost = tf.reduce_sum(cost*(1-beta))
+    return tf.where(tf.equal(positives, 0.0), 0.0, cost)
+
 
 def pre_process_binary_cross_entropy(bc_loss,input, label,arg, use_tf_loss=False):
     # preprocess data
@@ -336,5 +347,10 @@ def pre_process_binary_cross_entropy(bc_loss,input, label,arg, use_tf_loss=False
         # l_cost= tf.where(tf.equal(positives, 0.0), 0.0, cost)
 
         preds.append(logits)
-        loss += (l_cost*w_loss)
+        loss += (l_cost*1.0)
+
+
+    # mask[mask != 0] = negatives / (positives + negatives)
+    # mask[mask == 0] = positives / (positives + negatives)
+
     return preds, loss
