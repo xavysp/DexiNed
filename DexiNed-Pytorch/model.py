@@ -1,33 +1,28 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
 
-class _DenseLayer(nn.Sequential):
-    def __init__(self, input_features, out_features):
-        super(_DenseLayer, self).__init__()
-        # self.add_module('relu2', nn.ReLU(inplace=True)),
-        self.add_module('conv1', nn.Conv2d(input_features, out_features,
-                        kernel_size=1, stride=1, bias=True)),
-        self.add_module('norm1', nn.BatchNorm2d(out_features)),
-        self.add_module('relu1', nn.ReLU(inplace=True)),
-        self.add_module('conv2', nn.Conv2d(out_features, out_features,
-                        kernel_size=3, stride=1, padding=1, bias=True)),
-        self.add_module('norm2', nn.BatchNorm2d(out_features))
-        # double check the norm1 comment if necessary and put norm after conv2
-
-    def forward(self, x):
-        x1, x2 = x
-        # maybe I should put here a RELU
-        new_features = super(_DenseLayer, self).forward(x1) # F.relu()
-        return 0.5 * (new_features + x2), x2
-
-class _DenseBlock(nn.Sequential):
+class _DenseBlock(nn.Module):
     def __init__(self, num_layers, input_features, out_features):
         super(_DenseBlock, self).__init__()
+        self.layers = []
         for i in range(num_layers):
-            layer = _DenseLayer(input_features, out_features)
-            self.add_module('denselayer%d' % (i + 1), layer)
+            self.layers.append(nn.Sequential(OrderedDict([
+                ('conv1', nn.Conv2d(input_features, out_features, kernel_size=1, stride=1, bias=True)),
+                ('norm2', nn.BatchNorm2d(out_features)),
+                ('relu1', nn.ReLU(inplace=True)),
+                ('conv2', nn.Conv2d(out_features, out_features, kernel_size=3, stride=1, padding=1, bias=True)),
+                ('norm2', nn.BatchNorm2d(out_features))])))
             input_features = out_features
+
+    def forward(self, x):
+        x1, x2 = tuple(x)
+        new_features = x1
+        for layer in self.layers:
+            new_features = layer(new_features)
+
+        return 0.5 * (new_features + x2), x2
 
 class UpConvBlock(nn.Module):
     def __init__(self, in_features, up_scale, mode='deconv'):
@@ -198,7 +193,6 @@ class DexiNet(nn.Module):
         # return results
         results.append(block_cat)
         return results
-
 
 if __name__ == '__main__':
     batch_size = 8
