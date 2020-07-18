@@ -47,7 +47,7 @@ class m_trainer():
         # here to recovery previous training
         if self.args.use_previous_trained:
             if self.args.dataset_name.lower()!='biped': # using biped pretrained to use in other dataset
-                model_path = os.path.join('checkpoints',self.args.model_name+
+                model_path = os.path.join(self.args.checkpoint_dir,self.args.model_name+
                                           '_'+self.args.train_dataset,'train')
             else:
                 model_path = os.path.join(self.args.checkpoint_dir, self.args.model_name + '_' + self.args.train_dataset)
