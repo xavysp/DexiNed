@@ -440,7 +440,7 @@ def main():
     # Testing settings
     DATASET_NAME= ['BIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                     'PASCAL','NYUD','CLASSIC'] # 8
-    TEST_DATA = DATASET_NAME[8]
+    TEST_DATA = DATASET_NAME[5]
     data_inf = dataset_info(TEST_DATA)
     # training settings
     parser = argparse.ArgumentParser(description='Training application.')
@@ -456,7 +456,7 @@ def main():
     parser.add_argument('--test_list', type=str, default=data_inf['file_name'],
                         help='Name of the dataset.')
     parser.add_argument('--is_testing', type=bool, default=True,
-                        help='Just for testing')
+                        help='Just for testing') # just for testing True
     parser.add_argument('--use_prev_trained', type=bool, default=True,
                         help='use previous trained data') # Just for test
     parser.add_argument('--checkpoint_data', type=str, default='24/24_model.pth',

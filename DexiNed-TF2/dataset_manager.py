@@ -46,7 +46,7 @@ class DataLoader(tf.keras.utils.Sequence):
                 file_list = f.readlines()
             file_list = [line.strip() for line in file_list] # to clean the '\n'
             file_list = [line.split(' ') for line in file_list] # separate paths
-        if self.data_name.lower()=='biped':
+        if self.data_name.lower() in ['biped','mbiped']:
             m_mode = 'train' if self.is_training else 'test'
             input_path = [os.path.join(
                 self.base_dir,'imgs',m_mode,line[0]) for line in file_list]
@@ -206,6 +206,12 @@ def dataset_info(dataset_name, is_linux=False):
                       'train_list': 'train_rgb.lst',
                        'data_dir': '/opt/dataset/BIPED/edges',  # WIN: '../.../dataset/BIPED/edges'
                        'yita': 0.5},
+            'MBIPED': {'img_height': 720,
+                      'img_width': 1280,
+                      'test_list': 'test_rgbn.lst',
+                      'train_list': 'train_rgbn.lst',
+                      'data_dir': '/opt/dataset/BIPED/edges',  # WIN: '../.../dataset/BIPED/edges'
+                      'yita': 0.5},
             'CLASSIC': {'img_height':512,
                       'img_width': 512,
                       'test_list': None,
