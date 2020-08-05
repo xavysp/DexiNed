@@ -37,41 +37,66 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg
             output_file_name = os.path.join(output_dir, file_name)
             assert cv2.imwrite(output_file_name, image_vis)
     else:
-        output_dir_f = os.path.join(output_dir, 'f')
-        output_dir_a = os.path.join(output_dir, 'a')
+        output_dir_f = os.path.join(output_dir, 'fused')
+        output_dir_a = os.path.join(output_dir, 'avg')
         os.makedirs(output_dir_f, exist_ok=True)
         os.makedirs(output_dir_a, exist_ok=True)
+
+        # print(f"len(tensor): {len(tensor)}")
 
         # 255.0 * (1.0 - em_a)
         edge_maps = []
         for i in tensor:
             tmp = torch.sigmoid(i).cpu().detach().numpy()
             edge_maps.append(tmp)
-
-        # edge_maps.append(tmp)
         tensor = np.array(edge_maps)
-        idx = 0
+        # print(f"tensor shape: {tensor.shape}")
+
         image_shape = [x.cpu().detach().numpy() for x in img_shape]
+        # (H, W) -> (W, H)
         image_shape = [[y, x] for x, y in zip(image_shape[0], image_shape[1])]
+        print(f"image_shape: {image_shape}")
+
+        assert len(image_shape) == len(file_names)
+
+        idx = 0
         for i_shape, file_name in zip(image_shape, file_names):
             tmp = tensor[:, idx, ...]
-            tmp = np.transpose(np.squeeze(tmp), [0, 1, 2])
+            # tmp = np.transpose(np.squeeze(tmp), [0, 1, 2])
+            tmp = np.squeeze(tmp)
+            # print(f"tmp shape: {tmp.shape}")
+
+            # Iterate our all 7 NN outputs for a particular image
             preds = []
             for i in range(tmp.shape[0]):
                 tmp_img = tmp[i]
                 tmp_img[tmp_img < 0.0] = 0.0
                 tmp_img = 255.0 * (1.0 - tmp_img)
+
+                # Resize prediction to match input image size
                 if not tmp_img.shape[1] == i_shape[0] or not tmp_img.shape[0] == i_shape[1]:
                     tmp_img = cv2.resize(tmp_img, (i_shape[0], i_shape[1]))
+
                 preds.append(tmp_img)
                 if i == 6:
                     fuse = tmp_img
+
+            fuse = fuse.astype(np.uint8)
+
+            # Get the mean prediction of all the 7 outputs
             average = np.array(preds, dtype=np.float32)
             average = np.uint8(np.mean(average, axis=0))
+
+            # print(
+            #     f"fuse    - min: {fuse.min()}, max: {fuse.max()}, dtype: {fuse.dtype}")
+            # print(
+            #     f"average - min: {average.min()}, max: {average.max()}, dtype: {average.dtype}")
             output_file_name_f = os.path.join(output_dir_f, file_name)
             output_file_name_a = os.path.join(output_dir_a, file_name)
-            assert cv2.imwrite(output_file_name_f, fuse)
-            assert cv2.imwrite(output_file_name_a, np.uint8(average))
+            cv2.imwrite(output_file_name_f, fuse)
+            cv2.imwrite(output_file_name_a, average)
+
+            # Increment sample index
             idx += 1
 
 
