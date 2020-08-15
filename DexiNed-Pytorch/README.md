@@ -3,7 +3,7 @@
 
 This repo is an official unofficial version of DexiNed in Pytorch. The first official version of [DexiNed is in Tensorflow](https://github.com/xavysp/DexiNed).
 
-## Requerements
+## Requirements
 
 * Python 3.7
 * Pytorch   1.0.1
