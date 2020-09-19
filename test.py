@@ -3,7 +3,8 @@
 import tensorflow as tf
 from PIL import Image
 
-from models.dexined import dexined
+# from models.dexined import dexined
+from models.dexinedBs import dexined
 from utls.utls import *
 from utls.dataset_manager import data_parser,get_single_image,\
     get_testing_batch

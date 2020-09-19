@@ -3,7 +3,8 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from models.dexined import dexined
+# from models.dexined import dexined
+from models.dexinedBs import dexined
 from utls.utls import *
 from utls.dataset_manager import (data_parser,
                                   get_training_batch,get_validation_batch, visualize_result)
@@ -75,8 +76,7 @@ class m_trainer():
         checkpoint_dir = os.path.join(
             self.args.checkpoint_dir, self.args.model_name + '_' + self.args.train_dataset,
             self.args.model_state)
-        if not os.path.exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
+        os.makedirs(checkpoint_dir,exist_ok=True)
 
         fig = plt.figure()
         for idx in range(ini, maxi):

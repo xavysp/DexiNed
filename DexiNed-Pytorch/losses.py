@@ -34,7 +34,8 @@ def weighted_cross_entropy_loss(preds, edges):
     # Reference:
     #   hed/src/caffe/layers/sigmoid_cross_entropy_loss_layer.cpp
     #   https://github.com/s9xie/hed/issues/7
-
+    # print(preds.shape)
+    # print(edges.shape)
     mask = (edges > 0.5).float()
     b, c, h, w = mask.shape
 
@@ -56,5 +57,7 @@ def weighted_cross_entropy_loss(preds, edges):
                                                 edges.float(),
                                                 weight=weight,
                                                 reduction='none')
-    loss = torch.sum(losses) / b
+    loss_weight= torch.tensor([1.0]).repeat(b).cuda()
+    losses=losses.sum(dim=[2,3]).squeeze()
+    loss = torch.sum(losses*loss_weight)
     return loss
