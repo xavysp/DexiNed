@@ -44,8 +44,9 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         # labels = labels[:, None]  # Bx1xHxW
 
         preds_list = model(images)
+
         loss = sum([criterion(preds, labels) for preds in preds_list])
-        loss /= images.shape[0]  # the batch size
+        loss /= images.shape[0]  #batch size
 
         optimizer.zero_grad()
         loss.backward()
@@ -147,7 +148,7 @@ def parse_args():
     """Parse command line arguments."""
 
     # Testing settings
-    TEST_DATA = DATASET_NAMES[5]
+    TEST_DATA = DATASET_NAMES[3] # max 8
     data_inf = dataset_info(TEST_DATA)
 
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
@@ -173,8 +174,8 @@ def parse_args():
                         type=str,
                         default=data_inf['file_name'],
                         help='Dataset sample indices list.')
-    parser.add_argument('--is_testing',
-                        action="store_true",
+    parser.add_argument('--is_testing',type=bool,
+                        default=False,
                         help='Put script in testing mode.')
     # parser.add_argument('--use_prev_trained',
     #                     type=bool,
@@ -234,8 +235,8 @@ def parse_args():
                         default=8,
                         type=int,
                         help='The number of workers for the dataloaders.')
-    parser.add_argument('--tensorboard',
-                        action='store_true',
+    parser.add_argument('--tensorboard',type=bool,
+                        default=True,
                         help='Use Tensorboard for logging.'),
     parser.add_argument('--img_width',
                         type=int,
@@ -253,7 +254,7 @@ def parse_args():
                         type=bool,
                         help='If true crop training images, else resize images to match image width and height.')
     parser.add_argument('--mean_pixel_values',
-                        default=[104.00699, 116.66877, 122.67892, 137.86],
+                        default=[103.939,116.779,123.68, 137.86],
                         type=float)  # [103.939,116.779,123.68] [104.00699, 116.66877, 122.67892]
     args = parser.parse_args()
     return args
@@ -266,10 +267,11 @@ def main(args):
     print(f"Pytorch version: {torch.__version__}")
 
     # Tensorboard summary writer
+
     tb_writer = None
     if args.tensorboard and not args.is_testing:
-        from tensorboardX import SummaryWriter  # previous torch version
-        # from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
+        # from tensorboardX import SummaryWriter  # previous torch version
+        from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
         tb_writer = SummaryWriter(log_dir=args.output_dir)
 
     # Get computing device
@@ -300,7 +302,7 @@ def main(args):
                               img_height=args.test_img_height,
                               mean_bgr=args.mean_pixel_values[0:3] if len(
                                   args.mean_pixel_values) == 4 else args.mean_pixel_values,
-                              # arg=args
+                              test_list=args.test_list
                               )
     dataloader_val = DataLoader(dataset_val,
                                 batch_size=1,

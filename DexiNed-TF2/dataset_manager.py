@@ -212,13 +212,14 @@ def dataset_info(dataset_name, is_linux=False):
                       'train_list': 'train_rgbn.lst',
                       'data_dir': '/opt/dataset/BIPED/edges',  # WIN: '../.../dataset/BIPED/edges'
                       'yita': 0.5},
-            'CLASSIC': {'img_height':512,
-                      'img_width': 512,
+            'CLASSIC': {'img_height':512,  # 4032
+                      'img_width': 512, # 3024
                       'test_list': None,
                       'data_dir': 'data',  # mean_rgb
                       'yita': 0.5},
             'DCD': {'img_height': 336,# 240
                       'img_width': 448,#360
+                    
                       'test_list':'test_pair.lst',
                       'data_dir': '/opt/dataset/DCD',  # mean_rgb
                       'yita': 0.2}

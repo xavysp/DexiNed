@@ -106,7 +106,6 @@ class SingleConvBlock(nn.Module):
                  ):
         super(SingleConvBlock, self).__init__()
         self.use_bn = True
-        # XXX 1x1 convolution?
         self.conv = nn.Conv2d(in_features, out_features, 1, stride=stride)
         self.bn = nn.BatchNorm2d(out_features)
 
