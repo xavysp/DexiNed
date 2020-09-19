@@ -1,21 +1,22 @@
-# import cv2 as cv
-# import numpy as np
+import cv2 as cv
+import numpy as np
+import torch
 
 
-# def image_normalization(img, img_min=0, img_max=255):
-#     """This is a typical image normalization function
-#     where the minimum and maximum of the image is needed
-#     source: https://en.wikipedia.org/wiki/Normalization_(image_processing)
-#     :param img: an image could be gray scale or color
-#     :param img_min:  for default is 0
-#     :param img_max: for default is 255
-#     :return: a normalized image, if max is 255 the dtype is uint8
-#     """
-#     img = np.float32(img)
-#     epsilon = 1e-12  # whenever an inconsistent image
-#     img = (img-np.min(img))*(img_max-img_min) / \
-#         ((np.max(img)-np.min(img))+epsilon)+img_min
-#     return img
+def image_normalization(img, img_min=0, img_max=255):
+    """This is a typical image normalization function
+    where the minimum and maximum of the image is needed
+    source: https://en.wikipedia.org/wiki/Normalization_(image_processing)
+    :param img: an image could be gray scale or color
+    :param img_min:  for default is 0
+    :param img_max: for default is 255
+    :return: a normalized image, if max is 255 the dtype is uint8
+    """
+    img = np.float32(img)
+    epsilon = 1e-12  # whenever an inconsistent image
+    img = (img-np.min(img))*(img_max-img_min) / \
+        ((np.max(img)-np.min(img))+epsilon)+img_min
+    return img
 
 
 # def visualize_result(imgs_list, arg):
@@ -72,3 +73,15 @@
 #     cv.imshow(title, img)
 #     cv.waitKey(0)
 #     cv.destroyAllWindows()
+def tensor2edge(tensor):
+    print(tensor.shape)
+    tensor =torch.squeeze(tensor) if len(tensor.shape)>2 else tensor
+    tmp = torch.sigmoid(tensor)
+    tmp = tmp.cpu().detach().numpy()
+    # tmp = np.transpose(np.squeeze(tmp[1]), [1, 2, 0])
+    tmp = np.uint8(image_normalization(tmp))
+    tmp = cv.bitwise_not(tmp)
+    tmp = cv.cvtColor(tmp, cv.COLOR_GRAY2BGR)
+    cv.imshow('test_img', tmp)
+    cv.waitKey(0)
+    cv.destroyAllWindows()

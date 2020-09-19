@@ -44,8 +44,8 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         # labels = labels[:, None]  # Bx1xHxW
 
         preds_list = model(images)
-
-        loss = sum([criterion(preds, labels) for preds in preds_list])
+        tmp_preds = torch.cat(preds_list,dim=1)
+        loss = sum([criterion(tmp_preds[i,...], labels[i,...]) for i in range(0,tmp_preds.shape[0])])
         loss /= images.shape[0]  #batch size
 
         optimizer.zero_grad()
@@ -64,14 +64,16 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
             res_data = []
 
             img = images.cpu().numpy()
-            res_data.append(img)
+            res_data.append(img[2])
 
             ed_gt = labels.cpu().numpy()
-            res_data.append(ed_gt)
+            res_data.append(ed_gt[2])
 
-            for i in range(len(preds_list)):
-                tmp = preds_list[i]
-                tmp = torch.sigmoid(tmp)
+            tmp_pred = tmp_preds[2,...]
+            for i in range(tmp_pred.shape[0]):
+                tmp = tmp_pred[i]
+                print(tmp.shape)
+                tmp = torch.sigmoid(tmp).unsqueeze(dim=0)
                 tmp = tmp.cpu().detach().numpy()
                 res_data.append(tmp)
 

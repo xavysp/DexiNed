@@ -138,20 +138,20 @@ def visualize_result(imgs_list, arg):
     :param arg:
     :return: one image with the whole of imgs_list data
     """
-
     n_imgs = len(imgs_list)
     data_list = []
     for i in range(n_imgs):
         tmp = imgs_list[i]
-        if tmp.shape[1] == 3:
-            tmp = np.transpose(np.squeeze(tmp[1]), [1, 2, 0])
+        # print(tmp.shape)
+        if tmp.shape[0] == 3:
+            tmp = np.transpose(tmp, [1, 2, 0])
             tmp = restore_rgb([
                 arg.channel_swap,
                 arg.mean_pixel_values[:3]
             ], tmp)
             tmp = np.uint8(image_normalization(tmp))
         else:
-            tmp = np.squeeze(tmp[1])
+            tmp = np.squeeze(tmp)
             if len(tmp.shape) == 2:
                 tmp = np.uint8(image_normalization(tmp))
                 tmp = cv2.bitwise_not(tmp)
@@ -159,6 +159,7 @@ def visualize_result(imgs_list, arg):
             else:
                 tmp = np.uint8(image_normalization(tmp))
         data_list.append(tmp)
+        # print(i,tmp.shape)
     img = data_list[0]
     if n_imgs % 2 == 0:
         imgs = np.zeros((img.shape[0] * 2 + 10, img.shape[1]
