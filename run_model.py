@@ -17,14 +17,16 @@ import tensorflow as tf
 import utls.dataset_manager as dm
 from train import m_trainer
 from test import m_tester
+import platform
 
 def config_model():
-
+    in_linux = True if platform.system() == "Linux" else False
+    base_dir = "/opt/dataset/" if in_linux else "../../dataset/"
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
     parser.add_argument('--test_dataset', default='BIPED', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID','DCD'])
-    parser.add_argument('--dataset_dir',default="/opt/dataset/",type=str) # default:'/opt/dataset/'
+    parser.add_argument('--dataset_dir',default=base_dir,type=str) # default:'/opt/dataset/'
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
     parser.add_argument('--test_list', default='test_pair.lst',type=str) # for NYUD&BSDS:test_pair.lst, biped msi_test.lst/test_rgb.lst

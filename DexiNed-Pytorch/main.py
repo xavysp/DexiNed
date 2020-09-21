@@ -19,21 +19,10 @@ from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
 
 
-def create_directory(dir_path):
-    """Creates an empty directory.
-
-    Args:
-        dir_path (str): the absolute path to the directory to create.
-    """
-
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-
-
 def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
                     log_interval_vis, tb_writer, args=None):
     imgs_res_folder = os.path.join(args.output_dir, 'current_res')
-    create_directory(imgs_res_folder)
+    os.makedirs(imgs_res_folder,exist_ok=True)
 
     # Put model in training mode
     model.train()
@@ -45,8 +34,9 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
 
         preds_list = model(images)
         tmp_preds = torch.cat(preds_list,dim=1)
-        loss = sum([criterion(tmp_preds[i,...], labels[i,...]) for i in range(0,tmp_preds.shape[0])])
-        loss /= images.shape[0]  #batch size
+        # loss = sum([criterion(tmp_preds[i,...], labels[i,...]) for i in range(0,tmp_preds.shape[0])])
+        loss = sum([criterion(preds, labels) for preds in preds_list])
+        # loss /= images.shape[0]  #batch size
 
         optimizer.zero_grad()
         loss.backward()
@@ -69,10 +59,11 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
             ed_gt = labels.cpu().numpy()
             res_data.append(ed_gt[2])
 
-            tmp_pred = tmp_preds[2,...]
-            for i in range(tmp_pred.shape[0]):
-                tmp = tmp_pred[i]
-                print(tmp.shape)
+            # tmp_pred = tmp_preds[2,...]
+            for i in range(len(preds_list)):
+                tmp = preds_list[i]
+                tmp = tmp[2]
+                # print(tmp.shape)
                 tmp = torch.sigmoid(tmp).unsqueeze(dim=0)
                 tmp = tmp.cpu().detach().numpy()
                 res_data.append(tmp)
@@ -332,8 +323,8 @@ def main(args):
         # Create output directories
         output_dir_epoch = os.path.join(args.output_dir, str(epoch))
         img_test_dir = os.path.join(output_dir_epoch, args.test_data + '_res')
-        create_directory(output_dir_epoch)
-        create_directory(img_test_dir)
+        os.makedirs(output_dir_epoch,exist_ok=True)
+        os.makedirs(img_test_dir,exist_ok=True)
 
         train_one_epoch(epoch,
                         dataloader_train,
