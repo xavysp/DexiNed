@@ -12,7 +12,7 @@ DATASET_NAMES = [
     'BSDS300',
     'CID',
     'DCD',
-    'MULTICUE',
+    'MULTICUE', #5
     'PASCAL',
     'NYUD',
     'CLASSIC'

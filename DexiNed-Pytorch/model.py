@@ -6,18 +6,19 @@ import torch.nn.functional as F
 def weight_init(m):
     if isinstance(m, (nn.Conv2d,)):
         # print("Applying custom weight initialization for nn.Conv2d layer...")
-        torch.nn.init.normal_(m.weight, mean=0, std=0.01)
+        torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
         if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
-            torch.nn.init.constant_(m.weight, 0.2)
+            torch.nn.init.constant_(m.weight, 0.2) # for fuse conv
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
-        # print("Applying custom weight initialization for nn.ConvTranspose2d layer...")
-        torch.nn.init.normal_(m.weight, mean=0, std=0.01)
+        torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
         if m.bias is not None:

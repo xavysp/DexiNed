@@ -141,7 +141,7 @@ def parse_args():
     """Parse command line arguments."""
 
     # Testing settings
-    TEST_DATA = DATASET_NAMES[3] # max 8
+    TEST_DATA = DATASET_NAMES[-1] # max 8
     data_inf = dataset_info(TEST_DATA)
 
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
@@ -168,7 +168,7 @@ def parse_args():
                         default=data_inf['file_name'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
-                        default=False,
+                        default=True,
                         help='Put script in testing mode.')
     # parser.add_argument('--use_prev_trained',
     #                     type=bool,
