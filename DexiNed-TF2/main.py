@@ -58,7 +58,7 @@ parser.add_argument("--test_img_height", type=int, default=test_data_inf["img_he
 parser.add_argument("--test_img_width", type=int, default=test_data_inf["img_width"],
                     help="network input height size")
 
-parser.add_argument("--lr", type=float, default=0.0002, help=" learning rate for adam 1e-4")
+parser.add_argument("--lr", type=float, default=0.0001, help=" learning rate for adam 1e-4")
 parser.add_argument("--beta1", type=float, default=0.5, help="momentum term of adam")
 parser.add_argument("--l1_weight", type=float, default=100.0, help="weight on L1 term for generator gradient")
 parser.add_argument("--gan_weight", type=float, default=1.0, help="weight on GAN term for generator gradient")
