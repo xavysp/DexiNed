@@ -3,8 +3,8 @@
 import tensorflow as tf
 from PIL import Image
 
-# from models.dexined import dexined
-from models.dexinedBs import dexined
+from models.dexined import dexined
+# from models.dexinedBs import dexined
 from utls.utls import *
 from utls.dataset_manager import data_parser,get_single_image,\
     get_testing_batch
@@ -90,14 +90,10 @@ class m_tester():
         resf_dir = os.path.join(res_dir,'pred-f')
         resa_dir = os.path.join(res_dir,'pred-a')
 
-        if not os.path.exists(resf_dir):
-            os.makedirs(resf_dir)
-        if not os.path.exists(resa_dir):
-            os.makedirs(resa_dir)
-        if not os.path.exists(gt_dir):
-            os.makedirs(gt_dir)
-        if not os.path.exists(all_dir):
-            os.makedirs(all_dir)
+        os.makedirs(resf_dir, exist_ok=True)
+        os.makedirs(resa_dir, exist_ok=True)
+        os.makedirs(gt_dir, exist_ok=True)
+        os.makedirs(all_dir, exist_ok=True)
 
         if single_image:
             em_maps = [e[0] for e in em_maps]
