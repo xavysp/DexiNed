@@ -34,7 +34,7 @@ parser.add_argument("--data4train",default=TRAIN_DATA, type=str)
 parser.add_argument("--data4test",default=TEST_DATA, type=str)
 parser.add_argument('--train_list', default=train_data_inf['train_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
 parser.add_argument('--test_list', default=test_data_inf['test_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
-parser.add_argument("--model_state",default='test', choices=["train", "test", "export"])
+parser.add_argument("--model_state",default='train', choices=["train", "test", "export"])
 parser.add_argument("--output_dir", default='results', help="where to put output files")
 parser.add_argument("--checkpoint_dir", default='checkpoints', help="directory with checkpoint to resume training from or use for testing")
 

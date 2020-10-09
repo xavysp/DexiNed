@@ -9,7 +9,7 @@ import tensorflow as tf
 
 
 l2 = regularizers.l2
-w_decay=1e-3 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
+w_decay=0.0 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
 K.clear_session()
 # weight_init = tf.initializers.RandomNormal(mean=0.,stddev=0.01)
 # weight_init = tf.initializers.glorot_normal()
