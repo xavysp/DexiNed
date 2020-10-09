@@ -33,7 +33,7 @@ def config_model():
     parser.add_argument('--trained_model_dir', default='train',type=str) # 'trainV2_RN'
     # SSMIHD_RGBN msi_valid_list.txt and msi_test_list.txt is for unified test
     parser.add_argument('--use_nir', default=False, type=bool)
-    parser.add_argument('--use_dataset', default=True, type=bool) # test: dataset=True single image=FALSE
+    parser.add_argument('--use_dataset', default=False, type=bool) # test: dataset=True single image=FALSE
     # model config
     parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
     parser.add_argument('--model_name', default='DXN',choices=['DXN','XCP','None'])
