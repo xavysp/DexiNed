@@ -3,8 +3,8 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-# from models.dexined import dexined
-from models.dexinedBs import dexined
+from models.dexined import dexined
+# from models.dexinedBs import dexined
 from utls.utls import *
 from utls.dataset_manager import (data_parser,
                                   get_training_batch,get_validation_batch, visualize_result)

@@ -25,11 +25,11 @@ def config_model():
     parser = argparse.ArgumentParser(description='Basic details to run HED')
     # dataset config
     parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
-    parser.add_argument('--test_dataset', default='BIPED', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID','DCD'])
+    parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID','DCD'])
     parser.add_argument('--dataset_dir',default=base_dir,type=str) # default:'/opt/dataset/'
     parser.add_argument('--dataset_augmented', default=True,type=bool)
     parser.add_argument('--train_list',default='train_rgb.lst', type=str) # BSDS train_pair.lst, SSMIHD train_rgb_pair.lst/train_rgbn_pair.lst
-    parser.add_argument('--test_list', default='test_pair.lst',type=str) # for NYUD&BSDS:test_pair.lst, biped msi_test.lst/test_rgb.lst
+    parser.add_argument('--test_list', default='test_rgb.lst',type=str) # for NYUD&BSDS:test_pair.lst, biped msi_test.lst/test_rgb.lst
     parser.add_argument('--trained_model_dir', default='train',type=str) # 'trainV2_RN'
     # SSMIHD_RGBN msi_valid_list.txt and msi_test_list.txt is for unified test
     parser.add_argument('--use_nir', default=False, type=bool)
@@ -69,10 +69,10 @@ def config_model():
     parser.add_argument('--image_height', default=512, type=int) # 480 for NYUD 425 BIPED=720 default 400
     parser.add_argument('--n_channels', default=3, type=int) # last ssmihd_xcp trained in 512
     # test config
-    parser.add_argument('--test_snapshot', default=179999, type=int) #  BIPED: 149736 BSDS:101179
+    parser.add_argument('--test_snapshot', default=149999, type=int) #  BIPED: 149736 BSDS:101179
     #DexiNedv1=149736,DexiNedv2=149999
     parser.add_argument('--testing_threshold', default=0.0, type=float)
-    parser.add_argument('--base_dir_results',default='/opt/results/edges',type=str) # default: '/opt/results/edges'
+    parser.add_argument('--base_dir_results',default='results/edges',type=str) # default: '/opt/results/edges'
     # single image default=None
     args = parser.parse_args()
     return args
