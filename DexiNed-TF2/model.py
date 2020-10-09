@@ -336,7 +336,8 @@ def pre_process_binary_cross_entropy(bc_loss,input, label,arg, use_tf_loss=False
         beta2 = positives / (negatives + positives) # negatives in hed
         beta = negatives/ (positives + negatives) # positives in hed
         # pos_w = beta/(1-beta)
-        pos_w = tf.where(tf.greater(y, 0.0), beta, beta2)
+        pos_w = tf.where(tf.equal(y, 0.0), beta, beta2)
+        # pos_w = tf.where(tf.greater(y, 0.0), beta, beta2)
         # pos_w = tf.where(tf.equal(mask, 0.0), beta, beta2)
         logits = tf.sigmoid(tmp_p)
 
@@ -347,7 +348,7 @@ def pre_process_binary_cross_entropy(bc_loss,input, label,arg, use_tf_loss=False
         # l_cost= tf.where(tf.equal(positives, 0.0), 0.0, cost)
 
         preds.append(logits)
-        loss += (l_cost*1.0)
+        loss += (l_cost*w_loss)
 
 
     # mask[mask != 0] = negatives / (positives + negatives)
