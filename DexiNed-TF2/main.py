@@ -21,7 +21,7 @@ in_linux=True if platform.system()=="Linux" else False
 
 DATASET_NAME= ['BIPED','MBIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                 'PASCAL','NYUD','CLASSIC'] # 8
-TEST_DATA = DATASET_NAME[-1]
+TEST_DATA = DATASET_NAME[6] # MULTICUE=6
 TRAIN_DATA = DATASET_NAME[0]
 test_data_inf = dataset_info(TEST_DATA, is_linux=in_linux)
 train_data_inf = dataset_info(TRAIN_DATA, is_linux=in_linux)
@@ -34,7 +34,7 @@ parser.add_argument("--data4train",default=TRAIN_DATA, type=str)
 parser.add_argument("--data4test",default=TEST_DATA, type=str)
 parser.add_argument('--train_list', default=train_data_inf['train_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
 parser.add_argument('--test_list', default=test_data_inf['test_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
-parser.add_argument("--model_state",default='train', choices=["train", "test", "export"])
+parser.add_argument("--model_state",default='test', choices=["train", "test", "export"])
 parser.add_argument("--output_dir", default='results', help="where to put output files")
 parser.add_argument("--checkpoint_dir", default='checkpoints', help="directory with checkpoint to resume training from or use for testing")
 
@@ -63,6 +63,7 @@ parser.add_argument("--beta1", type=float, default=0.5, help="momentum term of a
 parser.add_argument("--l1_weight", type=float, default=100.0, help="weight on L1 term for generator gradient")
 parser.add_argument("--gan_weight", type=float, default=1.0, help="weight on GAN term for generator gradient")
 parser.add_argument("--rgbn_mean", type=float, default=[103.939,116.779,123.68, 137.86], help="pixels mean")
+parser.add_argument("--checkpoint", type=str, default='DexiNed19_model.h5', help="checkpoint Name")
 
 arg = parser.parse_args()
 def main(args):

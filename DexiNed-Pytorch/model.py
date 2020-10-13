@@ -9,7 +9,7 @@ def weight_init(m):
         torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
         # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
-            torch.nn.init.normal_(m.weight, mean=0.0,)
+            torch.nn.init.normal_(m.weight, std=0.1,)
         if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
             torch.nn.init.constant_(m.weight, 0.2) # for fuse conv
         if m.bias is not None:
