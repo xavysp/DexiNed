@@ -31,7 +31,7 @@ class _DenseLayer(nn.Sequential):
 
         # self.add_module('relu2', nn.ReLU(inplace=True)),
         self.add_module('conv1', nn.Conv2d(input_features, out_features,
-                                           kernel_size=1, stride=1, bias=True)),
+                                           kernel_size=3, stride=1, bias=True)),
         self.add_module('norm1', nn.BatchNorm2d(out_features)),
         self.add_module('relu1', nn.ReLU(inplace=True)),
         self.add_module('conv2', nn.Conv2d(out_features, out_features,
@@ -106,7 +106,7 @@ class SingleConvBlock(nn.Module):
                  use_bs=True  # XXX Unused
                  ):
         super(SingleConvBlock, self).__init__()
-        self.use_bn = True
+        self.use_bn = use_bs
         self.conv = nn.Conv2d(in_features, out_features, 1, stride=stride)
         self.bn = nn.BatchNorm2d(out_features)
 
@@ -158,21 +158,22 @@ class DexiNet(nn.Module):
         self.dblock_6 = _DenseBlock(3, 512, 256)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
+        # left skip connections, figure in Journal
         self.side_1 = SingleConvBlock(64, 128, 2)
         self.side_2 = SingleConvBlock(128, 256, 2)
         self.side_3 = SingleConvBlock(256, 512, 2)
         self.side_4 = SingleConvBlock(512, 512, 1)
         self.side_5 = SingleConvBlock(512, 256, 1)
 
-        self.pre_dense_2 = SingleConvBlock(128, 256, 2,
-                                           use_bs=False)  # by me, for left skip block4
+        # right skip connections, figure in Journal
+        self.pre_dense_2 = SingleConvBlock(128, 256, 2, use_bs=False)
         self.pre_dense_3 = SingleConvBlock(128, 256, 1)
         self.pre_dense_4 = SingleConvBlock(256, 512, 1)
-        self.pre_dense_5_0 = SingleConvBlock(256, 512, 2,
-                                             use_bs=False)
+        self.pre_dense_5_0 = SingleConvBlock(256, 512, 2,use_bs=False)
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
+        # USNet
         self.up_block_1 = UpConvBlock(64, 1)
         self.up_block_2 = UpConvBlock(128, 1)
         self.up_block_3 = UpConvBlock(256, 2)
@@ -225,7 +226,6 @@ class DexiNet(nn.Module):
             block_5_pre_dense_512 + block_4_down)
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
         block_5_add = block_5 + block_4_side
-#        block_5_side = self.side_5(block_5_add)
 
         # Block 6
         block_6_pre_dense = self.pre_dense_6(block_5)
