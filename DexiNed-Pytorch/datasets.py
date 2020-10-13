@@ -18,75 +18,127 @@ DATASET_NAMES = [
     'CLASSIC'
 ]  # 8
 
-CONFIGS = {
-    'BSDS': {
-        'img_height': 321,
-        'img_width': 481,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/BSDS',  # mean_rgb
-        'yita': 0.5
-    },
-    'BSDS300': {
-        'img_height': 321,
-        'img_width': 481,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/BSDS300',  # NIR
-        'yita': 0.5
-    },
-    'PASCAL': {
-        'img_height': 375,
-        'img_width': 500,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
-        'yita': 0.3
-    },
-    'CID': {
-        'img_height': 512,
-        'img_width': 512,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/CID',  # mean_rgb
-        'yita': 0.3
-    },
-    'NYUD': {
-        'img_height': 425,
-        'img_width': 560,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/NYUD',  # mean_rgb
-        'yita': 0.5
-    },
-    'MULTICUE': {
-        'img_height': 720,
-        'img_width': 1280,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
-        'yita': 0.3
-    },
-    'BIPED': {
-        'img_height': 720,
-        'img_width': 1280,
-        'file_name': 'test_rgb.lst',
-        'data_dir': '/opt/dataset/BIPED/edges',  # mean_rgb
-        'yita': 0.5
-    },
-    'CLASSIC': {
-        'img_height': 512,
-        'img_width': 512,
-        'file_name': None,
-        'data_dir': 'data',  # mean_rgb
-        'yita': 0.5
-    },
-    'DCD': {
-        'img_height': 240,
-        'img_width': 360,
-        'file_name': 'test_pair.lst',
-        'data_dir': '/opt/dataset/DCD',  # mean_rgb
-        'yita': 0.2
-    }
-}
 
+def dataset_info(dataset_name, is_linux=True):
+    if is_linux:
 
-def dataset_info(dataset_name):
-    return CONFIGS[dataset_name]
+        config = {
+            'BSDS': {
+                'img_height': 321,
+                'img_width': 481,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/BSDS',  # mean_rgb
+                'yita': 0.5
+            },
+            'BSDS300': {
+                'img_height': 321,
+                'img_width': 481,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/BSDS300',  # NIR
+                'yita': 0.5
+            },
+            'PASCAL': {
+                'img_height': 375,
+                'img_width': 500,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
+                'yita': 0.3
+            },
+            'CID': {
+                'img_height': 512,
+                'img_width': 512,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/CID',  # mean_rgb
+                'yita': 0.3
+            },
+            'NYUD': {
+                'img_height': 425,
+                'img_width': 560,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/NYUD',  # mean_rgb
+                'yita': 0.5
+            },
+            'MULTICUE': {
+                'img_height': 720,
+                'img_width': 1280,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
+                'yita': 0.3
+            },
+            'BIPED': {
+                'img_height': 720,
+                'img_width': 1280,
+                'test_list': 'test_rgb.lst',
+                'train_list': 'train_rgb.lst',
+                'data_dir': '/opt/dataset/BIPED/edges',  # mean_rgb
+                'yita': 0.5
+            },
+            'CLASSIC': {
+                'img_height': 512,
+                'img_width': 512,
+                'test_list': None,
+                'data_dir': 'data',  # mean_rgb
+                'yita': 0.5
+            },
+            'DCD': {
+                'img_height': 240,
+                'img_width': 360,
+                'test_list': 'test_pair.lst',
+                'data_dir': '/opt/dataset/DCD',  # mean_rgb
+                'yita': 0.2
+            }
+        }
+    else:
+        config = {
+            'BSDS': {'img_height': 512,  # 321
+                     'img_width': 512,  # 481
+                     'test_list': 'test_pair.lst',
+                     'data_dir': '../../dataset/BSDS',  # mean_rgb
+                     'yita': 0.5},
+            'BSDS300': {'img_height': 512,  # 321
+                        'img_width': 512,  # 481
+                        'test_list': 'test_pair.lst',
+                        'data_dir': '../../dataset/BSDS300',  # NIR
+                        'yita': 0.5},
+            'PASCAL': {'img_height': 375,
+                       'img_width': 500,
+                       'test_list': 'test_pair.lst',
+                       'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
+                       'yita': 0.3},
+            'CID': {'img_height': 512,
+                    'img_width': 512,
+                    'test_list': 'test_pair.lst',
+                    'data_dir': '../../dataset/CID',  # mean_rgb
+                    'yita': 0.3},
+            'NYUD': {'img_height': 425,
+                     'img_width': 560,
+                     'test_list': 'test_pair.lst',
+                     'data_dir': '/opt/dataset/NYUD',  # mean_rgb
+                     'yita': 0.5},
+            'MULTICUE': {'img_height': 720,
+                         'img_width': 1280,
+                         'test_list': 'test_pair.lst',
+                         'data_dir': '../../dataset/MULTICUE',  # mean_rgb
+                         'yita': 0.3},
+            'BIPED': {'img_height': 720,  # 720
+                      'img_width': 1280,  # 1280
+                      'test_list': 'test_rgb.lst',
+                      'train_list': 'train_rgb.lst',
+                      'data_dir': '../../dataset/BIPED/edges',  # WIN: '../.../dataset/BIPED/edges'
+                      'yita': 0.5},
+            'CLASSIC': {'img_height': 512,
+                        'img_width': 512,
+                        'test_list': None,
+                        'train_list': None,
+                        'data_dir': 'data',  # mean_rgb
+                        'yita': 0.5},
+            'DCD': {'img_height': 240,
+                    'img_width': 360,
+                    'test_list': 'test_pair.lst',
+                    'data_dir': '/opt/dataset/DCD',  # mean_rgb
+                    'yita': 0.2}
+        }
+    return config[dataset_name]
 
 
 class TestDataset(Dataset):

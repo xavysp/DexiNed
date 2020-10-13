@@ -37,7 +37,7 @@ def weighted_cross_entropy_loss(preds, edges):
     #   https://github.com/s9xie/hed/issues/7
     # edges= torch.cat([edge,edge,edge,edge,edge,edge,edge], dim=0)
     # print(preds.shape, edges.shape)
-    mask = (edges > 0.5).float()
+    mask = (edges > 0.1).float()
     b,c, h, w = mask.shape
 
     # Shape: [b,].
@@ -49,9 +49,9 @@ def weighted_cross_entropy_loss(preds, edges):
     weight = torch.zeros_like(mask)
     #weight[edges > 0.5]  = num_neg / (num_pos + num_neg)
     #weight[edges <= 0.5] = num_pos / (num_pos + num_neg)
-    weight.masked_scatter_(edges > 0.5,
+    weight.masked_scatter_(edges > 0.1,
                            torch.ones_like(edges) * num_neg / (num_pos + num_neg))
-    weight.masked_scatter_(edges <= 0.5,
+    weight.masked_scatter_(edges <= 0.1,
                            torch.ones_like(edges) * num_pos / (num_pos + num_neg))
 
     # Calculate loss

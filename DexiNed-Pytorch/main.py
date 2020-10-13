@@ -3,12 +3,10 @@ from __future__ import print_function
 
 import argparse
 import os
-import sys
-import time
+import time, platform
 
 import cv2
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -18,7 +16,7 @@ from model import DexiNet
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
 
-
+IS_LINUX = True if platform.system()=="Linux" else False
 def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
                     log_interval_vis, tb_writer, args=None):
     imgs_res_folder = os.path.join(args.output_dir, 'current_res')
@@ -134,21 +132,26 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
                                      image_shape,
                                      arg=args)
 
-    print(f"Testing ended for {args.test_data} dataset.")
+    print("******** Testing finished in {args.test_data} dataset. *****")
 
 
 def parse_args():
     """Parse command line arguments."""
 
     # Testing settings
-    TEST_DATA = DATASET_NAMES[-1] # max 8
-    data_inf = dataset_info(TEST_DATA)
+    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
+    train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
+    train_dir = train_info['data_dir']
+    # ----------- test -----------
+    TEST_DATA = DATASET_NAMES[5] # max 8
+    data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
+    test_dir = data_inf['data_dir']
 
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     # Data parameters
     parser.add_argument('--input_dir',
                         type=str,
-                        default='/opt/dataset/BIPED/edges',
+                        default=train_dir,
                         help='the path to the directory with the input data.')
     parser.add_argument('--input_val_dir',
                         type=str,
@@ -165,7 +168,7 @@ def parse_args():
                         help='Name of the dataset.')
     parser.add_argument('--test_list',
                         type=str,
-                        default=data_inf['file_name'],
+                        default=data_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
                         default=True,
