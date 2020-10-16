@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from datasets import DATASET_NAMES, BipedDataset, TestDataset, dataset_info
 from losses import weighted_cross_entropy_loss
-from model import DexiNet
+from model import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
 
@@ -275,7 +275,7 @@ def main(args):
                           else 'cuda')
 
     # Instantiate model and move it to the computing device
-    model = DexiNet().to(device)
+    model = DexiNed().to(device)
     # model = nn.DataParallel(model)
 
     if not args.is_testing:
