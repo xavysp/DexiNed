@@ -31,11 +31,11 @@ class _DenseLayer(nn.Sequential):
 
         # self.add_module('relu2', nn.ReLU(inplace=True)),
         self.add_module('conv1', nn.Conv2d(input_features, out_features,
-                                           kernel_size=3, stride=1, bias=True)),
+                                           kernel_size=3, stride=1, padding=2, bias=True)),
         self.add_module('norm1', nn.BatchNorm2d(out_features)),
         self.add_module('relu1', nn.ReLU(inplace=True)),
         self.add_module('conv2', nn.Conv2d(out_features, out_features,
-                                           kernel_size=3, stride=1, padding=1, bias=True)),
+                                           kernel_size=3, stride=1, bias=True)),
         self.add_module('norm2', nn.BatchNorm2d(out_features))
         # double check the norm1 comment if necessary and put norm after conv2
 
@@ -43,6 +43,9 @@ class _DenseLayer(nn.Sequential):
         x1, x2 = x
         # maybe I should put here a RELU
         new_features = super(_DenseLayer, self).forward(F.relu(x1))  # F.relu()
+        # if new_features.shape[-1]!=x2.shape[-1]:
+        #     new_features =F.interpolate(new_features,size=(x2.shape[2],x2.shape[-1]), mode='bicubic',
+        #                                 align_corners=False)
         return 0.5 * (new_features + x2), x2
 
 
@@ -56,41 +59,26 @@ class _DenseBlock(nn.Sequential):
 
 
 class UpConvBlock(nn.Module):
-    def __init__(self, in_features, up_scale, mode='deconv'):
+    def __init__(self, in_features, up_scale):
         super(UpConvBlock, self).__init__()
         self.up_factor = 2
         self.constant_features = 16
 
-        layers = None
-        if mode == 'deconv':
-            layers = self.make_deconv_layers(in_features, up_scale)
-        elif mode == 'pixel_shuffle':
-            layers = self.make_pixel_shuffle_layers(in_features, up_scale)
+        layers = self.make_deconv_layers(in_features, up_scale)
         assert layers is not None, layers
         self.features = nn.Sequential(*layers)
 
     def make_deconv_layers(self, in_features, up_scale):
         layers = []
+        all_pads=[0,0,1,3,7]
         for i in range(up_scale):
             kernel_size = 2 ** up_scale
+            pad = all_pads[up_scale]  # kernel_size-1
             out_features = self.compute_out_features(i, up_scale)
             layers.append(nn.Conv2d(in_features, out_features, 1))
             layers.append(nn.ReLU(inplace=True))
             layers.append(nn.ConvTranspose2d(
-                out_features, out_features, kernel_size, stride=2))
-            in_features = out_features
-        return layers
-
-    def make_pixel_shuffle_layers(self, in_features, up_scale):
-        layers = []
-        for i in range(up_scale):
-            kernel_size = 2 ** (i + 1)
-            out_features = self.compute_out_features(i, up_scale)
-            in_features = int(in_features / (self.up_factor ** 2))
-            layers.append(nn.PixelShuffle(self.up_factor))
-            layers.append(nn.Conv2d(in_features, out_features, 1))
-            if i < up_scale:
-                layers.append(nn.ReLU(inplace=True))
+                out_features, out_features, kernel_size, stride=2, padding=pad))
             in_features = out_features
         return layers
 
@@ -145,11 +133,11 @@ class DoubleConvBlock(nn.Module):
         return x
 
 
-class DexiNet(nn.Module):
+class DexiNed(nn.Module):
     """ Definition of the DXtrem network. """
 
     def __init__(self):
-        super(DexiNet, self).__init__()
+        super(DexiNed, self).__init__()
         self.block_1 = DoubleConvBlock(3, 32, 64, stride=2,)
         self.block_2 = DoubleConvBlock(64, 128, use_act=False)
         self.dblock_3 = _DenseBlock(2, 128, 256)
@@ -180,13 +168,20 @@ class DexiNet(nn.Module):
         self.up_block_4 = UpConvBlock(512, 3)
         self.up_block_5 = UpConvBlock(512, 4)
         self.up_block_6 = UpConvBlock(256, 4)
-        self.block_cat = nn.Conv2d(6, 1, kernel_size=1)
+        self.block_cat = SingleConvBlock(6, 1, stride=1, use_bs=False)
 
         self.apply(weight_init)
 
     def slice(self, tensor, slice_shape):
+        t_shape = tensor.shape
         height, width = slice_shape
-        return tensor[..., :height, :width]
+        if t_shape[-1]!=slice_shape[-1]:
+            new_tensor = F.interpolate(
+                tensor, size=(height, width), mode='bicubic',align_corners=False)
+        else:
+            new_tensor=tensor
+        # tensor[..., :height, :width]
+        return new_tensor
 
     def forward(self, x):
         assert x.ndim == 4, x.shape
@@ -235,12 +230,13 @@ class DexiNet(nn.Module):
         # upsampling blocks
         height, width = x.shape[-2:]
         slice_shape = (height, width)
-        out_1 = self.slice(self.up_block_1(block_1), slice_shape)
-        out_2 = self.slice(self.up_block_2(block_2), slice_shape)
-        out_3 = self.slice(self.up_block_3(block_3), slice_shape)
-        out_4 = self.slice(self.up_block_4(block_4), slice_shape)
-        out_5 = self.slice(self.up_block_5(block_5), slice_shape)
-        out_6 = self.slice(self.up_block_6(block_6), slice_shape)
+        # out_1 = self.slice(self.up_block_1(block_1), slice_shape)
+        out_1 = self.up_block_1(block_1)
+        out_2 = self.up_block_2(block_2)
+        out_3 = self.up_block_3(block_3)
+        out_4 = self.up_block_4(block_4)
+        out_5 = self.up_block_5(block_5)
+        out_6 = self.up_block_6(block_6)
         results = [out_1, out_2, out_3, out_4, out_5, out_6]
         # print(out_1.shape)
 
@@ -263,7 +259,7 @@ if __name__ == '__main__':
     input = torch.rand(batch_size, 3, img_height, img_width).to(device)
     # target = torch.rand(batch_size, 1, img_height, img_width).to(device)
     print(f"input shape: {input.shape}")
-    model = DexiNet().to(device)
+    model = DexiNed().to(device)
     output = model(input)
     print(f"output shapes: {[t.shape for t in output]}")
 
