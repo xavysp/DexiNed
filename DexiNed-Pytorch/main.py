@@ -132,7 +132,7 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
                                      image_shape,
                                      arg=args)
 
-    print("******** Testing finished in {args.test_data} dataset. *****")
+    print("******** Testing finished in", args.test_data, "dataset. *****")
 
 
 def parse_args():
@@ -143,7 +143,7 @@ def parse_args():
     train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_info['data_dir']
     # ----------- test -----------
-    TEST_DATA = DATASET_NAMES[3] # max 8
+    TEST_DATA = DATASET_NAMES[5] # max 8
     data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = data_inf['data_dir']
 
@@ -171,7 +171,7 @@ def parse_args():
                         default=data_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
-                        default=False,
+                        default=True,
                         help='Put script in testing mode.')
     # parser.add_argument('--use_prev_trained',
     #                     type=bool,
