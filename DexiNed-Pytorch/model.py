@@ -20,6 +20,7 @@ def weight_init(m):
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
         torch.nn.init.xavier_normal_(m.weight, gain=1.0)
+        # torch.nn.init.kaiming_uniform_(m.weight, a=0, mode='fan_in', nonlinearity='leaky_relu')
         # torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
         # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
