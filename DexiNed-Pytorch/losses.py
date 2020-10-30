@@ -25,7 +25,8 @@ def _weighted_cross_entropy_loss(preds, edges):
                                                 edges.float(),
                                                 weight=weight,
                                                 reduction='none')
-    loss = torch.sum(losses) / b
+    # loss = torch.sum(losses) / b
+    loss = torch.mean(losses)
     return loss
 
 
@@ -62,8 +63,6 @@ def weighted_cross_entropy_loss(preds, edges):
                                                 reduction='none')
     losses=losses.sum(dim=[1,2,3],keepdim=True)
     # beta = num_neg / (num_neg + num_pos)
-    # print("loss shape: ", losses.shape)
-    # print('before', torch.mean(losses))
     # cost = torch.mean(losses * (1 - beta))
     cost = torch.mean(losses)
     # print('after', cost)
