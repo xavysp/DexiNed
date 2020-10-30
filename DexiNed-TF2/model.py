@@ -9,7 +9,7 @@ import tensorflow as tf
 
 
 l2 = regularizers.l2
-w_decay=0.0 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
+w_decay=1e-3 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
 K.clear_session()
 # weight_init = tf.initializers.RandomNormal(mean=0.,stddev=0.01)
 # weight_init = tf.initializers.glorot_normal()
@@ -91,7 +91,7 @@ class UpConvBlock(layers.Layer):
             if i==up_scale-1:
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
-                    activation='relu', kernel_initializer=tf.initializers.TruncatedNormal(stddev=0.1),
+                    activation='relu', kernel_initializer=tf.initializers.TruncatedNormal(mean=0.),
                     kernel_regularizer=k_reg,use_bias=True)) #tf.initializers.TruncatedNormal(mean=0.)
                 features.append(layers.Conv2DTranspose(
                     out_features, kernel_size=(total_up_scale,total_up_scale),
