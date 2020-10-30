@@ -6,8 +6,10 @@ import torch.nn.functional as F
 def weight_init(m):
     if isinstance(m, (nn.Conv2d,)):
         # print("Applying custom weight initialization for nn.Conv2d layer...")
+        # torch.nn.init.kaiming_uniform_(m.weight, a=0, mode='fan_in', nonlinearity='leaky_relu')
+        torch.nn.init.xavier_normal_(m.weight, gain=1.0)
         # torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
-        torch.nn.init.normal_(m.weight, mean=0, std=0.01)
+        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
         if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
@@ -17,8 +19,9 @@ def weight_init(m):
 
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
+        torch.nn.init.xavier_normal_(m.weight, gain=1.0)
         # torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
-        torch.nn.init.normal_(m.weight, mean=0, std=0.01)
+        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
         if m.bias is not None:
@@ -41,7 +44,7 @@ class _DenseLayer(nn.Sequential):
 
     def forward(self, x):
         x1, x2 = x
-        # maybe I should put here a RELU
+
         new_features = super(_DenseLayer, self).forward(F.relu(x1))  # F.relu()
         # if new_features.shape[-1]!=x2.shape[-1]:
         #     new_features =F.interpolate(new_features,size=(x2.shape[2],x2.shape[-1]), mode='bicubic',
@@ -95,7 +98,8 @@ class SingleConvBlock(nn.Module):
                  ):
         super(SingleConvBlock, self).__init__()
         self.use_bn = use_bs
-        self.conv = nn.Conv2d(in_features, out_features, 1, stride=stride)
+        self.conv = nn.Conv2d(in_features, out_features, 1, stride=stride,
+                              bias=True)
         self.bn = nn.BatchNorm2d(out_features)
 
     def forward(self, x):
@@ -224,12 +228,11 @@ class DexiNed(nn.Module):
 
         # Block 6
         block_6_pre_dense = self.pre_dense_6(block_5)
-#        block_5_pre_dense_256 = self.pre_dense_6(block_5_add) # if error uncomment
         block_6, _ = self.dblock_6([block_5_add, block_6_pre_dense])
 
         # upsampling blocks
-        height, width = x.shape[-2:]
-        slice_shape = (height, width)
+        # height, width = x.shape[-2:]
+        # slice_shape = (height, width)
         # out_1 = self.slice(self.up_block_1(block_1), slice_shape)
         out_1 = self.up_block_1(block_1)
         out_2 = self.up_block_2(block_2)
