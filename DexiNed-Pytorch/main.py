@@ -11,7 +11,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from datasets import DATASET_NAMES, BipedDataset, TestDataset, dataset_info
-from losses import weighted_cross_entropy_loss
+from losses import weighted_cross_entropy_loss, bdcn_loss
 from model import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
@@ -24,6 +24,7 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
 
     # Put model in training mode
     model.train()
+    l_weight = [0.5,0.5,0.5,0.5,0.5,0.5,1.1]
 
     for batch_id, sample_batched in enumerate(dataloader):
         images = sample_batched['images'].to(device)  # BxCxHxW
@@ -33,7 +34,8 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         preds_list = model(images)
         tmp_preds = torch.cat(preds_list,dim=1)
         # loss = sum([criterion(tmp_preds[i,...], labels[i,...]) for i in range(0,tmp_preds.shape[0])])
-        loss = sum([criterion(preds, labels) for preds in preds_list])
+        loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)])
+        # loss = sum([criterion(preds, labels) for preds in preds_list])
         # loss /= images.shape[0]  #batch size
 
         optimizer.zero_grad()
@@ -143,7 +145,7 @@ def parse_args():
     train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_info['data_dir']
     # ----------- test -----------
-    TEST_DATA = DATASET_NAMES[5] # max 8
+    TEST_DATA = DATASET_NAMES[1] # max 8
     data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = data_inf['data_dir']
 
@@ -171,7 +173,7 @@ def parse_args():
                         default=data_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
-                        default=True,
+                        default=False,
                         help='Put script in testing mode.')
     # parser.add_argument('--use_prev_trained',
     #                     type=bool,
@@ -179,7 +181,7 @@ def parse_args():
     #                     help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='24/24_model.pth',
+                        default='1/1_model.pth',
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -314,7 +316,8 @@ def main(args):
         return
 
     # Criterion, optimizer, lr scheduler
-    criterion = weighted_cross_entropy_loss
+    criterion = bdcn_loss
+    # criterion = weighted_cross_entropy_loss
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
