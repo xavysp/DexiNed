@@ -12,8 +12,8 @@ def weight_init(m):
         # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
-        if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
-            torch.nn.init.constant_(m.weight, 0.2) # for fuse conv
+        # if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
+        #     torch.nn.init.constant_(m.weight, 0.2) # for fuse conv
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
@@ -28,6 +28,30 @@ def weight_init(m):
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
+
+class CoFusion(nn.Module):
+
+    def __init__(self, in_ch, out_ch):
+        super(CoFusion, self).__init__()
+        self.conv1 = nn.Conv2d(in_ch, 64, kernel_size=3,
+                               stride=1, padding=1)
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=3,
+                               stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, out_ch, kernel_size=3,
+                               stride=1, padding=1)
+        self.relu = nn.ReLU()
+
+        self.norm_layer1 = nn.GroupNorm(4, 64)
+        self.norm_layer2 = nn.GroupNorm(4, 64)
+
+    def forward(self, x):
+        # fusecat = torch.cat(x, dim=1)
+        attn = self.relu(self.norm_layer1(self.conv1(x)))
+        attn = self.relu(self.norm_layer2(self.conv2(attn)))
+        attn = F.softmax(self.conv3(attn), dim=1)
+
+        # return ((fusecat * attn).sum(1)).unsqueeze(1)
+        return ((x * attn).sum(1)).unsqueeze(1)
 
 class _DenseLayer(nn.Sequential):
     def __init__(self, input_features, out_features):
@@ -145,7 +169,7 @@ class DexiNed(nn.Module):
         super(DexiNed, self).__init__()
         self.block_1 = DoubleConvBlock(3, 32, 64, stride=2,)
         self.block_2 = DoubleConvBlock(64, 128, use_act=False)
-        self.dblock_3 = _DenseBlock(2, 128, 256)
+        self.dblock_3 = _DenseBlock(2, 128, 256) # [128,256,100,100]
         self.dblock_4 = _DenseBlock(3, 256, 512)
         self.dblock_5 = _DenseBlock(3, 512, 512)
         self.dblock_6 = _DenseBlock(3, 512, 256)
@@ -159,10 +183,10 @@ class DexiNed(nn.Module):
         self.side_5 = SingleConvBlock(512, 256, 1)
 
         # right skip connections, figure in Journal
-        self.pre_dense_2 = SingleConvBlock(128, 256, 2, use_bs=False)
+        # self.pre_dense_2 = SingleConvBlock(128, 256, 2, use_bs=False)
         self.pre_dense_3 = SingleConvBlock(128, 256, 1)
         self.pre_dense_4 = SingleConvBlock(256, 512, 1)
-        self.pre_dense_5_0 = SingleConvBlock(256, 512, 2,use_bs=False)
+        # self.pre_dense_5_0 = SingleConvBlock(512, 512, 2,use_bs=False) # [256,512,25,25]
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
@@ -173,7 +197,9 @@ class DexiNed(nn.Module):
         self.up_block_4 = UpConvBlock(512, 3)
         self.up_block_5 = UpConvBlock(512, 4)
         self.up_block_6 = UpConvBlock(256, 4)
-        self.block_cat = SingleConvBlock(6, 1, stride=1, use_bs=False)
+        self.block_cat = SingleConvBlock(6, 1, stride=1, use_bs=False) # hed fusion method
+        # self.block_cat = CoFusion(6,6)# cats fusion method
+
 
         self.apply(weight_init)
 
@@ -207,23 +233,22 @@ class DexiNed(nn.Module):
         # Block 3
         block_3_pre_dense = self.pre_dense_3(block_2_down)
         block_3, _ = self.dblock_3([block_2_add, block_3_pre_dense])
-        block_3_down = self.maxpool(block_3)
+        block_3_down = self.maxpool(block_3) # [128,256,50,50]
         block_3_add = block_3_down + block_2_side
         block_3_side = self.side_3(block_3_add)
 
         # Block 4
-        block_4_pre_dense_256 = self.pre_dense_2(block_2_down)
-        block_4_pre_dense = self.pre_dense_4(
-            block_4_pre_dense_256 + block_3_down)
+        # block_4_pre_dense_256 = self.pre_dense_2(block_2_down)
+        block_4_pre_dense = self.pre_dense_4(block_3_down)
         block_4, _ = self.dblock_4([block_3_add, block_4_pre_dense])
         block_4_down = self.maxpool(block_4)
         block_4_add = block_4_down + block_3_side
         block_4_side = self.side_4(block_4_add)
 
         # Block 5
-        block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense_256)
+        # block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense)
         block_5_pre_dense = self.pre_dense_5(
-            block_5_pre_dense_512 + block_4_down)
+            block_4_down) #block_5_pre_dense_512 +block_4_down
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
         block_5_add = block_5 + block_4_side
 

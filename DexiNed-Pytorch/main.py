@@ -11,7 +11,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from datasets import DATASET_NAMES, BipedDataset, TestDataset, dataset_info
-from losses import weighted_cross_entropy_loss, bdcn_loss
+from losses import *
 from model import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
@@ -24,7 +24,11 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
 
     # Put model in training mode
     model.train()
-    l_weight = [0.5,0.5,0.5,0.5,0.5,0.5,1.1]
+    # l_weight = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.1]  # for bdcn loss
+    l_weight = [0.4,0.4,0.6,0.6,0.5,0.5,1.3] # for bdcn loss theory 3 before the last 1.3
+    # l_weight = [[0.05, 2.], [0.05, 2.], [0.05, 2.],
+    #             [0.1, 1.], [0.1, 1.], [0.1, 1.],
+    #             [0.01, 4.]]  # for cats loss
 
     for batch_id, sample_batched in enumerate(dataloader):
         images = sample_batched['images'].to(device)  # BxCxHxW
@@ -32,10 +36,10 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         # labels = labels[:, None]  # Bx1xHxW
 
         preds_list = model(images)
-        tmp_preds = torch.cat(preds_list,dim=1)
-        # loss = sum([criterion(tmp_preds[i,...], labels[i,...]) for i in range(0,tmp_preds.shape[0])])
-        loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)])
-        # loss = sum([criterion(preds, labels) for preds in preds_list])
+        # tmp_preds = torch.cat(preds_list,dim=1) #list2tensor
+        # loss = sum([criterion(preds, labels, l_w, device) for preds, l_w in zip(preds_list, l_weight)])  # cats_loss
+        loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
+        # loss = sum([criterion(preds, labels) for preds in preds_list])  #HED loss, rcf_loss
         # loss /= images.shape[0]  #batch size
 
         optimizer.zero_grad()
@@ -119,6 +123,7 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
     model.eval()
 
     with torch.no_grad():
+        total_duration = []
         for batch_id, sample_batched in enumerate(dataloader):
             images = sample_batched['images'].to(device)
             if not args.test_data == "CLASSIC":
@@ -126,28 +131,75 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
             file_names = sample_batched['file_names']
             image_shape = sample_batched['image_shape']
             print(f"input tensor shape: {images.shape}")
-
+            # images = images[:, [2, 1, 0], :, :]
+            start_time = time.time()
             preds = model(images)
+            tmp_duration = time.time() - start_time
+            total_duration.append(tmp_duration)
             save_image_batch_to_disk(preds,
                                      output_dir,
                                      file_names,
                                      image_shape,
                                      arg=args)
 
+    total_duration = np.array(total_duration)
     print("******** Testing finished in", args.test_data, "dataset. *****")
+    print("Average time per image: %f.4" % total_duration.mean(), "seconds")
+    print("Time spend in the Dataset: %f.4" % total_duration.sum(), "seconds")
+
+def testPich(checkpoint_path, dataloader, model, device, output_dir, args):
+    # a test model plus the interganged channels
+    if not os.path.isfile(checkpoint_path):
+        raise FileNotFoundError(
+            f"Checkpoint filte note found: {checkpoint_path}")
+    print(f"Restoring weights from: {checkpoint_path}")
+    model.load_state_dict(torch.load(checkpoint_path,
+                                     map_location=device))
+
+    # Put model in evaluation mode
+    model.eval()
+
+    with torch.no_grad():
+        total_duration = []
+        for batch_id, sample_batched in enumerate(dataloader):
+            images = sample_batched['images'].to(device)
+            if not args.test_data == "CLASSIC":
+                labels = sample_batched['labels'].to(device)
+            file_names = sample_batched['file_names']
+            image_shape = sample_batched['image_shape']
+            print(f"input tensor shape: {images.shape}")
+            start_time = time.time()
+            # images2 = images[:, [1, 0, 2], :, :]  #GBR
+            images2 = images[:, [2, 1, 0], :, :] # RGB
+            preds = model(images)
+            preds2 = model(images2)
+            tmp_duration = time.time() - start_time
+            total_duration.append(tmp_duration)
+            save_image_batch_to_disk([preds,preds2],
+                                     output_dir,
+                                     file_names,
+                                     image_shape,
+                                     arg=args, is_inchannel=True)
+
+    total_duration = np.array(total_duration)
+    print("******** Testing finished in", args.test_data, "dataset. *****")
+    print("Average time per image: %f.4" % total_duration.mean(), "seconds")
+    print("Time spend in the Dataset: %f.4" % total_duration.sum(), "seconds")
 
 
 def parse_args():
     """Parse command line arguments."""
 
-    # Testing settings
+    # ----------- test -------0--
+    TEST_DATA = DATASET_NAMES[1]  # max 8
+    data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
+    test_dir = data_inf['data_dir']
+    is_testing = True #
+
+    # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
     train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_info['data_dir']
-    # ----------- test -----------
-    TEST_DATA = DATASET_NAMES[1] # max 8
-    data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
-    test_dir = data_inf['data_dir']
 
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     # Data parameters
@@ -163,6 +215,11 @@ def parse_args():
                         type=str,
                         default='checkpoints',
                         help='the path to output the results.')
+    parser.add_argument('--train_data',
+                        type=str,
+                        choices=DATASET_NAMES,
+                        default=TRAIN_DATA,
+                        help='Name of the dataset.')
     parser.add_argument('--test_data',
                         type=str,
                         choices=DATASET_NAMES,
@@ -173,15 +230,15 @@ def parse_args():
                         default=data_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
-                        default=False,
+                        default=is_testing,
                         help='Put script in testing mode.')
-    # parser.add_argument('--use_prev_trained',
-    #                     type=bool,
-    #                     default=True,
-    #                     help='use previous trained data')  # Just for test
+    parser.add_argument('--resume',
+                        type=bool,
+                        default=True,
+                        help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='1/1_model.pth',
+                        default='24/24_model.pth',
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -200,12 +257,6 @@ def parse_args():
                         default=50,
                         help='The number of batches to wait before printing test predictions.')
 
-    # Optimization parameters
-    # parser.add_argument('--optimizer',
-    #                     type=str,
-    #                     choices=['adam', 'sgd'],
-    #                     default='adam',
-    #                     help='The optimizer to use (default: adam).')
     parser.add_argument('--epochs',
                         type=int,
                         default=25,
@@ -248,7 +299,7 @@ def parse_args():
                         default=[2, 1, 0],
                         type=int)
     parser.add_argument('--crop_img',
-                        default=False,
+                        default=True,
                         type=bool,
                         help='If true crop training images, else resize images to match image width and height.')
     parser.add_argument('--mean_pixel_values',
@@ -267,10 +318,13 @@ def main(args):
     # Tensorboard summary writer
 
     tb_writer = None
+    training_dir = os.path.join(args.output_dir,args.train_data)
+    os.makedirs(training_dir,exist_ok=True)
+    checkpoint_path = os.path.join(args.output_dir, args.train_data, args.checkpoint_data)
     if args.tensorboard and not args.is_testing:
         # from tensorboardX import SummaryWriter  # previous torch version
         from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
-        tb_writer = SummaryWriter(log_dir=args.output_dir)
+        tb_writer = SummaryWriter(log_dir=training_dir)
 
     # Get computing device
     device = torch.device('cpu' if torch.cuda.device_count() == 0
@@ -279,8 +333,12 @@ def main(args):
     # Instantiate model and move it to the computing device
     model = DexiNed().to(device)
     # model = nn.DataParallel(model)
-
+    ini_epoch =0
     if not args.is_testing:
+        if args.resume:
+            ini_epoch=17
+            model.load_state_dict(torch.load(checkpoint_path,
+                                         map_location=device))
         dataset_train = BipedDataset(args.input_dir,
                                      img_width=args.img_width,
                                      img_height=args.img_height,
@@ -300,7 +358,7 @@ def main(args):
                               img_height=args.test_img_height,
                               mean_bgr=args.mean_pixel_values[0:3] if len(
                                   args.mean_pixel_values) == 4 else args.mean_pixel_values,
-                              test_list=args.test_list
+                              test_list=args.test_list, arg=args
                               )
     dataloader_val = DataLoader(dataset_val,
                                 batch_size=1,
@@ -308,16 +366,20 @@ def main(args):
                                 num_workers=args.workers)
     # Testing
     if args.is_testing:
-        checkpoint_path = os.path.join(args.output_dir, args.checkpoint_data)
+
         output_dir = os.path.join(args.res_dir, "BIPED2" + args.test_data)
         print(f"output_dir: {output_dir}")
 
         test(checkpoint_path, dataloader_val, model, device, output_dir, args)
+        # testPich(checkpoint_path, dataloader_val, model, device, output_dir, args)
+
         return
 
     # Criterion, optimizer, lr scheduler
-    criterion = bdcn_loss
-    # criterion = weighted_cross_entropy_loss
+    # criterion = cats_loss
+    criterion = bdcn_loss2 # now learning with Theory 2
+    # criterion = hed_loss2 # lst training 23/11/2020 finished,now learning with dataset new set
+
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
@@ -325,9 +387,9 @@ def main(args):
     #                               gamma=args.lr_gamma)
 
     # Main training loop
-    for epoch in range(args.epochs):
+    for epoch in range(ini_epoch,args.epochs):
         # Create output directories
-        output_dir_epoch = os.path.join(args.output_dir, str(epoch))
+        output_dir_epoch = os.path.join(args.output_dir,args.train_data, str(epoch))
         img_test_dir = os.path.join(output_dir_epoch, args.test_data + '_res')
         os.makedirs(output_dir_epoch,exist_ok=True)
         os.makedirs(img_test_dir,exist_ok=True)
