@@ -229,7 +229,7 @@ def parse_args():
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
                         default=is_testing,
-                        help='Put script in testing mode.')
+                        help='Script in testing mode.')
     parser.add_argument('--double_img',
                         type=bool,
                         default=False,
