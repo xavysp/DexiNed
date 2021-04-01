@@ -71,11 +71,26 @@ parser.add_argument('--test_list', default='test_pair.lst',type=str)
 ```
 
 ## Test
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1sIiz3zujM6RbWR6qDJ4JRJ38fmNGwGT0/view?usp=sharing) and save those files into the DexiNed folder like: checkpoints/DXN_BIPED/train/(here the checkpoints from Drive), then run as follow:
+The datasets.py has, among other things, The whole datasets configurations used in DexiNed for testing and training:
+```
+DATASET_NAMES = [
+    'BIPED',
+    'BSDS',
+    'BSDS300',
+    'CID',
+    'DCD',
+    'MULTICUE', #5
+    'PASCAL',
+    'NYUD',
+    'CLASSIC'
+] 
+```
+For example, if want t test your own dataset or image choose "CLASSIC".
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1sIiz3zujM6RbWR6qDJ4JRJ38fmNGwGT0/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/19/(here the checkpoints from Drive), then run as follow:
 
-    python main.py --choose_test_data=-1
-Make sure that in run_model.py the test setting be as:
-```parser.add_argument('--model_state', default='test', choices=['train','test','None'])```
+```python main.py --choose_test_data=-1```
+Make sure that in main.py the test setting be as:
+```parser.add_argument('--is_testing', default=True, help='Script in testing mode.')```
 DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will get data_list.zip, train_1.zip, and train_2.zip. The train_2  contains our last checkpoint trained with the updated BIPED; train_1 has checkpoints with the results presented in WACV'20, and data_list has a list of MDBD dataset images used for testing, if you choose another random list of images, you probably get a better or worst result, I think is not fair.**
 
 ## Train
