@@ -1,11 +1,11 @@
 """
 
 """
-import sys, os
+import sys
 import cv2 as cv
 from PIL import Image
 
-from utls.utls import *
+from legacy.utls.utls import *
 
 
 def cv_imshow(title='default',img=None):

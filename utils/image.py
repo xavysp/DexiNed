@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 import torch
-import torchgeometry as tgm
+import kornia as kn
 
 
 def image_normalization(img, img_min=0, img_max=255,
@@ -32,7 +32,7 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg
     if not arg.is_testing:
         assert len(tensor.shape) == 4, tensor.shape
         for tensor_image, file_name in zip(tensor, file_names):
-            image_vis = tgm.utils.tensor_to_image(
+            image_vis = kn.utils.tensor_to_image(
                 torch.sigmoid(tensor_image))[..., 0]
             image_vis = (255.0*(1.0 - image_vis)).astype(np.uint8)
             output_file_name = os.path.join(output_dir, file_name)

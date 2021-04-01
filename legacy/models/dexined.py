@@ -10,10 +10,9 @@ xsoria@cvc.uab.es/xavysp@gmail.com
 import time
 import os
 import numpy as np
-import tensorflow as tf
 
-from utls.losses import *
-from utls.utls import get_local_time, print_info, print_warning, print_error
+from legacy.utls.losses import *
+from legacy.utls.utls import print_info, print_warning
 
 slim = tf.contrib.slim
 

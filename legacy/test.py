@@ -82,7 +82,7 @@ class m_tester():
         """
         result_dir = 'DexiNed_'+self.args.train_dataset+'2'+self.args.test_dataset
         if self.args.base_dir_results is None:
-            res_dir = os.path.join('results', result_dir)
+            res_dir = os.path.join('../results', result_dir)
         else:
             res_dir = os.path.join(self.args.base_dir_results,result_dir)
         gt_dir = os.path.join(res_dir,'gt')
