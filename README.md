@@ -88,7 +88,7 @@ DATASET_NAMES = [
 For example, if want t test your own dataset or image choose "CLASSIC".
 Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1sIiz3zujM6RbWR6qDJ4JRJ38fmNGwGT0/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/19/(here the checkpoints from Drive), then run as follow:
 
-```python main.py --choose_test_data=-1```
+```python main.py --choose_test_data=-1 ```
 Make sure that in main.py the test setting be as:
 ```parser.add_argument('--is_testing', default=True, help='Script in testing mode.')```
 DexiNed downsample the input image till 16 scales, please make sure that, in dataset_info fucn (datasets.py), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will the find the last trained checkpoint, which has been trained in the last version of BIPED dataset that will be updated soon in Kaggle **
