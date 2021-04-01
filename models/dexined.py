@@ -44,8 +44,6 @@ class dexined():
         start_time = time.time()
         use_subpixel=self.args.use_subpixel
         weight_init =tf.random_normal_initializer(mean=0.0, stddev=0.01)
-        # weight_init = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
-        # weight_init = None  # None = tf.initializers.glorot_uniform()
         with tf.compat.v1.variable_scope('Xpt') as sc:
 
             # ------------------------- Block1 ----------------------------------------
