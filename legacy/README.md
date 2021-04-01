@@ -11,23 +11,15 @@ This work presents a new Convolutional Neural Network (CNN) arquitecture for edg
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
 ## Table of Contents
-* [PyTorch](#pytorch)
-* [TensorFlow](#tensorflow)
 * [Datasets](#datasets)
 * [Performance](#performance)
 * [Citation](#citation)
 
-# PyTorch
-To test DexiNed in PyTorch please refer to [DexiNed-Pytorch](https://github.com/xavysp/DexiNed/tree/master/DexiNed-Pytorch) directory
-
-# TensorFlow
-
- Before starting to use this model,  there are some requirements to fullfill.
- 
+This is the first version of DexiNed presented in WACV2020, so it can run on TensorFlow 1.15.4. The last version of DexiNed has been implemented on Pytorch and you can see in the main path of this repo.
 ## Requirements
 
 * [Python 3.7](https://www.python.org/downloads/release/python-370/g)
-* [TensorFlow>=1.8 <=1.15.2](https://www.tensorflow.org) (tested on such versions)
+* [TensorFlow>=1.8 <=1.15.4](https://www.tensorflow.org) (tested on such versions)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
 * Other package like Numpy, h5py, PIL. 
