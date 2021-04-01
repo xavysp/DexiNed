@@ -54,7 +54,6 @@ def bdcn_lossORI(inputs, targets, l_weigts=1.1,cuda=False):
     # if cuda:
     weights = weights.cuda()
     inputs = torch.sigmoid(inputs)
-    # loss = nn.BCELoss(weights, size_average=False)(inputs, targets)
     loss = torch.nn.BCELoss(weights, reduction='sum')(inputs.float(), targets.float())
     return l_weigts*loss
 
