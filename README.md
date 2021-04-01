@@ -91,7 +91,7 @@ Before test the DexiNed model, it is necesarry to download the checkpoint here [
 ```python main.py --choose_test_data=-1```
 Make sure that in main.py the test setting be as:
 ```parser.add_argument('--is_testing', default=True, help='Script in testing mode.')```
-DexiNed downsample the input image till 16 scales, please make sure that the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will get data_list.zip, train_1.zip, and train_2.zip. The train_2  contains our last checkpoint trained with the updated BIPED; train_1 has checkpoints with the results presented in WACV'20, and data_list has a list of MDBD dataset images used for testing, if you choose another random list of images, you probably get a better or worst result, I think is not fair.**
+DexiNed downsample the input image till 16 scales, please make sure that, in dataset_info fucn (datasets.py), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will the find the last trained checkpoint, which has been trained in the last version of BIPED dataset that will be updated soon in Kaggle **
 
 ## Train
 
@@ -102,6 +102,10 @@ Make sure that in main.py the train setting be as:
 # Datasets
 
 ## Dataset used for Training
+```diff
+- The BIPED dataset will be updated to the last version in the coming days
+
+```
 
 BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped). The BIPED dataset has been updated, adding more annotations and correcting few mistakes, so those links have the renewed version of BIPED, if you want the older version you may ask us by email. The last performance (table below) will be updated soon. 
 
