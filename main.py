@@ -187,9 +187,15 @@ def testPich(checkpoint_path, dataloader, model, device, output_dir, args):
 
 def parse_args():
     """Parse command line arguments."""
-
+    parser = argparse.ArgumentParser(description='DexiNed trainer.')
+    parser.add_argument('--choose_test_data',
+                        type=int,
+                        default=-1,
+                        help='Already set the dataset for testing choice: 0 - 8')
     # ----------- test -------0--
-    TEST_DATA = DATASET_NAMES[-1] # max 8
+
+
+    TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = data_inf['data_dir']
     is_testing = True  # current test _bdcnlossNew256-sd7-1.10.4p5
@@ -199,7 +205,7 @@ def parse_args():
     train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_info['data_dir']
 
-    parser = argparse.ArgumentParser(description='DexiNed trainer.')
+
     # Data parameters
     parser.add_argument('--input_dir',
                         type=str,
