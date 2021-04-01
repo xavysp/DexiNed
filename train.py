@@ -40,11 +40,11 @@ class m_trainer():
         else:
             raise NotImplementedError('Learning rate scheduler type [%s] is not implemented',
                                       self.args.lr_scheduler)
-        opt = tf.train.AdamOptimizer(learning_rate)
+        opt = tf.compat.v1.train.AdamOptimizer(learning_rate)
         trainG = opt.minimize(self.model.loss)# like hed
-        saver = tf.train.Saver(max_to_keep=7)
+        saver = tf.compat.v1.train.Saver(max_to_keep=7)
 
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         # here to recovery previous training
         if self.args.use_previous_trained:
             if self.args.dataset_name.lower()!='biped': # using biped pretrained to use in other dataset
@@ -82,7 +82,7 @@ class m_trainer():
         for idx in range(ini, maxi):
 
             x_batch, y_batch,_ = get_training_batch(self.args, train_data)
-            run_metadata = tf.RunMetadata()
+            run_metadata = tf.compat.v1.RunMetadata()
 
             _, summary, loss,pred_maps= sess.run(
                 [trainG, self.model.merged_summary, self.model.loss, self.model.predictions],

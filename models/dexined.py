@@ -30,9 +30,9 @@ class dexined():
             self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
                                                       self.args.image_width, self.args.n_channels])
         else:
-            self.images = tf.placeholder(tf.float32, [None, self.args.image_height,
+            self.images = tf.compat.v1.placeholder(tf.float32, [None, self.args.image_height,
                                                       self.args.image_width, self.args.n_channels])
-        self.edgemaps = tf.placeholder(tf.float32, [None, self.args.image_height,
+        self.edgemaps = tf.compat.v1.placeholder(tf.float32, [None, self.args.image_height,
                                                     self.args.image_width, 1])
         self.define_model()
 
@@ -46,7 +46,7 @@ class dexined():
         weight_init =tf.random_normal_initializer(mean=0.0, stddev=0.01)
         # weight_init = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
         # weight_init = None  # None = tf.initializers.glorot_uniform()
-        with tf.variable_scope('Xpt') as sc:
+        with tf.compat.v1.variable_scope('Xpt') as sc:
 
             # ------------------------- Block1 ----------------------------------------
             self.conv1_1 = tf.layers.conv2d(self.images, filters=32, kernel_size=[3, 3],
@@ -488,10 +488,10 @@ class dexined():
         error = tf.cast(tf.not_equal(pred, tf.cast(self.edgemaps, tf.int32)), tf.float32)
         self.error = tf.reduce_mean(error, name='pixel_error')
 
-        tf.summary.scalar('Training', self.loss)
-        tf.summary.scalar('Validation', self.error)
+        tf.compat.v1.summary.scalar('Training', self.loss)
+        tf.compat.v1.summary.scalar('Validation', self.error)
 
-        self.merged_summary = tf.summary.merge_all()
+        self.merged_summary = tf.compat.v1.summary.merge_all()
 
         self.train_log_dir = os.path.join(self.args.logs_dir,
                                       os.path.join(self.args.model_name+'_'+self.args.train_dataset,'train'))
@@ -502,5 +502,5 @@ class dexined():
             os.makedirs(self.train_log_dir)
         if not os.path.exists(self.val_log_dir):
             os.makedirs(self.val_log_dir)
-        self.train_writer = tf.summary.FileWriter(self.train_log_dir, session.graph)
-        self.val_writer = tf.summary.FileWriter(self.val_log_dir)
+        self.train_writer = tf.compat.v1.summary.FileWriter(self.train_log_dir, session.graph)
+        self.val_writer = tf.compat.v1.summary.FileWriter(self.val_log_dir)

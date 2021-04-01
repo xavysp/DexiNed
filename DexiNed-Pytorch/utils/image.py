@@ -26,7 +26,8 @@ def image_normalization(img, img_min=0, img_max=255,
     return img
 
 
-def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg=None):
+def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg=None, is_inchannel=False):
+
     os.makedirs(output_dir, exist_ok=True)
     if not arg.is_testing:
         assert len(tensor.shape) == 4, tensor.shape
@@ -37,8 +38,25 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg
             output_file_name = os.path.join(output_dir, file_name)
             assert cv2.imwrite(output_file_name, image_vis)
     else:
-        output_dir_f = os.path.join(output_dir, 'fused')
-        output_dir_a = os.path.join(output_dir, 'avg')
+        if is_inchannel:
+
+            tensor, tensor2 = tensor
+            fuse_name = 'fusedCH'
+            av_name='avgCH'
+            is_2tensors=True
+            edge_maps2 = []
+            for i in tensor2:
+                tmp = torch.sigmoid(i).cpu().detach().numpy()
+                edge_maps2.append(tmp)
+            tensor2 = np.array(edge_maps2)
+        else:
+            fuse_name = 'fused'
+            av_name = 'avg'
+            tensor2=None
+            tmp_img2 = None
+
+        output_dir_f = os.path.join(output_dir, fuse_name)
+        output_dir_a = os.path.join(output_dir, av_name)
         os.makedirs(output_dir_f, exist_ok=True)
         os.makedirs(output_dir_a, exist_ok=True)
 
@@ -59,9 +77,10 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg
         idx = 0
         for i_shape, file_name in zip(image_shape, file_names):
             tmp = tensor[:, idx, ...]
+            tmp2 = tensor2[:, idx, ...] if tensor2 is not None else None
             # tmp = np.transpose(np.squeeze(tmp), [0, 1, 2])
             tmp = np.squeeze(tmp)
-            # print(f"tmp shape: {tmp.shape}")
+            tmp2 = np.squeeze(tmp2) if tensor2 is not None else None
 
             # Iterate our all 7 NN outputs for a particular image
             preds = []
@@ -71,16 +90,36 @@ def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg
                 tmp_img = cv2.bitwise_not(tmp_img)
                 # tmp_img[tmp_img < 0.0] = 0.0
                 # tmp_img = 255.0 * (1.0 - tmp_img)
+                if tmp2 is not None:
+                    tmp_img2 = tmp2[i]
+                    tmp_img2 = np.uint8(image_normalization(tmp_img2))
+                    tmp_img2 = cv2.bitwise_not(tmp_img2)
 
                 # Resize prediction to match input image size
                 if not tmp_img.shape[1] == i_shape[0] or not tmp_img.shape[0] == i_shape[1]:
                     tmp_img = cv2.resize(tmp_img, (i_shape[0], i_shape[1]))
+                    tmp_img2 = cv2.resize(tmp_img2, (i_shape[0], i_shape[1])) if tmp2 is not None else None
 
-                preds.append(tmp_img)
+
+                if tmp2 is not None:
+                    tmp_mask = np.logical_and(tmp_img>128,tmp_img2<128)
+                    tmp_img= np.where(tmp_mask, tmp_img2, tmp_img)
+                    preds.append(tmp_img)
+
+                else:
+                    preds.append(tmp_img)
+
                 if i == 6:
                     fuse = tmp_img
+                    fuse = fuse.astype(np.uint8)
+                    if tmp_img2 is not None:
+                        fuse2 = tmp_img2
+                        fuse2 = fuse2.astype(np.uint8)
+                        # fuse = fuse-fuse2
+                        fuse_mask=np.logical_and(fuse>128,fuse2<128)
+                        fuse = np.where(fuse_mask,fuse2, fuse)
 
-            fuse = fuse.astype(np.uint8)
+                        # print(fuse.shape, fuse_mask.shape)
 
             # Get the mean prediction of all the 7 outputs
             average = np.array(preds, dtype=np.float32)
@@ -120,7 +159,6 @@ def restore_rgb(config, I, restore_rgb=False):
         I = image_normalization(I)
     else:
         print("Sorry the input data size is out of our configuration")
-    # print("The enterely I data {} restored".format(I.shape))
     return I
 
 

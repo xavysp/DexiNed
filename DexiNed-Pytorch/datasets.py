@@ -24,22 +24,22 @@ def dataset_info(dataset_name, is_linux=True):
 
         config = {
             'BSDS': {
-                'img_height': 321,
-                'img_width': 481,
+                'img_height': 512, #321
+                'img_width': 512, #481
                 'test_list': 'test_pair.lst',
                 'data_dir': '/opt/dataset/BSDS',  # mean_rgb
                 'yita': 0.5
             },
             'BSDS300': {
-                'img_height': 321,
-                'img_width': 481,
+                'img_height': 512, #321
+                'img_width': 512, #481
                 'test_list': 'test_pair.lst',
                 'data_dir': '/opt/dataset/BSDS300',  # NIR
                 'yita': 0.5
             },
             'PASCAL': {
-                'img_height': 375,
-                'img_width': 500,
+                'img_height': 375, # 375
+                'img_width': 500, #500
                 'test_list': 'test_pair.lst',
                 'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
                 'yita': 0.3
@@ -66,8 +66,8 @@ def dataset_info(dataset_name, is_linux=True):
                 'yita': 0.3
             },
             'BIPED': {
-                'img_height': 720,
-                'img_width': 1280,
+                'img_height': 720, #720 # 1088
+                'img_width': 1280, # 1280 5 1920
                 'test_list': 'test_rgb.lst',
                 'train_list': 'train_rgb.lst',
                 'data_dir': '/opt/dataset/BIPED/edges',  # mean_rgb
@@ -90,8 +90,8 @@ def dataset_info(dataset_name, is_linux=True):
         }
     else:
         config = {
-            'BSDS': {'img_height': 512,  # 321
-                     'img_width': 512,  # 481
+            'BSDS': {'img_height': 720,  # 321
+                     'img_width': 720,  # 481
                      'test_list': 'test_pair.lst',
                      'data_dir': '../../dataset/BSDS',  # mean_rgb
                      'yita': 0.5},
@@ -149,7 +149,7 @@ class TestDataset(Dataset):
                  img_height,
                  img_width,
                  test_list=None,
-                 #  arg=None
+                 arg=None
                  ):
         if test_data not in DATASET_NAMES:
             raise ValueError(f"Unsupported dataset: {test_data}")
@@ -157,6 +157,7 @@ class TestDataset(Dataset):
         self.data_root = data_root
         self.test_data = test_data
         self.test_list = test_list
+        self.args=arg
         # self.arg = arg
         # self.mean_bgr = arg.mean_pixel_values[0:3] if len(arg.mean_pixel_values) == 4 \
         #     else arg.mean_pixel_values
@@ -229,27 +230,28 @@ class TestDataset(Dataset):
     def transform(self, img, gt):
         # gt[gt< 51] = 0 # test without gt discrimination
         if self.test_data == "CLASSIC":
-            img_height = img.shape[0] if img.shape[0] % 16 == 0 else (
-                (img.shape[0] // 16) + 1) * 16
-            img_width = img.shape[1] if img.shape[1] % 16 == 0 else (
-                (img.shape[1] // 16) + 1) * 16
-            # img_height = self.img_height
-            # img_width = self.img_width
+            img_height = self.img_height
+            img_width = self.img_width
             print(
-                f"actual size: {img.shape}, target size: {(img_width, img_height)}")
+                f"actual size: {img.shape}, target size: {( img_height,img_width,)}")
             # img = cv2.resize(img, (self.img_width, self.img_height))
-            img = cv2.resize(img, (img_width, img_height))
+            img = cv2.resize(img, (img_width,img_height))
             gt = None
 
         # Make images and labels at least 512 by 512
         elif img.shape[0] < 512 or img.shape[1] < 512:
-            img = cv2.resize(img, (512, 512))
-            gt = cv2.resize(gt, (512, 512))
+            img = cv2.resize(img, (self.args.test_img_width, self.args.test_img_height)) # 512
+            gt = cv2.resize(gt, (self.args.test_img_width, self.args.test_img_height)) # 512
 
         # Make sure images and labels are divisible by 2^4=16
         elif img.shape[0] % 16 != 0 or img.shape[1] % 16 != 0:
             img_width = ((img.shape[1] // 16) + 1) * 16
             img_height = ((img.shape[0] // 16) + 1) * 16
+            img = cv2.resize(img, (img_width, img_height))
+            gt = cv2.resize(gt, (img_width, img_height))
+        else:
+            img_width =self.args.test_img_width
+            img_height =self.args.test_img_height
             img = cv2.resize(img, (img_width, img_height))
             gt = cv2.resize(gt, (img_width, img_height))
 
@@ -298,10 +300,6 @@ class BipedDataset(Dataset):
         self.data_type = 'aug'  # be aware that this might change in the future
         self.img_height = img_height
         self.img_width = img_width
-        # self.scale = is_scaling
-        # self.arg = arg
-        # self.mean_bgr = arg.mean_pixel_values[0:3] if len(arg.mean_pixel_values) == 4 \
-        #     else arg.mean_pixel_values
         self.mean_bgr = mean_bgr
         self.crop_img = crop_img
 
@@ -351,14 +349,10 @@ class BipedDataset(Dataset):
         gt = np.array(gt, dtype=np.float32)
         if len(gt.shape) == 3:
             gt = gt[:, :, 0]
-        # gt[gt< 51] = 0 # test without gt discrimination
-        gt /= 255.
-        # if self.yita is not None:
-        #     gt[gt >= self.yita] = 1
+
+        gt /= 255. # for DexiNed input and BDCN
 
         img = np.array(img, dtype=np.float32)
-        # if self.rgb:
-        #     img = img[:, :, ::-1]  # RGB->BGR
         img -= self.mean_bgr
         # data = []
         # if self.scale is not None:
@@ -368,17 +362,34 @@ class BipedDataset(Dataset):
         #     return data, gt
         crop_size = self.img_height if self.img_height == self.img_width else 400
 
-        if self.crop_img:
-            _, h, w = gt.size()
-            assert (crop_size < h and crop_size < w)
-            i = random.randint(0, h - crop_size)
-            j = random.randint(0, w - crop_size)
-            img = img[:, i:i + crop_size, j:j + crop_size]
-            gt = gt[:, i:i + crop_size, j:j + crop_size]
+        if np.random.random() >= 0.5: #l
+            h,w = gt.shape
+            LR_img_size = 256  #l 256, 240 200
+            i = random.randint(0, h - LR_img_size)
+            j = random.randint(0, w - LR_img_size)
+            # if img.
+            img = img[i:i + LR_img_size , j:j + LR_img_size ]
+            gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
+            if img.size == 0:
+                print('none')
+            img = cv2.resize(img, dsize=(crop_size, crop_size),)
+            gt = cv2.resize(gt, dsize=(crop_size, crop_size))
         else:
-            img = cv2.resize(img,
-                             dsize=(self.img_width, self.img_height))
-            gt = cv2.resize(gt, dsize=(self.img_width, self.img_height))
+            # New addidings
+            img = cv2.resize(img, dsize=(crop_size, crop_size))
+            gt = cv2.resize(gt, dsize=(crop_size, crop_size))
+
+        gt[gt > 0.2] += 0.5
+        gt = np.clip(gt, 0., 1.)
+        # # For RCF input
+        # # -----------------------------------
+        # gt[gt==0]=0.
+        # gt[np.logical_and(gt>0.,gt<0.5)] = 2.
+        # gt[gt>=0.5]=1.
+        #
+        # gt = gt.astype('float32')
+        # ----------------------------------
+
         img = img.transpose((2, 0, 1))
         img = torch.from_numpy(img.copy()).float()
         gt = torch.from_numpy(np.array([gt])).float()

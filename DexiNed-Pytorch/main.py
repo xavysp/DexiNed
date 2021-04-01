@@ -24,8 +24,9 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
 
     # Put model in training mode
     model.train()
-    # l_weight = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.1]  # for bdcn loss
-    l_weight = [0.4,0.4,0.6,0.6,0.5,0.5,1.3] # for bdcn loss theory 3 before the last 1.3
+    # l_weight = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.1]  # for bdcn ori loss
+     # before [0.6,0.6,1.1,1.1,0.4,0.4,1.3] [0.4,0.4,1.1,1.1,0.6,0.6,1.3],[0.4,0.4,1.1,1.1,0.8,0.8,1.3]
+    l_weight = [0.7,0.7,1.1,1.1,0.3,0.3,1.3] # for bdcn loss theory 3 before the last 1.3 0.6-0..5
     # l_weight = [[0.05, 2.], [0.05, 2.], [0.05, 2.],
     #             [0.1, 1.], [0.1, 1.], [0.1, 1.],
     #             [0.01, 4.]]  # for cats loss
@@ -33,15 +34,10 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
     for batch_id, sample_batched in enumerate(dataloader):
         images = sample_batched['images'].to(device)  # BxCxHxW
         labels = sample_batched['labels'].to(device)  # BxHxW
-        # labels = labels[:, None]  # Bx1xHxW
-
         preds_list = model(images)
-        # tmp_preds = torch.cat(preds_list,dim=1) #list2tensor
         # loss = sum([criterion(preds, labels, l_w, device) for preds, l_w in zip(preds_list, l_weight)])  # cats_loss
         loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
         # loss = sum([criterion(preds, labels) for preds in preds_list])  #HED loss, rcf_loss
-        # loss /= images.shape[0]  #batch size
-
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -141,6 +137,7 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
                                      file_names,
                                      image_shape,
                                      arg=args)
+            torch.cuda.empty_cache()
 
     total_duration = np.array(total_duration)
     print("******** Testing finished in", args.test_data, "dataset. *****")
@@ -180,6 +177,7 @@ def testPich(checkpoint_path, dataloader, model, device, output_dir, args):
                                      file_names,
                                      image_shape,
                                      arg=args, is_inchannel=True)
+            torch.cuda.empty_cache()
 
     total_duration = np.array(total_duration)
     print("******** Testing finished in", args.test_data, "dataset. *****")
@@ -191,10 +189,10 @@ def parse_args():
     """Parse command line arguments."""
 
     # ----------- test -------0--
-    TEST_DATA = DATASET_NAMES[1]  # max 8
+    TEST_DATA = DATASET_NAMES[-1] # max 8
     data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = data_inf['data_dir']
-    is_testing = True #
+    is_testing = True  # current test _bdcnlossNew256-sd7-1.10.4p5
 
     # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
@@ -232,13 +230,17 @@ def parse_args():
     parser.add_argument('--is_testing',type=bool,
                         default=is_testing,
                         help='Put script in testing mode.')
+    parser.add_argument('--double_img',
+                        type=bool,
+                        default=False,
+                        help='True: use same 2 imgs changing channels')  # Just for test
     parser.add_argument('--resume',
                         type=bool,
-                        default=True,
+                        default=False,
                         help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='24/24_model.pth',
+                        default='19/19_model.pth',
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -369,17 +371,15 @@ def main(args):
 
         output_dir = os.path.join(args.res_dir, "BIPED2" + args.test_data)
         print(f"output_dir: {output_dir}")
-
-        test(checkpoint_path, dataloader_val, model, device, output_dir, args)
-        # testPich(checkpoint_path, dataloader_val, model, device, output_dir, args)
+        if args.double_img:
+            # predict twice an image changing channels, then mix those results
+            testPich(checkpoint_path, dataloader_val, model, device, output_dir, args)
+        else:
+            test(checkpoint_path, dataloader_val, model, device, output_dir, args)
 
         return
 
-    # Criterion, optimizer, lr scheduler
-    # criterion = cats_loss
-    criterion = bdcn_loss2 # now learning with Theory 2
-    # criterion = hed_loss2 # lst training 23/11/2020 finished,now learning with dataset new set
-
+    criterion = bdcn_loss2
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
@@ -387,8 +387,17 @@ def main(args):
     #                               gamma=args.lr_gamma)
 
     # Main training loop
+    seed=1021
     for epoch in range(ini_epoch,args.epochs):
+        if epoch%7==0:
+
+            seed = seed+1000
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed(seed)
+            print("------ Random seed applied-------------")
         # Create output directories
+
         output_dir_epoch = os.path.join(args.output_dir,args.train_data, str(epoch))
         img_test_dir = os.path.join(output_dir_epoch, args.test_data + '_res')
         os.makedirs(output_dir_epoch,exist_ok=True)

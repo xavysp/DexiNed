@@ -35,7 +35,7 @@ def config_model():
     parser.add_argument('--use_nir', default=False, type=bool)
     parser.add_argument('--use_dataset', default=False, type=bool) # test: dataset=True single image=FALSE
     # model config
-    parser.add_argument('--model_state', default='test', choices=['train','test','None']) # always in None
+    parser.add_argument('--model_state', default='train', choices=['train','test','None']) # always in None
     parser.add_argument('--model_name', default='DXN',choices=['DXN','XCP','None'])
     parser.add_argument('--use_v1', default=False,type=bool)
     parser.add_argument('--model_purpose', default='edges',choices=['edges','restoration','None'])
@@ -83,9 +83,9 @@ def get_session(gpu_fraction):
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
 
     if num_threads:
-        return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, intra_op_parallelism_threads=num_threads))
+        return tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options, intra_op_parallelism_threads=num_threads))
     else:
-        return tf.Session(config=tf.ConfigProto())
+        return tf.compat.v1.Session(config=tf.compat.v1.ConfigProto())
 
 
 def main(args):

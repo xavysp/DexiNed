@@ -5,24 +5,17 @@ import torch.nn.functional as F
 
 def weight_init(m):
     if isinstance(m, (nn.Conv2d,)):
-        # print("Applying custom weight initialization for nn.Conv2d layer...")
-        # torch.nn.init.kaiming_uniform_(m.weight, a=0, mode='fan_in', nonlinearity='leaky_relu')
         torch.nn.init.xavier_normal_(m.weight, gain=1.0)
-        # torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
-        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, mean=0.0,)
-        # if m.weight.data.shape == torch.Size([1, 6, 1, 1]):
-        #     torch.nn.init.constant_(m.weight, 0.2) # for fuse conv
+
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
         torch.nn.init.xavier_normal_(m.weight, gain=1.0)
-        # torch.nn.init.kaiming_uniform_(m.weight, a=0, mode='fan_in', nonlinearity='leaky_relu')
-        # torch.nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
-        # torch.nn.init.normal_(m.weight, mean=0, std=0.01)
+
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
         if m.bias is not None:
@@ -182,11 +175,9 @@ class DexiNed(nn.Module):
         self.side_4 = SingleConvBlock(512, 512, 1)
         self.side_5 = SingleConvBlock(512, 256, 1)
 
-        # right skip connections, figure in Journal
-        # self.pre_dense_2 = SingleConvBlock(128, 256, 2, use_bs=False)
+        # right skip connections, figure in Journal paper
         self.pre_dense_3 = SingleConvBlock(128, 256, 1)
         self.pre_dense_4 = SingleConvBlock(256, 512, 1)
-        # self.pre_dense_5_0 = SingleConvBlock(512, 512, 2,use_bs=False) # [256,512,25,25]
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
@@ -218,11 +209,8 @@ class DexiNed(nn.Module):
         assert x.ndim == 4, x.shape
 
         # Block 1
-        # print(f"x shape           : {x.shape}")
         block_1 = self.block_1(x)
-        # print(f"block_1 shape     : {block_1.shape}")
         block_1_side = self.side_1(block_1)
-        # print(f"block_1_side shape: {block_1_side.shape}")
 
         # Block 2
         block_2 = self.block_2(block_1)
@@ -238,7 +226,6 @@ class DexiNed(nn.Module):
         block_3_side = self.side_3(block_3_add)
 
         # Block 4
-        # block_4_pre_dense_256 = self.pre_dense_2(block_2_down)
         block_4_pre_dense = self.pre_dense_4(block_3_down)
         block_4, _ = self.dblock_4([block_3_add, block_4_pre_dense])
         block_4_down = self.maxpool(block_4)
@@ -246,7 +233,6 @@ class DexiNed(nn.Module):
         block_4_side = self.side_4(block_4_add)
 
         # Block 5
-        # block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense)
         block_5_pre_dense = self.pre_dense_5(
             block_4_down) #block_5_pre_dense_512 +block_4_down
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
@@ -257,9 +243,6 @@ class DexiNed(nn.Module):
         block_6, _ = self.dblock_6([block_5_add, block_6_pre_dense])
 
         # upsampling blocks
-        # height, width = x.shape[-2:]
-        # slice_shape = (height, width)
-        # out_1 = self.slice(self.up_block_1(block_1), slice_shape)
         out_1 = self.up_block_1(block_1)
         out_2 = self.up_block_2(block_2)
         out_3 = self.up_block_3(block_3)
@@ -267,7 +250,6 @@ class DexiNed(nn.Module):
         out_5 = self.up_block_5(block_5)
         out_6 = self.up_block_6(block_6)
         results = [out_1, out_2, out_3, out_4, out_5, out_6]
-        # print(out_1.shape)
 
         # concatenate multiscale outputs
         block_cat = torch.cat(results, dim=1)  # Bx6xHxW
