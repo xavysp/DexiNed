@@ -198,7 +198,7 @@ def parse_args():
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = data_inf['data_dir']
-    is_testing = True  # current test _bdcnlossNew256-sd7-1.10.4p5
+    is_testing = True # current test _bdcnlossNew256-sd7-1.10.4p5
 
     # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
