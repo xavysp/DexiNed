@@ -58,7 +58,6 @@ class _DenseLayer(nn.Sequential):
         self.add_module('conv2', nn.Conv2d(out_features, out_features,
                                            kernel_size=3, stride=1, bias=True)),
         self.add_module('norm2', nn.BatchNorm2d(out_features))
-        # double check the norm1 comment if necessary and put norm after conv2
 
     def forward(self, x):
         x1, x2 = x
@@ -262,8 +261,8 @@ class DexiNed(nn.Module):
 
 if __name__ == '__main__':
     batch_size = 8
-    img_height = 400
-    img_width = 400
+    img_height = 352
+    img_width = 352
 
     # device = "cuda" if torch.cuda.is_available() else "cpu"
     device = "cpu"
