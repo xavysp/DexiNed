@@ -26,6 +26,7 @@ def dataset_info(dataset_name, is_linux=True):
             'BSDS': {
                 'img_height': 512, #321
                 'img_width': 512, #481
+                'train_list': 'train_pair.lst',
                 'test_list': 'test_pair.lst',
                 'data_dir': '/opt/dataset/BSDS',  # mean_rgb
                 'yita': 0.5
@@ -34,13 +35,15 @@ def dataset_info(dataset_name, is_linux=True):
                 'img_height': 512, #321
                 'img_width': 512, #481
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/BSDS300',  # NIR
                 'yita': 0.5
             },
             'PASCAL': {
-                'img_height': 375, # 375
-                'img_width': 500, #500
+                'img_height': 400, # 375
+                'img_width': 512, #500
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/PASCAL',  # mean_rgb
                 'yita': 0.3
             },
@@ -48,13 +51,15 @@ def dataset_info(dataset_name, is_linux=True):
                 'img_height': 512,
                 'img_width': 512,
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/CID',  # mean_rgb
                 'yita': 0.3
             },
             'NYUD': {
-                'img_height': 425,
-                'img_width': 560,
+                'img_height': 448,#425
+                'img_width': 560,#560
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/NYUD',  # mean_rgb
                 'yita': 0.5
             },
@@ -62,6 +67,7 @@ def dataset_info(dataset_name, is_linux=True):
                 'img_height': 720,
                 'img_width': 1280,
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
                 'yita': 0.3
             },
@@ -77,13 +83,15 @@ def dataset_info(dataset_name, is_linux=True):
                 'img_height': 512,
                 'img_width': 512,
                 'test_list': None,
+                'train_list': None,
                 'data_dir': 'data',  # mean_rgb
                 'yita': 0.5
             },
             'DCD': {
-                'img_height': 240,
-                'img_width': 360,
+                'img_height': 240, #222222240
+                'img_width': 368,# 360
                 'test_list': 'test_pair.lst',
+                'train_list': None,
                 'data_dir': '/opt/dataset/DCD',  # mean_rgb
                 'yita': 0.2
             }
@@ -291,8 +299,8 @@ class BipedDataset(Dataset):
                  dataset_type='rgbr',
                  #  is_scaling=None,
                  # Whether to crop image or otherwise resize image to match image height and width.
-                 crop_img=False
-                 #  arg=None
+                 crop_img=False,
+                 arg=None
                  ):
         self.data_root = data_root
         self.train_mode = train_mode
@@ -302,6 +310,7 @@ class BipedDataset(Dataset):
         self.img_width = img_width
         self.mean_bgr = mean_bgr
         self.crop_img = crop_img
+        self.arg = arg
 
         self.data_index = self._build_index()
 
@@ -311,25 +320,43 @@ class BipedDataset(Dataset):
         assert self.data_type in self.data_types, self.data_type
 
         data_root = os.path.abspath(self.data_root)
-        images_path = os.path.join(data_root,
-                                   'imgs',
-                                   self.train_mode,
-                                   self.dataset_type,
-                                   self.data_type)
-        labels_path = os.path.join(data_root,
-                                   'edge_maps',
-                                   self.train_mode,
-                                   self.dataset_type,
-                                   self.data_type)
         sample_indices = []
-        for directory_name in os.listdir(images_path):
-            image_directories = os.path.join(images_path, directory_name)
-            for file_name_ext in os.listdir(image_directories):
-                file_name = os.path.splitext(file_name_ext)[0]
+        if self.arg.train_data.lower()=='biped':
+
+            images_path = os.path.join(data_root,
+                                       'imgs',
+                                       self.train_mode,
+                                       self.dataset_type,
+                                       self.data_type)
+            labels_path = os.path.join(data_root,
+                                       'edge_maps',
+                                       self.train_mode,
+                                       self.dataset_type,
+                                       self.data_type)
+
+            for directory_name in os.listdir(images_path):
+                image_directories = os.path.join(images_path, directory_name)
+                for file_name_ext in os.listdir(image_directories):
+                    file_name = os.path.splitext(file_name_ext)[0]
+                    sample_indices.append(
+                        (os.path.join(images_path, directory_name, file_name + '.jpg'),
+                         os.path.join(labels_path, directory_name, file_name + '.png'),)
+                    )
+        else:
+            file_path = os.path.join(data_root,self.arg.train_list)
+            with open(file_path, 'r') as f:
+                files = f.readlines()
+            files = [line.strip() for line in files]
+
+            pairs = [line.split() for line in files]
+            for pair in pairs:
+                tmp_img = pair[0]
+                tmp_gt = pair[1]
                 sample_indices.append(
-                    (os.path.join(images_path, directory_name, file_name + '.jpg'),
-                     os.path.join(labels_path, directory_name, file_name + '.png'),)
-                )
+                    (os.path.join(data_root,tmp_img),
+                     os.path.join(data_root,tmp_gt),))
+
+
         return sample_indices
 
     def __len__(self):
@@ -354,14 +381,24 @@ class BipedDataset(Dataset):
 
         img = np.array(img, dtype=np.float32)
         img -= self.mean_bgr
+        i_h, i_w,_ = img.shape
         # data = []
         # if self.scale is not None:
         #     for scl in self.scale:
         #         img_scale = cv2.resize(img, None, fx=scl, fy=scl, interpolation=cv2.INTER_LINEAR)
         #         data.append(torch.from_numpy(img_scale.transpose((2, 0, 1))).float())
         #     return data, gt
-        crop_size = self.img_height if self.img_height == self.img_width else 400
+        #  400 for BIPEd and 352 for BSDS check with 384
+        crop_size = self.img_height if self.img_height == self.img_width else 352#320#352
 
+        # for BSDS
+        # if i_w> crop_size and i_h>crop_size:
+        #     i = random.randint(0, i_h - crop_size)
+        #     j = random.randint(0, i_w - crop_size)
+        #     img = img[i:i + crop_size , j:j + crop_size ]
+        #     gt = gt[i:i + crop_size , j:j + crop_size ]
+
+        # for BIPED
         if np.random.random() >= 0.5: #l
             h,w = gt.shape
             LR_img_size = 256  #l 256, 240 200

@@ -100,10 +100,12 @@ def validate_one_epoch(epoch, dataloader, model, device, output_dir, arg=None):
             images = sample_batched['images'].to(device)
             # labels = sample_batched['labels'].to(device)
             file_names = sample_batched['file_names']
+            image_shape = sample_batched['image_shape']
             preds = model(images)
+            # print('pred shape', preds[0].shape)
             save_image_batch_to_disk(preds[-1],
                                      output_dir,
-                                     file_names,
+                                     file_names,img_shape=image_shape,
                                      arg=arg)
 
 
@@ -233,6 +235,10 @@ def parse_args():
                         type=str,
                         default=data_inf['test_list'],
                         help='Dataset sample indices list.')
+    parser.add_argument('--train_list',
+                        type=str,
+                        default=data_inf['train_list'],
+                        help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
                         default=is_testing,
                         help='Script in testing mode.')
@@ -246,7 +252,7 @@ def parse_args():
                         help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='19/19_model.pth',
+                        default='14/14_model.pth',
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -297,12 +303,12 @@ def parse_args():
                         help='Use Tensorboard for logging.'),
     parser.add_argument('--img_width',
                         type=int,
-                        default=400,
-                        help='Image width for training.')
+                        default=352,
+                        help='Image width for training.') # BIPED 400 BSDS 352
     parser.add_argument('--img_height',
                         type=int,
-                        default=400,
-                        help='Image height for training.')
+                        default=352,
+                        help='Image height for training.') # BIPED 400 BSDS 352
     parser.add_argument('--channel_swap',
                         default=[2, 1, 0],
                         type=int)
@@ -353,7 +359,7 @@ def main(args):
                                      mean_bgr=args.mean_pixel_values[0:3] if len(
                                          args.mean_pixel_values) == 4 else args.mean_pixel_values,
                                      train_mode='train',
-                                     #    arg=args
+                                     arg=args
                                      )
         dataloader_train = DataLoader(dataset_train,
                                       batch_size=args.batch_size,
@@ -375,7 +381,7 @@ def main(args):
     # Testing
     if args.is_testing:
 
-        output_dir = os.path.join(args.res_dir, "BIPED2" + args.test_data)
+        output_dir = os.path.join(args.res_dir, args.train_data+"2"+ args.test_data)
         print(f"output_dir: {output_dir}")
         if args.double_img:
             # predict twice an image changing channels, then mix those results
