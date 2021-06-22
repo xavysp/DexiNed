@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from datasets import DATASET_NAMES, BipedDataset, TestDataset, dataset_info
 from losses import *
 from model import DexiNed
+# from model0C import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result)
 
@@ -36,7 +37,7 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         labels = sample_batched['labels'].to(device)  # BxHxW
         preds_list = model(images)
         # loss = sum([criterion(preds, labels, l_w, device) for preds, l_w in zip(preds_list, l_weight)])  # cats_loss
-        loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
+        loss = sum([criterion(preds, labels,l_w)/args.batch_size for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
         # loss = sum([criterion(preds, labels) for preds in preds_list])  #HED loss, rcf_loss
         optimizer.zero_grad()
         loss.backward()
@@ -192,20 +193,20 @@ def parse_args():
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     parser.add_argument('--choose_test_data',
                         type=int,
-                        default=-1,
+                        default=3,
                         help='Already set the dataset for testing choice: 0 - 8')
     # ----------- test -------0--
 
 
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
-    data_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
-    test_dir = data_inf['data_dir']
+    test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
+    test_dir = test_inf['data_dir']
     is_testing = True # current test _bdcnlossNew256-sd7-1.10.4p5
 
     # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
-    train_info = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
-    train_dir = train_info['data_dir']
+    train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
+    train_dir = train_inf['data_dir']
 
 
     # Data parameters
@@ -215,7 +216,7 @@ def parse_args():
                         help='the path to the directory with the input data.')
     parser.add_argument('--input_val_dir',
                         type=str,
-                        default=data_inf['data_dir'],
+                        default=test_inf['data_dir'],
                         help='the path to the directory with the input data for validation.')
     parser.add_argument('--output_dir',
                         type=str,
@@ -233,18 +234,18 @@ def parse_args():
                         help='Name of the dataset.')
     parser.add_argument('--test_list',
                         type=str,
-                        default=data_inf['test_list'],
+                        default=test_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--train_list',
                         type=str,
-                        default=data_inf['train_list'],
+                        default=train_inf['train_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--is_testing',type=bool,
                         default=is_testing,
                         help='Script in testing mode.')
     parser.add_argument('--double_img',
                         type=bool,
-                        default=False,
+                        default=True,
                         help='True: use same 2 imgs changing channels')  # Just for test
     parser.add_argument('--resume',
                         type=bool,
@@ -256,11 +257,11 @@ def parse_args():
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
-                        default=data_inf['img_width'],
+                        default=test_inf['img_width'],
                         help='Image width for testing.')
     parser.add_argument('--test_img_height',
                         type=int,
-                        default=data_inf['img_height'],
+                        default=test_inf['img_height'],
                         help='Image height for testing.')
     parser.add_argument('--res_dir',
                         type=str,
@@ -273,7 +274,7 @@ def parse_args():
 
     parser.add_argument('--epochs',
                         type=int,
-                        default=25,
+                        default=22,
                         metavar='N',
                         help='Number of training epochs (default: 25).')
     parser.add_argument('--lr',
@@ -303,11 +304,11 @@ def parse_args():
                         help='Use Tensorboard for logging.'),
     parser.add_argument('--img_width',
                         type=int,
-                        default=352,
-                        help='Image width for training.') # BIPED 400 BSDS 352
+                        default=480,
+                        help='Image width for training.') # BIPED 400 BSDS 352 MDBD 480
     parser.add_argument('--img_height',
                         type=int,
-                        default=352,
+                        default=480,
                         help='Image height for training.') # BIPED 400 BSDS 352
     parser.add_argument('--channel_swap',
                         default=[2, 1, 0],
