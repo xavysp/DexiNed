@@ -403,24 +403,24 @@ class BipedDataset(Dataset):
         #  400 for BIPEd and 352 for BSDS check with 384
         crop_size = self.img_height if self.img_height == self.img_width else 352# MDBD=480 BPED=352
 
-        # for BSDS
-        if i_w> crop_size and i_h>crop_size:
-            i = random.randint(0, i_h - crop_size)
-            j = random.randint(0, i_w - crop_size)
-            img = img[i:i + crop_size , j:j + crop_size ]
-            gt = gt[i:i + crop_size , j:j + crop_size ]
+        # # for BSDS
+        # if i_w> crop_size and i_h>crop_size:
+        #     i = random.randint(0, i_h - crop_size)
+        #     j = random.randint(0, i_w - crop_size)
+        #     img = img[i:i + crop_size , j:j + crop_size ]
+        #     gt = gt[i:i + crop_size , j:j + crop_size ]
 
-        # # for BIPED
-        # if np.random.random() >= 0.5: #l
-        #     h,w = gt.shape
-        #     LR_img_size = 352  #l BIPED=256, 240 200 # MDBD= 352
-        #     i = random.randint(0, h - LR_img_size)
-        #     j = random.randint(0, w - LR_img_size)
-        #     # if img.
-        #     img = img[i:i + LR_img_size , j:j + LR_img_size ]
-        #     gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
-        #     img = cv2.resize(img, dsize=(crop_size, crop_size),)
-        #     gt = cv2.resize(gt, dsize=(crop_size, crop_size))
+        # for BIPED
+        if np.random.random() >= 0.5: #l
+            h,w = gt.shape
+            LR_img_size = 352  #l BIPED=256, 240 200 # MDBD= 352
+            i = random.randint(0, h - LR_img_size)
+            j = random.randint(0, w - LR_img_size)
+            # if img.
+            img = img[i:i + LR_img_size , j:j + LR_img_size ]
+            gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
+            img = cv2.resize(img, dsize=(crop_size, crop_size),)
+            gt = cv2.resize(gt, dsize=(crop_size, crop_size))
         else:
             # New addidings
             img = cv2.resize(img, dsize=(crop_size, crop_size))
