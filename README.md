@@ -88,7 +88,7 @@ DATASET_NAMES = [
 ] 
 ```
 For example, if want t test your own dataset or image choose "CLASSIC".
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1MRUlg_mRwDiBiQLKFVuEfuvkzs65JFVe/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/19/(here the checkpoints from Drive), then run as follow:
+Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1SUytJJxicNAzncDNwDjIUG24FUpEWHm_/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/19/(here the checkpoints from Drive), then run as follow:
 
 ```python main.py --choose_test_data=-1 ```
 Make sure that in main.py the test setting be as:
