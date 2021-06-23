@@ -10,31 +10,33 @@
 
 ```
 
-This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), the last version will be uploaded after the camera-ready deadline of WACV2020.
+This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955). The last version of DexiNed is implemented in Pytorch and has improvements in the model and in the BIPED dataset.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
 ## Table of Contents
-* [PyTorch](#pytorch)
-* [TensorFlow](#tensorflow)
+* [DexiNed-v1](#dexiNed-v1)
+* [TensorFlow](#tensorflow2)
 * [Datasets](#datasets)
 * [Performance](#performance)
 * [Citation](#citation)
 
-# PyTorch
-To test DexiNed in PyTorch please refer to [DexiNed-Pytorch](https://github.com/xavysp/DexiNed/tree/master/DexiNed-Pytorch) directory
+# DexiNed-v1
 
-# TensorFlow
+This version was presented in WACV2020, this is the base DexiNed model [implemented in TensorFlow 1](https://github.com/xavysp/DexiNed/tree/master/legacy)
 
- Before starting to use this model,  there are some requirements to fullfill.
- 
+
+# TensorFlow2
+
+Dexined version on TF 2 is not ready 
 ## Requirements
 
 * [Python 3.7](https://www.python.org/downloads/release/python-370/g)
-* [TensorFlow>=1.8 <=1.15.2](https://www.tensorflow.org) (tested on such versions)
+* [Pytorch >=1.4](https://pytorch.org/) (Last test 1.9)
 * [OpenCV](https://pypi.org/project/opencv-python/)
 * [Matplotlib](https://matplotlib.org/3.1.1/users/installing.html)
-* Other package like Numpy, h5py, PIL. 
+* [Kornia](https://kornia.github.io/)
+* Other package like Numpy, h5py, PIL, json. 
 
 Once the packages are installed,  clone this repo as follow: 
 
