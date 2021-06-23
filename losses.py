@@ -20,18 +20,18 @@ def hed_loss2(inputs, targets, l_weight=1.1):
 
 
 def bdcn_loss2(inputs, targets, l_weight=1.1):
-    # bdcn loss with the rcf approach
-    targets = targets.long()
-    # mask = (targets > 0.1).float()
-    mask = targets.float()
-    num_positive = torch.sum((mask > 0.0).float()).float() # >0.1
-    num_negative = torch.sum((mask <= 0.0).float()).float() # <= 0.1
+    mask = (targets > 0).float()
+    num_positive = mask.float().sum((1,2,3), keepdim=True) # >0.1
+    num_negative = mask.size(1)*mask.size(2)*mask.size(3) - num_positive # <= 0.1
 
-    mask[mask > 0.] = 1.0 * num_negative / (num_positive + num_negative) #0.1
-    mask[mask <= 0.] = 1.1 * num_positive / (num_positive + num_negative)  # before mask[mask <= 0.1]
-    # mask[mask == 2] = 0
+    beta = num_negative / (num_positive + num_negative)
+    beta2 = num_positive / (num_positive + num_negative)
+
+    pos_w = torch.where(~mask.bool(), beta, beta2)
+
     inputs= torch.sigmoid(inputs)
-    cost = torch.nn.BCELoss(mask, reduction='sum')(inputs, targets.float())
+    cost = torch.nn.BCELoss(pos_w)(inputs, targets.float())
+    
     return l_weight*cost
 
 def bdcn_lossORI(inputs, targets, l_weigts=1.1,cuda=False):
