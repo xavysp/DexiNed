@@ -105,7 +105,7 @@ Make sure that in main.py the train setting be as:
 
 ## Dataset used for Training
 ```diff
-- The BIPED dataset will be updated to the last version in the coming days
+- The BIPED dataset has been updated to the last version and it can be download from Kaggle
 
 ```
 
