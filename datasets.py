@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+import json
 
 DATASET_NAMES = [
     'BIPED',
@@ -12,7 +13,7 @@ DATASET_NAMES = [
     'BSDS300',
     'CID',
     'DCD',
-    'MULTICUE', #5
+    'MDBD', #5
     'PASCAL',
     'NYUD',
     'CLASSIC'
@@ -63,12 +64,12 @@ def dataset_info(dataset_name, is_linux=True):
                 'data_dir': '/opt/dataset/NYUD',  # mean_rgb
                 'yita': 0.5
             },
-            'MULTICUE': {
+            'MDBD': {
                 'img_height': 720,
                 'img_width': 1280,
                 'test_list': 'test_pair.lst',
-                'train_list': None,
-                'data_dir': '/opt/dataset/MULTICUE',  # mean_rgb
+                'train_list': 'train_pair.lst',
+                'data_dir': '/opt/dataset/MDBD',  # mean_rgb
                 'yita': 0.3
             },
             'BIPED': {
@@ -123,10 +124,11 @@ def dataset_info(dataset_name, is_linux=True):
                      'test_list': 'test_pair.lst',
                      'data_dir': '/opt/dataset/NYUD',  # mean_rgb
                      'yita': 0.5},
-            'MULTICUE': {'img_height': 720,
+            'MDBD': {'img_height': 720,
                          'img_width': 1280,
                          'test_list': 'test_pair.lst',
-                         'data_dir': '../../dataset/MULTICUE',  # mean_rgb
+                         'train_list': 'train_pair.lst',
+                         'data_dir': '../../dataset/MDBD',  # mean_rgb
                          'yita': 0.3},
             'BIPED': {'img_height': 720,  # 720
                       'img_width': 1280,  # 1280
@@ -343,19 +345,29 @@ class BipedDataset(Dataset):
                          os.path.join(labels_path, directory_name, file_name + '.png'),)
                     )
         else:
-            file_path = os.path.join(data_root,self.arg.train_list)
-            with open(file_path, 'r') as f:
-                files = f.readlines()
-            files = [line.strip() for line in files]
+            file_path = os.path.join(data_root, self.arg.train_list)
+            if self.arg.train_data.lower()=='bsds':
 
-            pairs = [line.split() for line in files]
-            for pair in pairs:
-                tmp_img = pair[0]
-                tmp_gt = pair[1]
-                sample_indices.append(
-                    (os.path.join(data_root,tmp_img),
-                     os.path.join(data_root,tmp_gt),))
+                with open(file_path, 'r') as f:
+                    files = f.readlines()
+                files = [line.strip() for line in files]
 
+                pairs = [line.split() for line in files]
+                for pair in pairs:
+                    tmp_img = pair[0]
+                    tmp_gt = pair[1]
+                    sample_indices.append(
+                        (os.path.join(data_root,tmp_img),
+                         os.path.join(data_root,tmp_gt),))
+            else:
+                with open(file_path) as f:
+                    files = json.load(f)
+                for pair in files:
+                    tmp_img = pair[0]
+                    tmp_gt = pair[1]
+                    sample_indices.append(
+                        (os.path.join(data_root, tmp_img),
+                         os.path.join(data_root, tmp_gt),))
 
         return sample_indices
 
@@ -389,9 +401,9 @@ class BipedDataset(Dataset):
         #         data.append(torch.from_numpy(img_scale.transpose((2, 0, 1))).float())
         #     return data, gt
         #  400 for BIPEd and 352 for BSDS check with 384
-        crop_size = self.img_height if self.img_height == self.img_width else 352#320#352
+        crop_size = self.img_height if self.img_height == self.img_width else 352# MDBD=480 BPED=352
 
-        # for BSDS
+        # # for BSDS
         # if i_w> crop_size and i_h>crop_size:
         #     i = random.randint(0, i_h - crop_size)
         #     j = random.randint(0, i_w - crop_size)
@@ -401,23 +413,24 @@ class BipedDataset(Dataset):
         # for BIPED
         if np.random.random() >= 0.5: #l
             h,w = gt.shape
-            LR_img_size = 256  #l 256, 240 200
+            LR_img_size = 352  #l BIPED=256, 240 200 # MDBD= 352
             i = random.randint(0, h - LR_img_size)
             j = random.randint(0, w - LR_img_size)
             # if img.
             img = img[i:i + LR_img_size , j:j + LR_img_size ]
             gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
-            if img.size == 0:
-                print('none')
             img = cv2.resize(img, dsize=(crop_size, crop_size),)
             gt = cv2.resize(gt, dsize=(crop_size, crop_size))
         else:
             # New addidings
             img = cv2.resize(img, dsize=(crop_size, crop_size))
             gt = cv2.resize(gt, dsize=(crop_size, crop_size))
-
+         # for  BIPED and BSDS
         gt[gt > 0.2] += 0.5
         gt = np.clip(gt, 0., 1.)
+        # for MDBD
+        # gt[gt > 0.1] =1.
+        ## gt = np.clip(gt, 0., 1.)
         # # For RCF input
         # # -----------------------------------
         # gt[gt==0]=0.
