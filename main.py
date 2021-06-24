@@ -392,7 +392,7 @@ def main(args):
 
         return
 
-    criterion = bdcn_loss3
+    criterion = bdcn_loss4
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
