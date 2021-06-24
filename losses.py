@@ -34,6 +34,23 @@ def bdcn_loss2(inputs, targets, l_weight=1.1):
     cost = torch.nn.BCELoss(mask, reduction='sum')(inputs, targets.float())
     return l_weight*cost
 
+def bdcn_loss3(inputs, targets, l_weight=1.1):
+    # bdcn loss with the rcf approach
+    mask = (targets > 0).float()
+    num_positive = mask.float().sum((1,2,3), keepdim=True) # >0.1
+    num_negative = mask.size(1)*mask.size(2)*mask.size(3) - num_positive # <= 0.1
+
+    beta = num_negative / (num_positive + num_negative)
+    beta2 = num_positive / (num_positive + num_negative)
+
+    pos_w = torch.where(~mask.bool(), beta, beta2)
+
+    inputs= torch.sigmoid(inputs)
+    cost = torch.nn.BCELoss(pos_w)(inputs, targets.float())
+
+    return l_weight*cost
+
+
 def bdcn_lossORI(inputs, targets, l_weigts=1.1,cuda=False):
     """
     :param inputs: inputs is a 4 dimensional data nx1xhxw
