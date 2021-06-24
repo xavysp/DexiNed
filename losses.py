@@ -36,12 +36,13 @@ def bdcn_loss2(inputs, targets, l_weight=1.1):
 
 def bdcn_loss3(inputs, targets, l_weight=1.1):
     # bdcn loss with the rcf approach
-    mask = (targets > 0).float()
+    mask = (targets > 0.1).float()
+    _,c,w,h = mask.shape
     num_positive = mask.float().sum((1,2,3), keepdim=True) # >0.1
-    num_negative = mask.size(1)*mask.size(2)*mask.size(3) - num_positive # <= 0.1
+    num_negative = c*w*h - num_positive # <= 0.1
 
-    beta = num_negative / (num_positive + num_negative)
-    beta2 = num_positive / (num_positive + num_negative)
+    beta = 1.*num_negative / (num_positive + num_negative)
+    beta2 = 1.1*num_positive / (num_positive + num_negative)
 
     pos_w = torch.where(~mask.bool(), beta, beta2)
 

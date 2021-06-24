@@ -413,7 +413,7 @@ class BipedDataset(Dataset):
         # for BIPED
         if np.random.random() >= 0.5: #l
             h,w = gt.shape
-            LR_img_size = 352  #l BIPED=256, 240 200 # MDBD= 352
+            LR_img_size = 256  #l BIPED=256, 240 200 # MDBD= 352
             i = random.randint(0, h - LR_img_size)
             j = random.randint(0, w - LR_img_size)
             # if img.
