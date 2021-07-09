@@ -6,6 +6,7 @@ import os
 import time, platform
 
 import cv2
+import numpy as np
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -31,7 +32,7 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
     # l_weight = [[0.05, 2.], [0.05, 2.], [0.05, 2.],
     #             [0.1, 1.], [0.1, 1.], [0.1, 1.],
     #             [0.01, 4.]]  # for cats loss
-
+    loss_avg =[]
     for batch_id, sample_batched in enumerate(dataloader):
         images = sample_batched['images'].to(device)  # BxCxHxW
         labels = sample_batched['labels'].to(device)  # BxHxW
@@ -42,11 +43,10 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
-        if tb_writer is not None:
-            tb_writer.add_scalar('loss',
-                                 loss.detach(),
-                                 (len(dataloader) * epoch + batch_id))
+        loss_avg.append(loss.item())
+        if epoch==0 and (batch_id==100 and tb_writer is not None):
+            tmp_loss = np.array(loss_avg).mean()
+            tb_writer.add_scalar('loss', tmp_loss,epoch)
 
         if batch_id % 5 == 0:
             print(time.ctime(), 'Epoch: {0} Sample {1}/{2} Loss: {3}'
@@ -88,6 +88,8 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
                                    (x, y),
                                    font, font_size, font_color, font_thickness, cv2.LINE_AA)
             cv2.imwrite(os.path.join(imgs_res_folder, 'results.png'), vis_imgs)
+    loss_avg = np.array(loss_avg).mean()
+    return loss_avg
 
 
 def validate_one_epoch(epoch, dataloader, model, device, output_dir, arg=None):
@@ -193,7 +195,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     parser.add_argument('--choose_test_data',
                         type=int,
-                        default=0,
+                        default=1,
                         help='Already set the dataset for testing choice: 0 - 8')
     # ----------- test -------0--
 
@@ -201,10 +203,10 @@ def parse_args():
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = test_inf['data_dir']
-    is_testing = False # current test _bdcnlossNew256-sd7-1.10.4p5
+    is_testing = False# current test _bdcnlossNew256-sd7-1.10.4p5
 
     # Training settings
-    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
+    TRAIN_DATA = DATASET_NAMES[1] # BIPED=0
     train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_inf['data_dir']
 
@@ -245,7 +247,7 @@ def parse_args():
                         help='Script in testing mode.')
     parser.add_argument('--double_img',
                         type=bool,
-                        default=True,
+                        default=False,
                         help='True: use same 2 imgs changing channels')  # Just for test
     parser.add_argument('--resume',
                         type=bool,
@@ -253,7 +255,7 @@ def parse_args():
                         help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='14/14_model.pth',
+                        default='19/19_model.pth',
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -274,7 +276,7 @@ def parse_args():
 
     parser.add_argument('--epochs',
                         type=int,
-                        default=22,
+                        default=34,
                         metavar='N',
                         help='Number of training epochs (default: 25).')
     parser.add_argument('--lr',
@@ -283,9 +285,9 @@ def parse_args():
                         help='Initial learning rate.')
     parser.add_argument('--wd',
                         type=float,
-                        default=1e-4,
+                        default=0.,
                         metavar='WD',
-                        help='weight decay (default: 1e-4)')
+                        help='weight decay (default: 1e-4) in F1=0')
     # parser.add_argument('--lr_stepsize',
     #                     default=1e4,
     #                     type=int,
@@ -305,11 +307,11 @@ def parse_args():
     parser.add_argument('--img_width',
                         type=int,
                         default=480,
-                        help='Image width for training.') # BIPED 400 BSDS 352 MDBD 480
+                        help='Image width for training.') # BIPED 400 BSDS 352/320 MDBD 480
     parser.add_argument('--img_height',
                         type=int,
                         default=480,
-                        help='Image height for training.') # BIPED 400 BSDS 352
+                        help='Image height for training.') # BIPED 480 BSDS 352/320
     parser.add_argument('--channel_swap',
                         default=[2, 1, 0],
                         type=int)
@@ -392,7 +394,7 @@ def main(args):
 
         return
 
-    criterion = bdcn_loss4
+    criterion = bdcn_loss2
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
@@ -416,7 +418,7 @@ def main(args):
         os.makedirs(output_dir_epoch,exist_ok=True)
         os.makedirs(img_test_dir,exist_ok=True)
 
-        train_one_epoch(epoch,
+        avg_loss =train_one_epoch(epoch,
                         dataloader_train,
                         model,
                         criterion,
@@ -435,6 +437,10 @@ def main(args):
         # Save model after end of every epoch
         torch.save(model.module.state_dict() if hasattr(model, "module") else model.state_dict(),
                    os.path.join(output_dir_epoch, '{0}_model.pth'.format(epoch)))
+        if tb_writer is not None:
+            tb_writer.add_scalar('loss',
+                                 avg_loss,
+                                 epoch+1)
 
 
 if __name__ == '__main__':

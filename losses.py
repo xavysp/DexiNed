@@ -31,43 +31,32 @@ def bdcn_loss2(inputs, targets, l_weight=1.1):
     mask[mask <= 0.] = 1.1 * num_positive / (num_positive + num_negative)  # before mask[mask <= 0.1]
     # mask[mask == 2] = 0
     inputs= torch.sigmoid(inputs)
-    cost = torch.nn.BCELoss(mask, reduction='sum')(inputs, targets.float())
+    cost = torch.nn.BCELoss(mask, reduction='none')(inputs, targets.float())
+    cost = torch.sum(cost.float().mean((1, 2, 3)))
     return l_weight*cost
 
 def bdcn_loss3(inputs, targets, l_weight=1.1):
     # bdcn loss with the rcf approach
-    mask = (targets > 0.1).float()
-    _,c,w,h = mask.shape
-    num_positive = mask.float().sum((1,2,3), keepdim=True) # >0.1
-    num_negative = c*w*h - num_positive # <= 0.1
+    targets = targets.long()
+    # mask = (targets > 0.1).float()
+    mask = (targets > 0.).float()
+    # num_positive = torch.sum((mask > 0.0).float()).float()  # >0.1
+    num_positive = torch.sum((mask > 0.0).float(),dim=(1,2,3),keepdim=True).float()  # >0.1
+    num_negative = torch.sum((mask <= 0.0).float(),dim=(1,2,3),keepdim=True).float()  # <= 0.1
+    beta = 1. * num_negative / (num_positive + num_negative)
+    beta2 = 1.1 * num_positive / (num_positive + num_negative)
 
-    beta = 1.*num_negative / (num_positive + num_negative)
-    beta2 = 1.1*num_positive / (num_positive + num_negative)
+    # mask[mask > 0.] = 1.0 * num_negative / (num_positive + num_negative)  # 0.1
+    # mask[mask <= 0.] = 1.1 * num_positive / (num_positive + num_negative)  # before mask[mask <= 0.1]
+    # mask[mask == 2] = 0
+    pos_w = torch.where(mask.bool(), beta, beta2)
 
-    pos_w = torch.where(~mask.bool(), beta, beta2)
-
-    inputs= torch.sigmoid(inputs)
-    cost = torch.nn.BCELoss(pos_w)(inputs, targets.float())
-
-    return l_weight*cost
-
-def bdcn_loss4(inputs, targets, l_weight=1.1):
-    # bdcn loss with the rcf approach
-    mask = (targets > 0.1).float()
-    b,c,w,h = mask.shape
-    num_positive = mask.float().sum((1,2,3), keepdim=True) # >0.1
-    num_negative = c*w*h - num_positive # <= 0.1
-
-    beta = 1.*num_negative / (num_positive + num_negative)
-    beta2 = 1.1*num_positive / (num_positive + num_negative)
-
-    pos_w = torch.where(~mask.bool(), beta, beta2)
-
-    inputs= torch.sigmoid(inputs)
-    # cost = torch.nn.BCELoss(pos_w)(inputs, targets.float())
-    cost = torch.nn.BCELoss(pos_w, reduction='none')(inputs, targets.float())
-    cost = torch.sum(cost.float().mean((1,2,3), keepdim=True) * (1 - beta))
-
+    inputs = torch.sigmoid(inputs)
+    cost = torch.nn.BCELoss(pos_w, reduction='sum')(inputs, targets.float())
+    # cost = torch.mean(cost.float().sum((1, 2, 3), keepdim=True))
+    # cost = torch.mean(cost.float().sum((1,2,3), keepdim=True) * (1 - beta))
+    # cost = torch.sum(cost.float().sum((1,2,3), keepdim=True) * (1 - beta))
+    # print(cost.shape)
     return l_weight*cost
 
 
