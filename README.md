@@ -46,7 +46,7 @@ Once the packages are installed,  clone this repo as follow:
 ## Project Architecture
 
 ```
-├── data                        # Sample images for testing
+├── data                        # Sample images for testing (paste your image here)
 |   ├── lena_std.tif            # Sample 1
 ├── DexiNed-TF2                 # DexiNed in TensorFlow2 (in construction)   
 ├── figs                        # Images used in README.md
@@ -97,7 +97,7 @@ DATASET_NAMES = [
     'CLASSIC'
 ] 
 ```
-For example, if want t test your own dataset or image choose "CLASSIC".
+For example, if want to test your own dataset or image choose "CLASSIC" and save your test data in "data" dir.
 Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1SUytJJxicNAzncDNwDjIUG24FUpEWHm_/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/14/(here the checkpoints from Drive), then run as follow:
 
 ```python main.py --choose_test_data=-1 ```
