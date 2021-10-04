@@ -46,34 +46,44 @@ Once the packages are installed,  clone this repo as follow:
 ## Project Architecture
 
 ```
-├── data                        # sample images for testing
-|   ├── lena_std.tif            # sample 1
-|   └── stonehengeuk.jpg        # sample 2
+├── data                        # Sample images for testing
+|   ├── lena_std.tif            # Sample 1
+├── DexiNed-TF2                 # DexiNed in TensorFlow2 (in construction)   
 ├── figs                        # Images used in README.md
 |   └── DexiNed_banner.png      # DexiNed banner
-├── models                      # tensorflow model file  
-|   └── dexined.py              # DexiNed class
-├── utls                        # a series of tools used in this repo
-|   └── dataset_manager.py      # tools for dataset managing
-|   └── losses.py               # Loss function used to train DexiNed 
-|   └── utls.py                 # miscellaneous tool functions
-├── run_model.py                # the main python file with main functions and parameter settings
-└── test.py                     # the script to run the test experiment
-└── train.py                    # the script to run the train experiment
+├── legacy                      # DexiNed in TensorFlow1 (presented in WACV2020)
+├── utls                        # A series of tools used in this repo
+|   └── image.py                # Miscellaneous tool functions
+├── datasets.py                 # Tools for dataset managing 
+├── dexi_utils.py               # New functions still not used in the currecnt version
+├── losses.py                   # Loss function used to train DexiNed (BDCNloss2)
+├── main.py                     # The main python file with main functions and parameter settings
+                                # here you can test and train
+├── model.py                    # DexiNed class in pythorch
 ```
 
-As described above, run_model.py has the parameters settings, whether DexiNed is used for training or testing, before those processes the parameters need to be set. As highlighted, DexiNed is trained just one time with our proposed dataset BIPED, so in "--train_dataset" as the default setting is BIDEP; however, in the testing stage (--test_dataset), any dataset can be used, even CLASSIC, which is an arbitrary image downloaded from the internet. However, to evaluate with single images or CLASSIC "--use_dataset" has to be in FALSE mode. Whenever a dataset is used to test or train on DexiNed the arguments have to have the list of training or testing files (--train_list, --test_list). Pay attention in the parameters' settings, and change whatever you want, like ''--image_width'' or ''--image_height''. To test the Lena image I set 512x51 (see "test" section).
+Before to start please check dataset.py, from the first line of code you can see the datasets used for training/testing. The main.py, line 194, call the data  for the training or testing, see the example of the code below:
 ```
-parser.add_argument('--train_dataset', default='BIPED', choices=['BIPED','BSDS'])
-parser.add_argument('--test_dataset', default='CLASSIC', choices=['BIPED', 'BSDS','MULTICUE','NYUD','PASCAL','CID'])
-parser.add_argument('--dataset_dir',default=None,type=str)
-parser.add_argument('--dataset_augmented', default=True,type=bool)
-parser.add_argument('--train_list',default='train_rgb.lst', type=str)
-parser.add_argument('--test_list', default='test_pair.lst',type=str)  
+    parser = argparse.ArgumentParser(description='DexiNed trainer.')
+    parser.add_argument('--choose_test_data',
+                        type=int,
+                        default=1,
+                        help='Already set the dataset for testing choice: 0 - 8')
+    # ----------- test -------0--
+
+    TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
+    test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
+    test_dir = test_inf['data_dir']
+    is_testing = True# current test -352-SM-NewGT-2AugmenPublish
+
+    # Training settings
+    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
+    train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
+    train_dir = train_inf['data_dir']
 ```
 
 ## Test
-The datasets.py has, among other things, The whole datasets configurations used in DexiNed for testing and training:
+As previously mentioned, the datasets.py has, among other things, the whole datasets configurations used in DexiNed for testing and training:
 ```
 DATASET_NAMES = [
     'BIPED',
@@ -93,7 +103,7 @@ Before test the DexiNed model, it is necesarry to download the checkpoint here [
 ```python main.py --choose_test_data=-1 ```
 Make sure that in main.py the test setting be as:
 ```parser.add_argument('--is_testing', default=True, help='Script in testing mode.')```
-DexiNed downsample the input image till 16 scales, please make sure that, in dataset_info fucn (datasets.py), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will the find the last trained checkpoint, which has been trained in the last version of BIPED dataset that will be updated soon in Kaggle **
+DexiNed downsample the input image till 16 scales, please make sure that, in dataset_info fucn (datasets.py), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will find the last trained checkpoint, which has been trained in the last version of BIPED dataset that will be updated soon in Kaggle **
 
 ## Train
 
@@ -109,7 +119,7 @@ Make sure that in main.py the train setting be as:
 
 ```
 
-BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. See more details and download in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped). The BIPED dataset has been updated, adding more annotations and correcting few mistakes, so those links have the renewed version of BIPED, if you want the older version you may ask us by email. The last performance (table below) will be updated soon. 
+BIPED (Barcelona Images for Perceptual Edge Detection): This dataset is collected and annotated in the edge level for this work. **See more details, augmentation script, and download** in: [Option1](https://xavysp.github.io/MBIPED/), [Option2 kaggle](https://www.kaggle.com/xavysp/biped). The BIPED dataset has been updated, adding more annotations and correcting few mistakes, so those links have the renewed version of BIPED, if you want the older version you may ask us by email. The last performance (table below) will be updated soon. 
 
 ## Datasets used for Testing
 
