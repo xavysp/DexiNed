@@ -6,11 +6,16 @@
 - Sorry for any inconvenience, we are updating the repo
 ``` -->
 ```diff
-- We have just updated the last version of DexiNed in Pytorch. The implementation with TF1 will fransfer to the "legacy" dir
+- We have just updated the last version of DexiNed in Pytorch.
+- The implementation with TF1 is fransfered to the "legacy" dir.
+- These days we are going to updated minor changes but the model, 
+  loss function, and the testing and training procedures does not need changes,
+  hopefully :), if you have time please check errors and let me know
+  in Issues.
 
 ```
 
-This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955). The last version of DexiNed is implemented in Pytorch, in TF2 it will be available soon.
+This is the extended work from DexiNed presented in WACV2020. We have improved the architecture and the dataset. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), the extended version will be available soon in ARXIV. The last version of DexiNed is implemented in Pytorch, in TF2 it will be available soon. If to want our preliminary version, please check legacy DIR.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
