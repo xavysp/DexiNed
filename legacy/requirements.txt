@@ -17,7 +17,7 @@ matplotlib==3.1.2
 mock==4.0.2
 numpy==1.18.1
 oauthlib==3.1.0
-opencv-python==4.1.2.30
+opencv-python==4.4.0
 opt-einsum==3.2.1
 pkg-resources==0.0.0
 protobuf==3.11.2
