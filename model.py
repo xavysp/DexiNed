@@ -5,16 +5,20 @@ import torch.nn.functional as F
 
 def weight_init(m):
     if isinstance(m, (nn.Conv2d,)):
+        # torch.nn.init.xavier_uniform_(m.weight, gain=1.0)
         torch.nn.init.xavier_normal_(m.weight, gain=1.0)
+        # torch.nn.init.normal_(m.weight, mean=0.0, std=0.01)
         if m.weight.data.shape[1] == torch.Size([1]):
-            torch.nn.init.normal_(m.weight, mean=0.0,)
+            torch.nn.init.normal_(m.weight, mean=0.0)
 
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)
 
     # for fusion layer
     if isinstance(m, (nn.ConvTranspose2d,)):
+        # torch.nn.init.xavier_uniform_(m.weight, gain=1.0)
         torch.nn.init.xavier_normal_(m.weight, gain=1.0)
+        # torch.nn.init.normal_(m.weight, mean=0.0, std=0.01)
 
         if m.weight.data.shape[1] == torch.Size([1]):
             torch.nn.init.normal_(m.weight, std=0.1)
@@ -175,6 +179,7 @@ class DexiNed(nn.Module):
         self.side_5 = SingleConvBlock(512, 256, 1)
 
         # right skip connections, figure in Journal paper
+        self.pre_dense_2 = SingleConvBlock(128, 256, 2)
         self.pre_dense_3 = SingleConvBlock(128, 256, 1)
         self.pre_dense_4 = SingleConvBlock(256, 512, 1)
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
@@ -225,7 +230,8 @@ class DexiNed(nn.Module):
         block_3_side = self.side_3(block_3_add)
 
         # Block 4
-        block_4_pre_dense = self.pre_dense_4(block_3_down)
+        block_2_resize_half = self.pre_dense_2(block_2_down)
+        block_4_pre_dense = self.pre_dense_4(block_3_down+block_2_resize_half)
         block_4, _ = self.dblock_4([block_3_add, block_4_pre_dense])
         block_4_down = self.maxpool(block_4)
         block_4_add = block_4_down + block_3_side

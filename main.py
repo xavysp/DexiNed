@@ -6,17 +6,14 @@ import os
 import time, platform
 
 import cv2
-import numpy as np
-import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from datasets import DATASET_NAMES, BipedDataset, TestDataset, dataset_info
 from losses import *
 from model import DexiNed
-# from model0C import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
-                   visualize_result)
+                   visualize_result,count_parameters)
 
 IS_LINUX = True if platform.system()=="Linux" else False
 def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
@@ -28,7 +25,7 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
     model.train()
     # l_weight = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.1]  # for bdcn ori loss
      # before [0.6,0.6,1.1,1.1,0.4,0.4,1.3] [0.4,0.4,1.1,1.1,0.6,0.6,1.3],[0.4,0.4,1.1,1.1,0.8,0.8,1.3]
-    l_weight = [0.7,0.7,1.1,1.1,0.3,0.3,1.3] # for bdcn loss theory 3 before the last 1.3 0.6-0..5
+    l_weight = [0.7,0.7,1.1,1.1,0.3,0.3,1.3] # New BDCN  loss
     # l_weight = [[0.05, 2.], [0.05, 2.], [0.05, 2.],
     #             [0.1, 1.], [0.1, 1.], [0.1, 1.],
     #             [0.01, 4.]]  # for cats loss
@@ -38,7 +35,7 @@ def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
         labels = sample_batched['labels'].to(device)  # BxHxW
         preds_list = model(images)
         # loss = sum([criterion(preds, labels, l_w, device) for preds, l_w in zip(preds_list, l_weight)])  # cats_loss
-        loss = sum([criterion(preds, labels,l_w)/args.batch_size for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
+        loss = sum([criterion(preds, labels,l_w) for preds, l_w in zip(preds_list,l_weight)]) # bdcn_loss
         # loss = sum([criterion(preds, labels) for preds in preds_list])  #HED loss, rcf_loss
         optimizer.zero_grad()
         loss.backward()
@@ -195,7 +192,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     parser.add_argument('--choose_test_data',
                         type=int,
-                        default=1,
+                        default=-1,
                         help='Already set the dataset for testing choice: 0 - 8')
     # ----------- test -------0--
 
@@ -203,10 +200,10 @@ def parse_args():
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = test_inf['data_dir']
-    is_testing = False# current test _bdcnlossNew256-sd7-1.10.4p5
+    is_testing =True#  current test -352-SM-NewGT-2AugmenPublish
 
     # Training settings
-    TRAIN_DATA = DATASET_NAMES[1] # BIPED=0
+    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0, MDBD=6
     train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
     train_dir = train_inf['data_dir']
 
@@ -255,7 +252,7 @@ def parse_args():
                         help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
-                        default='19/19_model.pth',
+                        default='10/10_model.pth',# 4 6 7 9 14
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
@@ -276,7 +273,7 @@ def parse_args():
 
     parser.add_argument('--epochs',
                         type=int,
-                        default=34,
+                        default=17,
                         metavar='N',
                         help='Number of training epochs (default: 25).')
     parser.add_argument('--lr',
@@ -285,20 +282,20 @@ def parse_args():
                         help='Initial learning rate.')
     parser.add_argument('--wd',
                         type=float,
-                        default=0.,
+                        default=1e-8,
                         metavar='WD',
-                        help='weight decay (default: 1e-4) in F1=0')
-    # parser.add_argument('--lr_stepsize',
-    #                     default=1e4,
-    #                     type=int,
-    #                     help='Learning rate step size.')
+                        help='weight decay (Good 1e-8) in TF1=0') # 1e-8 -> BIRND/MDBD, 0.0 -> BIPED
+    parser.add_argument('--adjust_lr',
+                        default=[10,15],
+                        type=int,
+                        help='Learning rate step size.') #[5,10]BIRND [10,15]BIPED/BRIND
     parser.add_argument('--batch_size',
                         type=int,
                         default=8,
                         metavar='B',
                         help='the mini-batch size (default: 8)')
     parser.add_argument('--workers',
-                        default=8,
+                        default=16,
                         type=int,
                         help='The number of workers for the dataloaders.')
     parser.add_argument('--tensorboard',type=bool,
@@ -306,11 +303,11 @@ def parse_args():
                         help='Use Tensorboard for logging.'),
     parser.add_argument('--img_width',
                         type=int,
-                        default=480,
+                        default=352,
                         help='Image width for training.') # BIPED 400 BSDS 352/320 MDBD 480
     parser.add_argument('--img_height',
                         type=int,
-                        default=480,
+                        default=352,
                         help='Image height for training.') # BIPED 480 BSDS 352/320
     parser.add_argument('--channel_swap',
                         default=[2, 1, 0],
@@ -339,9 +336,17 @@ def main(args):
     os.makedirs(training_dir,exist_ok=True)
     checkpoint_path = os.path.join(args.output_dir, args.train_data, args.checkpoint_data)
     if args.tensorboard and not args.is_testing:
-        # from tensorboardX import SummaryWriter  # previous torch version
         from torch.utils.tensorboard import SummaryWriter # for torch 1.4 or greather
         tb_writer = SummaryWriter(log_dir=training_dir)
+        # saving Model training settings
+        training_notes = ['DexiNed, Xavier Normal Init, LR= ' + str(args.lr) + ' WD= '
+                          + str(args.wd) + ' image size = ' + str(args.img_width)
+                          + ' adjust LR='+ str(args.adjust_lr) + ' Loss Function= BDCNloss2. '
+                          +'Trained on> '+args.train_data+' Tested on> '
+                          +args.test_data+' Batch size= '+str(args.batch_size)+' '+str(time.asctime())]
+        info_txt = open(os.path.join(training_dir, 'training_settings.txt'), 'w')
+        info_txt.write(str(training_notes))
+        info_txt.close()
 
     # Get computing device
     device = torch.device('cpu' if torch.cuda.device_count() == 0
@@ -353,9 +358,10 @@ def main(args):
     ini_epoch =0
     if not args.is_testing:
         if args.resume:
-            ini_epoch=17
+            ini_epoch=11
             model.load_state_dict(torch.load(checkpoint_path,
                                          map_location=device))
+            print('Training restarted from> ',checkpoint_path)
         dataset_train = BipedDataset(args.input_dir,
                                      img_width=args.img_width,
                                      img_height=args.img_height,
@@ -392,17 +398,23 @@ def main(args):
         else:
             test(checkpoint_path, dataloader_val, model, device, output_dir, args)
 
+        num_param = count_parameters(model)
+        print('-------------------------------------------------------')
+        print('Number of parameters of current DexiNed model:')
+        print(num_param)
+        print('-------------------------------------------------------')
         return
 
-    criterion = bdcn_loss2
+    criterion = bdcn_loss2 # hed_loss2 #bdcn_loss2
+
     optimizer = optim.Adam(model.parameters(),
                            lr=args.lr,
                            weight_decay=args.wd)
-    # lr_schd = lr_scheduler.StepLR(optimizer, step_size=args.lr_stepsize,
-    #                               gamma=args.lr_gamma)
 
     # Main training loop
     seed=1021
+    adjust_lr = args.adjust_lr
+    lr2= args.lr
     for epoch in range(ini_epoch,args.epochs):
         if epoch%7==0:
 
@@ -412,6 +424,11 @@ def main(args):
             torch.cuda.manual_seed(seed)
             print("------ Random seed applied-------------")
         # Create output directories
+        if adjust_lr is not None:
+            if epoch in adjust_lr:
+                lr2 = lr2*0.1
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] = lr2
 
         output_dir_epoch = os.path.join(args.output_dir,args.train_data, str(epoch))
         img_test_dir = os.path.join(output_dir_epoch, args.test_data + '_res')
@@ -441,7 +458,12 @@ def main(args):
             tb_writer.add_scalar('loss',
                                  avg_loss,
                                  epoch+1)
-
+        print('Current learning rate> ', optimizer.param_groups[0]['lr'])
+    num_param = count_parameters(model)
+    print('-------------------------------------------------------')
+    print('~Number of parameters of current DexiNed model:')
+    print(num_param)
+    print('-------------------------------------------------------')
 
 if __name__ == '__main__':
     args = parse_args()

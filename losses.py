@@ -12,7 +12,6 @@ def hed_loss2(inputs, targets, l_weight=1.1):
 
     mask[mask > 0.1] = 1.0 * num_negative / (num_positive + num_negative)
     mask[mask <= 0.] = 1.1 * num_positive / (num_positive + num_negative)
-    # mask[mask == 2] = 0
     inputs= torch.sigmoid(inputs)
     cost = torch.nn.BCELoss(mask, reduction='sum')(inputs.float(), targets.float())
 
@@ -32,33 +31,9 @@ def bdcn_loss2(inputs, targets, l_weight=1.1):
     # mask[mask == 2] = 0
     inputs= torch.sigmoid(inputs)
     cost = torch.nn.BCELoss(mask, reduction='none')(inputs, targets.float())
-    cost = torch.sum(cost.float().mean((1, 2, 3)))
+    # cost = torch.mean(cost.float().mean((1, 2, 3))) # before sum
+    cost = torch.sum(cost.float().mean((1, 2, 3))) # before sum
     return l_weight*cost
-
-def bdcn_loss3(inputs, targets, l_weight=1.1):
-    # bdcn loss with the rcf approach
-    targets = targets.long()
-    # mask = (targets > 0.1).float()
-    mask = (targets > 0.).float()
-    # num_positive = torch.sum((mask > 0.0).float()).float()  # >0.1
-    num_positive = torch.sum((mask > 0.0).float(),dim=(1,2,3),keepdim=True).float()  # >0.1
-    num_negative = torch.sum((mask <= 0.0).float(),dim=(1,2,3),keepdim=True).float()  # <= 0.1
-    beta = 1. * num_negative / (num_positive + num_negative)
-    beta2 = 1.1 * num_positive / (num_positive + num_negative)
-
-    # mask[mask > 0.] = 1.0 * num_negative / (num_positive + num_negative)  # 0.1
-    # mask[mask <= 0.] = 1.1 * num_positive / (num_positive + num_negative)  # before mask[mask <= 0.1]
-    # mask[mask == 2] = 0
-    pos_w = torch.where(mask.bool(), beta, beta2)
-
-    inputs = torch.sigmoid(inputs)
-    cost = torch.nn.BCELoss(pos_w, reduction='sum')(inputs, targets.float())
-    # cost = torch.mean(cost.float().sum((1, 2, 3), keepdim=True))
-    # cost = torch.mean(cost.float().sum((1,2,3), keepdim=True) * (1 - beta))
-    # cost = torch.sum(cost.float().sum((1,2,3), keepdim=True) * (1 - beta))
-    # print(cost.shape)
-    return l_weight*cost
-
 
 def bdcn_lossORI(inputs, targets, l_weigts=1.1,cuda=False):
     """
@@ -111,9 +86,6 @@ def bdrloss(prediction, label, radius,device='cpu'):
 
     bdr_pred = prediction * label
     pred_bdr_sum = label * F.conv2d(bdr_pred, filt, bias=None, stride=1, padding=radius)
-
-
-
     texture_mask = F.conv2d(label.float(), filt, bias=None, stride=1, padding=radius)
     mask = (texture_mask != 0).float()
     mask[label == 1] = 0
@@ -174,5 +146,3 @@ def cats_loss(prediction, label, l_weight=[0.,0.], device='cpu'):
     bdrcost = bdrloss(prediction.float(), label_w.float(), radius=4, device=device)
 
     return cost + bdr_factor * bdrcost + tex_factor * textcost
-
-

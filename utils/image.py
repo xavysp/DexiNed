@@ -25,6 +25,12 @@ def image_normalization(img, img_min=0, img_max=255,
         ((np.max(img) - np.min(img)) + epsilon) + img_min
     return img
 
+def count_parameters(model=None):
+    if model is not None:
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    else:
+        print("Error counting model parameters line 32 img_processing.py")
+        raise NotImplementedError
 
 def save_image_batch_to_disk(tensor, output_dir, file_names, img_shape=None, arg=None, is_inchannel=False):
 
