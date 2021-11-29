@@ -227,7 +227,7 @@ class TestDataset(Dataset):
         return sample_indices
 
     def __len__(self):
-        return len(self.data_index)
+        return len(self.data_index[0]) if self.test_data.upper()=='CLASSIC' else len(self.data_index)
 
     def __getitem__(self, idx):
         # get data sample
