@@ -95,16 +95,11 @@ The results below are from the last version of BIPEP. After WACV20, the BIPED im
 
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
-| [SED](https://github.com/ArashAkbarinia/BoundaryDetection) before     | `.717` | `.731` | `.756` |
-| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)      | `.000` | `.000` | `.000` |
-| [HED](https://github.com/s9xie/hed) before     | `.823` | `.847` | `.869` |
-| [HED](https://github.com/s9xie/hed)     | `.000` | `.000` | `.000` |
-| [RCF](https://github.com/yun-liu/rcf) before     | `.843` | `.859` | `.882` |
-| [RCF](https://github.com/yun-liu/rcf)      | `.000` | `.000` | `.000` |
-| [BDCN](https://github.com/pkuCactus/BDCN) before    | `.839` | `.854` | `.887` |
-| [BDCN](https://github.com/pkuCactus/BDCN)     | `.000` | `.000` | `.000` |
+| [SED](https://github.com/ArashAkbarinia/BoundaryDetection)     | `.717` | `.731` | `.756` |
+| [HED](https://github.com/s9xie/hed)     | `.823` | `.847` | `.869` |
+| [RCF](https://github.com/yun-liu/rcf)     | `.843` | `.859` | `.882` |
+| [BDCN](https://github.com/pkuCactus/BDCN)    | `.839` | `.854` | `.887` |
 | DexiNed(WACV'20)| `.859` | `.867` | `.905` |
-| DexiNed(Ours)| `.000` | `.000` | `.000` |
 </center>
 Evaluation performed to BIPED dataset. We will update the result soon.
 
