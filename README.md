@@ -15,7 +15,16 @@
 
 ```
 
-This is the extended work from DexiNed presented in WACV2020. We have improved the architecture and the dataset. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), the extended version will be available soon in ARXIV. The last version of DexiNed is implemented in Pytorch, in TF2 it will be available soon. If to want our preliminary version, please check legacy DIR.
+This is the extended work from DexiNed presented in WACV2020. 
+We have improved the architecture and the dataset. Unlike of the state-of-the-art CNN
+based edge detectors, this models has a single training stage, 
+but it is still able to overcome those models in edge detection datasets. Moreover, 
+Dexined does not need pre-trained weights, and it is trained from the scratch 
+with fewer parameters tunning. To know more about DexiNed, read our first 
+version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), 
+and its extended version [here](https://arxiv.org/abs/1909.01955).
+The last version of DexiNed is implemented in Pytorch, in TF2 it 
+will be available soon. If to want our preliminary version, please check legacy DIR.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 
@@ -138,7 +147,7 @@ Non-edge detection datasets
 # Performance
 
 The results below are from the last version of BIPEP (BIPEDv2, we leave as BIPED because this is the default version).
-After WACV20, the BIPED images have been again checked and added annotations. All of those models have been trained again. 
+After WACV20, the BIPED images have been checked again and added more annotations. All of those models have been trained again. 
 
 <center>
 
@@ -168,13 +177,13 @@ Please cite our paper if you find helpful in your academic/scientific publicatio
 }
 ```
 
-<!--```
-@misc{soria2020dexined_ext,
-    title={Towards a Robust Deep Learning Model for Edge Detection},
-    author={Xavier Soria and Edgar Riba and Angel Sappa},
-    year={2020},
+```
+@misc{soria2021dexined_ext,
+    title={Dense Extreme Inception Network for Edge Detection},
+    author={Xavier Soria and Angel Sappa and Patricio Humanante and Arash Arbarinia},
+    year={2021},
     eprint={000000000},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
-```-->
+```
 
