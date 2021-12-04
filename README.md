@@ -27,6 +27,7 @@ The last version of DexiNed is implemented in Pytorch, in TF2 it
 will be available soon. If to want our preliminary version, please check legacy DIR.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
+</div>
 
 ## Table of Contents
 * [DexiNed-v1](#dexiNed-v1)
@@ -159,6 +160,7 @@ After WACV20, the BIPED images have been checked again and added more annotation
 | DexiNed-a(Ours)| `.893` | `.897` | `.940` |
 
 </center>
+
 
 # Citation
 
