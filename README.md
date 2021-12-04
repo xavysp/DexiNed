@@ -150,7 +150,6 @@ The results below are from the last version of BIPEP (BIPEDv2, we leave as BIPED
 After WACV20, the BIPED images have been checked again and added more annotations. All of those models have been trained again. 
 
 <center>
-
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
 | [RCF](https://github.com/yun-liu/rcf)      | `.849` | `.861` | `.906` |
@@ -158,8 +157,8 @@ After WACV20, the BIPED images have been checked again and added more annotation
 | [CATS](https://github.com/WHUHLX/CATS)     | `.887` | `.892` | `.817` |
 | DexiNed-f(Ours)| `.895` | `.900` | `.927` |
 | DexiNed-a(Ours)| `.893` | `.897` | `.940` |
+
 </center>
-Evaluation performed to BIPED dataset. We will update the result soon.
 
 # Citation
 
