@@ -9,6 +9,7 @@
 This work presents a new Convolutional Neural Network (CNN) arquitecture for edge detection. Unlike of the state-of-the-art CNN based edge detectors, this models has a single training stage, but it is still able to overcome those models in the edge detection datasets. Moreover, Dexined does not need pre-trained weights, and it is trained from the scratch with fewer parameters tunning. To know more about DexiNed, read our first version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), the last version will be uploaded after the camera-ready deadline of WACV2020.
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
+<div/>
 
 ## Table of Contents
 * [Datasets](#datasets)
