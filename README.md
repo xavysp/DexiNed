@@ -151,6 +151,7 @@ The results below are from the last version of BIPEP (BIPEDv2, we leave as BIPED
 After WACV20, the BIPED images have been checked again and added more annotations. All of those models have been trained again. 
 
 <center>
+
 |     Methods    |    ODS   |    ODS   |    AP    |
 | -------------- | ---------| -------- | -------- |
 | [RCF](https://github.com/yun-liu/rcf)      | `.849` | `.861` | `.906` |
