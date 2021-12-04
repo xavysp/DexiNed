@@ -1,6 +1,6 @@
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-towards-a/edge-detection-on-biped)](https://paperswithcode.com/sota/edge-detection-on-biped?p=dense-extreme-inception-network-towards-a)
 
-# Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection (DexiNed)
+# DexiNed: Dense Extreme Inception Network for Edge Detection (Extended version)
 
 <!-- ```diff
 - Sorry for any inconvenience, we are updating the repo
@@ -21,7 +21,7 @@ based edge detectors, this models has a single training stage,
 but it is still able to overcome those models in edge detection datasets. Moreover, 
 Dexined does not need pre-trained weights, and it is trained from the scratch 
 with fewer parameters tunning. To know more about DexiNed, read our first 
-version of Dexined in [arxiv](https://arxiv.org/abs/1909.01955), 
+version of Dexined in [arxiv](https://ieeexplore.ieee.org/document/9093290), 
 and its extended version [here](https://arxiv.org/abs/1909.01955).
 The last version of DexiNed is implemented in Pytorch, in TF2 it 
 will be available soon. If to want our preliminary version, please check legacy DIR.
@@ -169,11 +169,20 @@ If you like DexiNed, why not starring the project on GitHub!
 
 Please cite our paper if you find helpful in your academic/scientific publication,
 ```
-@InProceedings{soria2020dexined,
-    title={Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection},
-    author={Xavier Soria and Edgar Riba and Angel Sappa},
-    booktitle={The IEEE Winter Conference on Applications of Computer Vision (WACV '20)},
-    year={2020}
+@INPROCEEDINGS {xsoria2020dexined,
+author = {X. Soria and E. Riba and A. Sappa},
+booktitle = {2020 IEEE Winter Conference on Applications of Computer Vision (WACV)},
+title = {Dense Extreme Inception Network: Towards a Robust CNN Model for Edge Detection},
+year = {2020},
+volume = {},
+issn = {},
+pages = {1912-1921},
+keywords = {image edge detection;convolution;training;feeds;machine learning;task analysis;kernel},
+doi = {10.1109/WACV45572.2020.9093290},
+url = {https://doi.ieeecomputersociety.org/10.1109/WACV45572.2020.9093290},
+publisher = {IEEE Computer Society},
+address = {Los Alamitos, CA, USA},
+month = {mar}
 }
 ```
 
