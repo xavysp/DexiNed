@@ -21,8 +21,8 @@ based edge detectors, this models has a single training stage,
 but it is still able to overcome those models in edge detection datasets. Moreover, 
 Dexined does not need pre-trained weights, and it is trained from the scratch 
 with fewer parameters tunning. To know more about DexiNed, read our first 
-version of Dexined in [arxiv](https://ieeexplore.ieee.org/document/9093290), 
-and its extended version [here](https://arxiv.org/abs/1909.01955).
+version of Dexined in [ieeexplore](https://ieeexplore.ieee.org/document/9093290), 
+and its extended version in[arXiv](https://arxiv.org/abs/1909.01955).
 The last version of DexiNed is implemented in Pytorch, in TF2 it 
 will be available soon. If to want our preliminary version, please check legacy DIR.
 
