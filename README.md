@@ -22,7 +22,7 @@ but it is still able to overcome those models in edge detection datasets. Moreov
 Dexined does not need pre-trained weights, and it is trained from the scratch 
 with fewer parameters tunning. To know more about DexiNed, read our first 
 version of Dexined in [ieeexplore](https://ieeexplore.ieee.org/document/9093290), 
-and its extended version in [arXiv](https://arxiv.org/abs/1909.01955).
+and its extended version in [arXiv](https://arxiv.org/abs/2112.02250).
 The last version of DexiNed is implemented in Pytorch, in TF2 it 
 will be available soon. If to want our preliminary version, please check legacy DIR.
 
