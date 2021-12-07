@@ -193,7 +193,7 @@ month = {mar}
     title={Dense Extreme Inception Network for Edge Detection},
     author={Xavier Soria and Angel Sappa and Patricio Humanante and Arash Arbarinia},
     year={2021},
-    eprint={000000000},
+    eprint={arXiv:2112.02250},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
 ```
