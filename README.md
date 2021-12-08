@@ -1,5 +1,5 @@
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-towards-a/edge-detection-on-biped)](https://paperswithcode.com/sota/edge-detection-on-biped?p=dense-extreme-inception-network-towards-a)
-
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-for-edge/edge-detection-on-biped-1)](https://paperswithcode.com/sota/edge-detection-on-biped-1?p=dense-extreme-inception-network-for-edge)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-for-edge/edge-detection-on-mdbd)](https://paperswithcode.com/sota/edge-detection-on-mdbd?p=dense-extreme-inception-network-for-edge)
 # DexiNed: Dense Extreme Inception Network for Edge Detection (Extended version)
 
 <!-- ```diff
