@@ -111,6 +111,7 @@ def dataset_info(dataset_name, is_linux=True):
             'BSDS': {'img_height': 512,  # 321
                      'img_width': 512,  # 481
                      'test_list': 'test_pair.lst',
+                     'train_list': 'train_pair.lst',
                      'data_dir': 'C:/Users/xavysp/dataset/BSDS',  # mean_rgb
                      'yita': 0.5},
             'BSDS300': {'img_height': 512,  # 321

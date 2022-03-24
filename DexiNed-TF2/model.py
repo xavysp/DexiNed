@@ -9,11 +9,11 @@ import tensorflow as tf
 
 
 l2 = regularizers.l2
-w_decay=1e-3 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
+w_decay=1e-8 #0.0#2e-4#1e-3, 2e-4 # please define weight decay
 K.clear_session()
 # weight_init = tf.initializers.RandomNormal(mean=0.,stddev=0.01)
 # weight_init = tf.initializers.glorot_normal()
-weight_init = tf.initializers.glorot_uniform()
+weight_init = tf.initializers.glorot_normal()
 
 class _DenseLayer(layers.Layer):
     """_DenseBlock model.
@@ -91,12 +91,12 @@ class UpConvBlock(layers.Layer):
             if i==up_scale-1:
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
-                    activation='relu', kernel_initializer=tf.initializers.TruncatedNormal(mean=0.),
+                    activation='relu', kernel_initializer=tf.initializers.random_normal(mean=0.),
                     kernel_regularizer=k_reg,use_bias=True)) #tf.initializers.TruncatedNormal(mean=0.)
                 features.append(layers.Conv2DTranspose(
                     out_features, kernel_size=(total_up_scale,total_up_scale),
                     strides=(2,2), padding='same',
-                    kernel_initializer=tf.initializers.TruncatedNormal(stddev=0.1),
+                    kernel_initializer=tf.initializers.random_normal(stddev=0.1),
                     kernel_regularizer=k_reg,use_bias=True)) # stddev=0.1
             else:
 
@@ -194,6 +194,7 @@ class DexiNed(tf.keras.Model):
     def __init__(self,rgb_mean=None,
                  **kwargs):
         super(DexiNed, self).__init__(**kwargs)
+
         self.rgbn_mean = rgb_mean
         self.block_1 = DoubleConvBlock(32, 64, stride=(2,2),use_act=False)
         self.block_2 = DoubleConvBlock(128,use_act=False)
@@ -203,7 +204,7 @@ class DexiNed(tf.keras.Model):
         self.dblock_6 = _DenseBlock(3, 256)
         self.maxpool = layers.MaxPool2D(pool_size=(3, 3), strides=2, padding='same')
 
-        # first skip connection
+        # left skip connections, figure in Journal
         self.side_1 = SingleConvBlock(128,k_size=(1,1),stride=(2,2),use_bs=True,
                                       w_init=weight_init)
         self.side_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),use_bs=True,
@@ -215,20 +216,20 @@ class DexiNed(tf.keras.Model):
         # self.side_5 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
         #                               w_init=weight_init)
 
-
+        # right skip connections, figure in Journal paper
         self.pre_dense_2 = SingleConvBlock(256,k_size=(1,1),stride=(2,2),
                                       w_init=weight_init) # use_bn=True
         self.pre_dense_3 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
         self.pre_dense_4 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
-        self.pre_dense_5_0 = SingleConvBlock(512, k_size=(1,1),stride=(2,2),
-                                      w_init=weight_init) # use_bn=True
+        # self.pre_dense_5_0 = SingleConvBlock(512, k_size=(1,1),stride=(2,2),
+        #                               w_init=weight_init) # use_bn=True
         self.pre_dense_5 = SingleConvBlock(512,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
         self.pre_dense_6 = SingleConvBlock(256,k_size=(1,1),stride=(1,1),use_bs=True,
                                       w_init=weight_init)
-
+        # USNet
         self.up_block_1 = UpConvBlock(1)
         self.up_block_2 = UpConvBlock(1)
         self.up_block_3 = UpConvBlock(2)
@@ -274,8 +275,8 @@ class DexiNed(tf.keras.Model):
         block_4_side = self.side_4(block_4_add)
 
         # Block 5
-        block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense_256)
-        block_5_pre_dense = self.pre_dense_5(block_5_pre_dense_512 + block_4_down )
+        # block_5_pre_dense_512 = self.pre_dense_5_0(block_4_pre_dense_256)
+        block_5_pre_dense = self.pre_dense_5(block_4_down )
         block_5, _ = self.dblock_5([block_4_add, block_5_pre_dense])
         block_5_add = block_5 + block_4_side
 

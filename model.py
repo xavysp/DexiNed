@@ -176,7 +176,7 @@ class DexiNed(nn.Module):
         self.side_2 = SingleConvBlock(128, 256, 2)
         self.side_3 = SingleConvBlock(256, 512, 2)
         self.side_4 = SingleConvBlock(512, 512, 1)
-        self.side_5 = SingleConvBlock(512, 256, 1)
+        self.side_5 = SingleConvBlock(512, 256, 1) # Sory I forget to comment this line :(
 
         # right skip connections, figure in Journal paper
         self.pre_dense_2 = SingleConvBlock(128, 256, 2)
@@ -185,7 +185,7 @@ class DexiNed(nn.Module):
         self.pre_dense_5 = SingleConvBlock(512, 512, 1)
         self.pre_dense_6 = SingleConvBlock(512, 256, 1)
 
-        # USNet
+
         self.up_block_1 = UpConvBlock(64, 1)
         self.up_block_2 = UpConvBlock(128, 1)
         self.up_block_3 = UpConvBlock(256, 2)
