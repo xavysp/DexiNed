@@ -130,10 +130,16 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
             image_shape = sample_batched['image_shape']
             print(f"input tensor shape: {images.shape}")
             # images = images[:, [2, 1, 0], :, :]
-            start_time = time.time()
+
+            end = time.perf_counter()
+            if device.type == 'cuda':
+                torch.cuda.synchronize()
             preds = model(images)
-            tmp_duration = time.time() - start_time
+            if device.type == 'cuda':
+                torch.cuda.synchronize()
+            tmp_duration = time.perf_counter() - end
             total_duration.append(tmp_duration)
+
             save_image_batch_to_disk(preds,
                                      output_dir,
                                      file_names,
@@ -141,10 +147,9 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
                                      arg=args)
             torch.cuda.empty_cache()
 
-    total_duration = np.array(total_duration)
+    total_duration = np.sum(np.array(total_duration))
     print("******** Testing finished in", args.test_data, "dataset. *****")
-    print("Average time per image: %f.4" % total_duration.mean(), "seconds")
-    print("Time spend in the Dataset: %f.4" % total_duration.sum(), "seconds")
+    print("FPS: %f.4" % (len(dataloader)/total_duration))
 
 def testPich(checkpoint_path, dataloader, model, device, output_dir, args):
     # a test model plus the interganged channels
@@ -192,7 +197,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     parser.add_argument('--choose_test_data',
                         type=int,
-                        default=-1,
+                        default=1,
                         help='Already set the dataset for testing choice: 0 - 8')
     # ----------- test -------0--
 

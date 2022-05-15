@@ -21,7 +21,7 @@ in_linux=True if platform.system()=="Linux" else False
 
 DATASET_NAME= ['BIPED','MBIPED','BSDS','BSDS300','CID','DCD','MULTICUE',
                 'PASCAL','NYUD','CLASSIC'] # 8
-TEST_DATA = DATASET_NAME[6] # MULTICUE=6
+TEST_DATA = DATASET_NAME[-1] # MULTICUE=6
 TRAIN_DATA = DATASET_NAME[0]
 test_data_inf = dataset_info(TEST_DATA, is_linux=in_linux)
 train_data_inf = dataset_info(TRAIN_DATA, is_linux=in_linux)

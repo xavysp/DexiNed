@@ -298,6 +298,7 @@ class TestDataset(Dataset):
         img = np.array(img, dtype=np.float32)
         # if self.rgb:
         #     img = img[:, :, ::-1]  # RGB->BGR
+        img=cv2.resize(img, (400, 464))
         img -= self.mean_bgr
         img = img.transpose((2, 0, 1))
         img = torch.from_numpy(img.copy()).float()
