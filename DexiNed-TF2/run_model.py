@@ -62,9 +62,13 @@ class run_DexiNed():
         global_loss = 1000.
         t_loss = []
         ckpt_save_mode = "h5"
+        tmp_lr = self.args.lr
         for epoch in range(self.args.max_epochs):
             # training
             t_loss = []
+            # if epoch in self.args.adjust_lr:
+            tmp_lr=tmp_lr*0.1
+            optimizer.lr.assign(tmp_lr)
             for step, (x, y) in enumerate(train_data):
 
                 with tf.GradientTape() as tape:

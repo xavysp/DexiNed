@@ -46,11 +46,13 @@ parser.add_argument("--progress_freq", type=int, default=50, help="display progr
 parser.add_argument("--display_freq", type=int, default=10, help="write current training images every display_freq steps")
 parser.add_argument("--scale", type=float, default=None, help="scale image before fed DexiNed.0.5, 1.5 ")
 
+parser.add_argument('--adjust_lr', default=[10, 15],type=int,
+                    help='Learning rate step size.')  # [5,10]BIRND [10,15]BIPED/BRIND
 parser.add_argument("--batch_size", type=int, default=8, help="number of images in batch")
 parser.add_argument("--test_bs", type=int, default=1, help="number of images in test batch")
 parser.add_argument("--batch_normalization", type=bool, default=True, help=" use batch norm")
-parser.add_argument("--image_height", type=int, default=400, help="scale images to this size before cropping to 256x256")
-parser.add_argument("--image_width", type=int, default=400, help="scale images to this size before cropping to 256x256")
+parser.add_argument("--image_height", type=int, default=352, help="scale images to this size before cropping to 256x256")
+parser.add_argument("--image_width", type=int, default=352, help="scale images to this size before cropping to 256x256")
 parser.add_argument("--crop_img", type=bool, default=False,
                     help="4Training: True crop image, False resize image")
 parser.add_argument("--test_img_height", type=int, default=test_data_inf["img_height"],
