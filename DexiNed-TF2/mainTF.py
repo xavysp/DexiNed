@@ -10,6 +10,7 @@ __copyright__   = "Copyright 2020, CIMI"
 
 import argparse
 import platform
+import tensorflow as tf
 
 from run_model import run_DexiNed
 from dataset_manager import dataset_info
@@ -25,6 +26,8 @@ TEST_DATA = DATASET_NAME[-1] # MULTICUE=6
 TRAIN_DATA = DATASET_NAME[0]
 test_data_inf = dataset_info(TEST_DATA, is_linux=in_linux)
 train_data_inf = dataset_info(TRAIN_DATA, is_linux=in_linux)
+test_model=False
+is_testing ="test" if test_model else "train"
 # training settings
 
 parser = argparse.ArgumentParser(description='Edge detection parameters for feeding the model')
@@ -34,7 +37,7 @@ parser.add_argument("--data4train",default=TRAIN_DATA, type=str)
 parser.add_argument("--data4test",default=TEST_DATA, type=str)
 parser.add_argument('--train_list', default=train_data_inf['train_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
 parser.add_argument('--test_list', default=test_data_inf['test_list'], type=str)  # SSMIHD: train_rgb_pair.lst, others train_pair.lst
-parser.add_argument("--model_state",default='test', choices=["train", "test", "export"])
+parser.add_argument("--model_state",default=is_testing , choices=["train", "test", "export"])
 parser.add_argument("--output_dir", default='results', help="where to put output files")
 parser.add_argument("--checkpoint_dir", default='checkpoints', help="directory with checkpoint to resume training from or use for testing")
 
@@ -69,6 +72,20 @@ parser.add_argument("--checkpoint", type=str, default='DexiNed19_model.h5', help
 
 arg = parser.parse_args()
 def main(args):
+    tf.debugging.set_log_device_placement(True)
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+        try:
+            tf.config.set_logical_device_configuration(
+                gpus[0],
+                [tf.config.LogicalDeviceConfiguration(memory_limit=1024)])
+            logical_gpus = tf.config.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Virtual devices must be set before GPUs have been initialized
+            print(e)
+
     model = run_DexiNed(args=args)
     if args.model_state=='train':
         model.train()

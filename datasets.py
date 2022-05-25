@@ -10,7 +10,7 @@ import json
 DATASET_NAMES = [
     'BIPED',
     'BSDS',
-    'BSDS-RIND',
+    'BRIND',
     'BSDS300',
     'CID',
     'DCD',
@@ -33,12 +33,12 @@ def dataset_info(dataset_name, is_linux=True):
                 'data_dir': '/opt/dataset/BSDS',  # mean_rgb
                 'yita': 0.5
             },
-            'BSDS-RIND': {
+            'BRIND': {
                 'img_height': 512,  # 321
                 'img_width': 512,  # 481
                 'train_list': 'train_pair2.lst',
                 'test_list': 'test_pair.lst',
-                'data_dir': '/opt/dataset/BSDS-RIND',  # mean_rgb
+                'data_dir': '/opt/dataset/BRIND',  # mean_rgb
                 'yita': 0.5
             },
             'BSDS300': {
@@ -432,44 +432,46 @@ class BipedDataset(Dataset):
         #  400 for BIPEd and 352 for BSDS check with 384
         crop_size = self.img_height if self.img_height == self.img_width else None#448# MDBD=480 BIPED=480/400 BSDS=352
 
-        # # for BSDS 352/BRIND
-        # if i_w> crop_size and i_h>crop_size:
-        #     i = random.randint(0, i_h - crop_size)
-        #     j = random.randint(0, i_w - crop_size)
-        #     img = img[i:i + crop_size , j:j + crop_size ]
-        #     gt = gt[i:i + crop_size , j:j + crop_size ]
+        # for BSDS 352/BRIND
+        if i_w> crop_size and i_h>crop_size:
+            i = random.randint(0, i_h - crop_size)
+            j = random.randint(0, i_w - crop_size)
+            img = img[i:i + crop_size , j:j + crop_size ]
+            gt = gt[i:i + crop_size , j:j + crop_size ]
 
-        # for BIPED/MDBD
-        if np.random.random() > 0.4: #l
-            h,w = gt.shape
-            if i_w> 500 and i_h>500:
-
-                LR_img_size = crop_size #l BIPED=256, 240 200 # MDBD= 352 BSDS= 176
-                i = random.randint(0, h - LR_img_size)
-                j = random.randint(0, w - LR_img_size)
-                # if img.
-                img = img[i:i + LR_img_size , j:j + LR_img_size ]
-                gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
-            else:
-                LR_img_size = 352#256  # l BIPED=208-352, # MDBD= 352-480- BSDS= 176-320
-                i = random.randint(0, h - LR_img_size)
-                j = random.randint(0, w - LR_img_size)
-                # if img.
-                img = img[i:i + LR_img_size, j:j + LR_img_size]
-                gt = gt[i:i + LR_img_size, j:j + LR_img_size]
-                img = cv2.resize(img, dsize=(crop_size, crop_size), )
-                gt = cv2.resize(gt, dsize=(crop_size, crop_size))
+        # # for BIPED/MDBD
+        # if np.random.random() > 0.4: #l
+        #     h,w = gt.shape
+        #     if i_w> 500 and i_h>500:
+        #
+        #         LR_img_size = crop_size #l BIPED=256, 240 200 # MDBD= 352 BSDS= 176
+        #         i = random.randint(0, h - LR_img_size)
+        #         j = random.randint(0, w - LR_img_size)
+        #         # if img.
+        #         img = img[i:i + LR_img_size , j:j + LR_img_size ]
+        #         gt = gt[i:i + LR_img_size , j:j + LR_img_size ]
+        #     else:
+        #         LR_img_size = 352#256  # l BIPED=208-352, # MDBD= 352-480- BSDS= 176-320
+        #         i = random.randint(0, h - LR_img_size)
+        #         j = random.randint(0, w - LR_img_size)
+        #         # if img.
+        #         img = img[i:i + LR_img_size, j:j + LR_img_size]
+        #         gt = gt[i:i + LR_img_size, j:j + LR_img_size]
+        #         img = cv2.resize(img, dsize=(crop_size, crop_size), )
+        #         gt = cv2.resize(gt, dsize=(crop_size, crop_size))
 
         else:
             # New addidings
             img = cv2.resize(img, dsize=(crop_size, crop_size))
             gt = cv2.resize(gt, dsize=(crop_size, crop_size))
-        # BSDS
-        # gt[gt>0.28]=1. # BSDS/MDBD
-        # gt[gt<=0.28]=0. # BSDS/MDBD
-        # for BIPED / BRIND
-        gt[gt > 0.2] += 0.6# 0.5 for BIPED/BSDS-RIND
-        gt = np.clip(gt, 0., 1.) # BIPED/BSDS-RIND
+        # BRIND
+        gt[gt > 0.1] +=0.2#0.4
+        gt = np.clip(gt, 0., 1.)
+        # gt[gt > 0.1] =1#0.4
+        # gt = np.clip(gt, 0., 1.)
+        # # for BIPED
+        # gt[gt > 0.2] += 0.6# 0.5 for BIPED
+        # gt = np.clip(gt, 0., 1.) # BIPED
         # # for MDBD
         # gt[gt > 0.1] +=0.7
         # gt = np.clip(gt, 0., 1.)

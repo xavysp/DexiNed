@@ -91,12 +91,12 @@ class UpConvBlock(layers.Layer):
             if i==up_scale-1:
                 features.append(layers.Conv2D(
                     filters=out_features, kernel_size=(1,1), strides=(1,1), padding='same',
-                    activation='relu', kernel_initializer=tf.initializers.random_normal(mean=0.),
+                    activation='relu', kernel_initializer=tf.initializers.RandomNormal(mean=0.),
                     kernel_regularizer=k_reg,use_bias=True)) #tf.initializers.TruncatedNormal(mean=0.)
                 features.append(layers.Conv2DTranspose(
                     out_features, kernel_size=(total_up_scale,total_up_scale),
                     strides=(2,2), padding='same',
-                    kernel_initializer=tf.initializers.random_normal(stddev=0.1),
+                    kernel_initializer=tf.initializers.RandomNormal(stddev=0.1),
                     kernel_regularizer=k_reg,use_bias=True)) # stddev=0.1
             else:
 
