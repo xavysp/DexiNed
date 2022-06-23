@@ -23,7 +23,7 @@ and its extended version in [arXiv](https://arxiv.org/abs/2112.02250).
 The last version of DexiNed is implemented in Pytorch, in TF2 it 
 will be available soon. If to want our preliminary version, please check legacy DIR.
 
-We have prepared a basic intro to DexiNed in a video, [check in YouTube](https://youtu.be/Hz0uU04B3U8)
+We have prepared a basic intro to DexiNed in a video, [check it in YouTube](https://youtu.be/Hz0uU04B3U8)
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 </div>
