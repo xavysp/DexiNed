@@ -2,9 +2,6 @@
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dense-extreme-inception-network-for-edge/edge-detection-on-mdbd)](https://paperswithcode.com/sota/edge-detection-on-mdbd?p=dense-extreme-inception-network-for-edge)
 # DexiNed: Dense Extreme Inception Network for Edge Detection (Extended version)
 
-<!-- ```diff
-- Sorry for any inconvenience, we are updating the repo
-``` -->
 ```diff
 - We have just updated the last version of DexiNed in Pytorch.
 - The implementation with TF1 is fransfered to the "legacy" dir.
@@ -25,6 +22,8 @@ version of Dexined in [ieeexplore](https://ieeexplore.ieee.org/document/9093290)
 and its extended version in [arXiv](https://arxiv.org/abs/2112.02250).
 The last version of DexiNed is implemented in Pytorch, in TF2 it 
 will be available soon. If to want our preliminary version, please check legacy DIR.
+
+We have prepared a basic intro to DexiNed in a video, [check in YouTube](https://youtu.be/Hz0uU04B3U8)
 
 <div style="text-align:center"><img src='figs/DexiNed_banner.png' width=800>
 </div>
