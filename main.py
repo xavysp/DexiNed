@@ -205,7 +205,7 @@ def parse_args():
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = test_inf['data_dir']
-    is_testing =True#  current test -352-SM-NewGT-2AugmenPublish
+    is_testing =False#  current test -352-SM-NewGT-2AugmenPublish
 
     # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0, MDBD=6
@@ -405,7 +405,7 @@ def main(args):
 
         num_param = count_parameters(model)
         print('-------------------------------------------------------')
-        print('Number of parameters of current DexiNed model:')
+        print('DexiNed # of Parameters:')
         print(num_param)
         print('-------------------------------------------------------')
         return
@@ -439,6 +439,12 @@ def main(args):
         img_test_dir = os.path.join(output_dir_epoch, args.test_data + '_res')
         os.makedirs(output_dir_epoch,exist_ok=True)
         os.makedirs(img_test_dir,exist_ok=True)
+        validate_one_epoch(epoch,
+                           dataloader_val,
+                           model,
+                           device,
+                           img_test_dir,
+                           arg=args)
 
         avg_loss =train_one_epoch(epoch,
                         dataloader_train,
@@ -466,7 +472,7 @@ def main(args):
         print('Current learning rate> ', optimizer.param_groups[0]['lr'])
     num_param = count_parameters(model)
     print('-------------------------------------------------------')
-    print('~Number of parameters of current DexiNed model:')
+    print('DexiNed, # of Parameters:')
     print(num_param)
     print('-------------------------------------------------------')
 
