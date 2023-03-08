@@ -186,14 +186,19 @@ address = {Los Alamitos, CA, USA},
 month = {mar}
 }
 ```
-
+Extended version.
 ```
-@misc{soria2021dexined_ext,
-    title={Dense Extreme Inception Network for Edge Detection},
-    author={Xavier Soria and Angel Sappa and Patricio Humanante and Arash Arbarinia},
-    year={2021},
-    eprint={arXiv:2112.02250},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@article{soria2023dexined_ext,
+title = {Dense extreme inception network for edge detection},
+journal = {Pattern Recognition},
+volume = {139},
+pages = {109461},
+year = {2023},
+issn = {0031-3203},
+doi = {https://doi.org/10.1016/j.patcog.2023.109461},
+url = {https://www.sciencedirect.com/science/article/pii/S0031320323001619},
+author = {Xavier Soria and Angel Sappa and Patricio Humanante and Arash Akbarinia},
+keywords = {Edge detection, Deep learning, CNN, Contour detection, Boundary detection, Segmentation}
+}
 ```
 
