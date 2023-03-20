@@ -121,7 +121,7 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
     model.eval()
 
     with torch.no_grad():
-        total_duration = []
+        total_duration = 0 
         for batch_id, sample_batched in enumerate(dataloader):
             images = sample_batched['images'].to(device)
             if not args.test_data == "CLASSIC":
@@ -138,7 +138,7 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
             if device.type == 'cuda':
                 torch.cuda.synchronize()
             tmp_duration = time.perf_counter() - end
-            total_duration.append(tmp_duration)
+            total_duration += tmp_duration
 
             save_image_batch_to_disk(preds,
                                      output_dir,
@@ -147,7 +147,6 @@ def test(checkpoint_path, dataloader, model, device, output_dir, args):
                                      arg=args)
             torch.cuda.empty_cache()
 
-    total_duration = np.sum(np.array(total_duration))
     print("******** Testing finished in", args.test_data, "dataset. *****")
     print("FPS: %f.4" % (len(dataloader)/total_duration))
 
