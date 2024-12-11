@@ -52,10 +52,11 @@ Dexined version on TF 2 is not ready
 * [Kornia](https://kornia.github.io/)
 * Other package like Numpy, h5py, PIL, json. 
 
-Once the packages are installed,  clone this repo as follow: 
+Once the packages are installed, clone this repo as follows and initiate the MBIPED submodule: 
 
     git clone https://github.com/xavysp/DexiNed.git
     cd DexiNed
+    git submodule update --init
 
 ## Project Architecture
 
@@ -76,19 +77,19 @@ Once the packages are installed,  clone this repo as follow:
 ├── model.py                    # DexiNed class in pythorch
 ```
 
-Before to start please check dataset.py, from the first line of code you can see the datasets used for training/testing. The main.py, line 194, call the data  for the training or testing, see the example of the code below:
+Before starting, please check `datasets.py`. From the first line of code you can see the datasets used for training/testing. In `main.py`, line 194, we call the data for the training or testing. See the example of the code below:
 ```
     parser = argparse.ArgumentParser(description='DexiNed trainer.')
     parser.add_argument('--choose_test_data',
                         type=int,
                         default=1,
                         help='Already set the dataset for testing choice: 0 - 8')
-    # ----------- test -------0--
+    
+    ...
 
     TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
     test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
     test_dir = test_inf['data_dir']
-    is_testing = True# current test -352-SM-NewGT-2AugmenPublish
 
     # Training settings
     TRAIN_DATA = DATASET_NAMES[0] # BIPED=0
@@ -96,8 +97,24 @@ Before to start please check dataset.py, from the first line of code you can see
     train_dir = train_inf['data_dir']
 ```
 
+The datasets listed below must be downloaded in order for training to be performed. In the current configuration of the `datasets.py` file, for standard datasets, the datasets must be stored in a directory called `dataset` underneath the root directory of this repository. For custom datasets, the data must be stored in the `data` directory underneath the root directory of this repository.
+
+## Train
+
+In order to train the model, call the `main.py` script with the flag `--is_training` along with any other additional flags. (Note: The other flags can all be found in the `parse_args()` function in the `main.py` script.) The program is assumed to be in testing mode unless this is done. Below is what should be entered into the command line, assuming no other options are selected:
+
+`python main.py --is_training`
+
+Training with the BIPED dataset is configured to work only with the augmented version of the dataset that is generated from the MBIPED project/submodule. In order to generate this augmented dataset, edit file `MBIPED/main.py` to have `BIPED_main_dir` in the `main()` function be equal to the directory at which you are storing the BIPED dataset. This should be changed to `dataset` for the standard configuration. After this is completed, from the DexiNed root directory, call the MBIPED main script using:
+
+`python MBIPED/main.py`
+
+This will generate the augmented dataset. 
+
+Note: This is a long process that is not currently able to be paused/restarted. If the process fails for any reason, the user must delete the augmented image files and restart in order to retry.
+
 ## Test
-As previously mentioned, the datasets.py has, among other things, the whole datasets configurations used in DexiNed for testing and training:
+As previously mentioned, the `datasets.py` file has, among other things, the whole datasets configurations used in DexiNed for testing and training:
 ```
 DATASET_NAMES = [
     'BIPED',
@@ -111,19 +128,13 @@ DATASET_NAMES = [
     'CLASSIC'
 ] 
 ```
-For example, if want to test your own dataset or image choose "CLASSIC" and save your test data in "data" dir.
-Before test the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1V56vGTsu7GYiQouCIKvTWl5UKCZ6yCNu/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/10/(here the checkpoints from Drive), then run as follow:
+For example, if want to test your own dataset or image choose `CLASSIC` and save your test data in the `data` dir.
+Before testing a pretrained version of the DexiNed model, it is necesarry to download the checkpoint here [Checkpoint Pytorch](https://drive.google.com/file/d/1V56vGTsu7GYiQouCIKvTWl5UKCZ6yCNu/view?usp=sharing) and save this file into the DexiNed folder like: checkpoints/BIPED/10/(here the checkpoints from Drive), then run as follow:
 
 ```python main.py --choose_test_data=-1 ```
-Make sure that in main.py the test setting be as:
-```parser.add_argument('--is_testing', default=True, help='Script in testing mode.')```
-DexiNed downsample the input image till 16 scales, please make sure that, in dataset_info fucn (datasets.py), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will find the last trained checkpoint, which has been trained in the last version of BIPED dataset that will be updated soon in Kaggle **
+Be sure not to set the `--is_training` flag when calling the main script.
 
-## Train
-
-    python main.py 
-Make sure that in main.py the train setting be as:
-```parser.add_argument('--is_testing', default=False, help='Script in testing mode.')```
+DexiNed downsample the input images by factors of 16. Please make sure that, in the `dataset_info()` function (`datasets.py`), the image width and height be multiple of 16, like 512, 960, and etc. **In the Checkpoint from Drive you will find the last trained checkpoint, which has been trained in the last version of the BIPED dataset that will be updated soon in Kaggle **
 
 # Datasets
 
@@ -164,7 +175,7 @@ After WACV20, the BIPED images have been checked again and added more annotation
 
 # Citation
 
-If you like DexiNed, why not starring the project on GitHub!
+If you like DexiNed, why not star the project on GitHub!
 
 [![GitHub stars](https://img.shields.io/github/stars/xavysp/DexiNed.svg?style=social&label=Star&maxAge=3600)](https://GitHub.com/xavysp/DexiNed/stargazers/)
 

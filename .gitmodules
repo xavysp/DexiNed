@@ -1,0 +1,3 @@
+[submodule "MBIPED"]
+	path = MBIPED
+	url = git@github.com:xavysp/MBIPED.git

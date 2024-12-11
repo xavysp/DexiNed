@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse
 import os
 import time, platform
+from dataclasses import dataclass
 
 import cv2
 import torch.optim as optim
@@ -14,6 +15,38 @@ from losses import *
 from model import DexiNed
 from utils import (image_normalization, save_image_batch_to_disk,
                    visualize_result,count_parameters)
+
+@dataclass
+class Args:
+    choose_test_data: int
+    input_dir: str
+    input_val_dir: str
+    output_dir: str
+    train_data: str
+    test_data: str
+    test_list: str
+    train_list: str
+    is_testing: bool
+    double_img: bool
+    resume: bool
+    checkpoint_data: str
+    test_img_width: int
+    test_img_height: int
+    res_dir: str
+    log_interval_vis: int
+    epochs: int
+    lr: float
+    wd: float
+    adjust_lr: list[int]
+    batch_size: int
+    workers: int
+    tensorboard: bool
+    img_width: int
+    img_height: int
+    channel_swap: list[int]
+    crop_img: bool
+    mean_pixel_values: list[float]
+
 
 IS_LINUX = True if platform.system()=="Linux" else False
 def train_one_epoch(epoch, dataloader, model, criterion, optimizer, device,
@@ -199,28 +232,12 @@ def parse_args():
                         type=int,
                         default=-1,
                         help='Already set the dataset for testing choice: 0 - 8')
-    # ----------- test -------0--
-
-
-    TEST_DATA = DATASET_NAMES[parser.parse_args().choose_test_data] # max 8
-    test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
-    test_dir = test_inf['data_dir']
-    is_testing =True#  current test -352-SM-NewGT-2AugmenPublish
-
-    # Training settings
-    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0, MDBD=6
-    train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
-    train_dir = train_inf['data_dir']
-
-
     # Data parameters
     parser.add_argument('--input_dir',
                         type=str,
-                        default=train_dir,
                         help='the path to the directory with the input data.')
     parser.add_argument('--input_val_dir',
                         type=str,
-                        default=test_inf['data_dir'],
                         help='the path to the directory with the input data for validation.')
     parser.add_argument('--output_dir',
                         type=str,
@@ -229,31 +246,25 @@ def parse_args():
     parser.add_argument('--train_data',
                         type=str,
                         choices=DATASET_NAMES,
-                        default=TRAIN_DATA,
                         help='Name of the dataset.')
     parser.add_argument('--test_data',
                         type=str,
                         choices=DATASET_NAMES,
-                        default=TEST_DATA,
                         help='Name of the dataset.')
     parser.add_argument('--test_list',
                         type=str,
-                        default=test_inf['test_list'],
                         help='Dataset sample indices list.')
     parser.add_argument('--train_list',
                         type=str,
-                        default=train_inf['train_list'],
                         help='Dataset sample indices list.')
-    parser.add_argument('--is_testing',type=bool,
-                        default=is_testing,
-                        help='Script in testing mode.')
+    parser.add_argument('--is_training',
+                        action='store_true',
+                        help='Script in training mode.')
     parser.add_argument('--double_img',
-                        type=bool,
-                        default=False,
+                        action='store_true',
                         help='True: use same 2 imgs changing channels')  # Just for test
     parser.add_argument('--resume',
-                        type=bool,
-                        default=False,
+                        action='store_true',
                         help='use previous trained data')  # Just for test
     parser.add_argument('--checkpoint_data',
                         type=str,
@@ -261,11 +272,9 @@ def parse_args():
                         help='Checkpoint path from which to restore model weights from.')
     parser.add_argument('--test_img_width',
                         type=int,
-                        default=test_inf['img_width'],
                         help='Image width for testing.')
     parser.add_argument('--test_img_height',
                         type=int,
-                        default=test_inf['img_height'],
                         help='Image height for testing.')
     parser.add_argument('--res_dir',
                         type=str,
@@ -303,8 +312,8 @@ def parse_args():
                         default=16,
                         type=int,
                         help='The number of workers for the dataloaders.')
-    parser.add_argument('--tensorboard',type=bool,
-                        default=True,
+    parser.add_argument('--no_tensorboard',
+                        action='store_true',
                         help='Use Tensorboard for logging.'),
     parser.add_argument('--img_width',
                         type=int,
@@ -317,15 +326,94 @@ def parse_args():
     parser.add_argument('--channel_swap',
                         default=[2, 1, 0],
                         type=int)
-    parser.add_argument('--crop_img',
-                        default=True,
-                        type=bool,
+    parser.add_argument('--no_crop_img',
+                        action='store_true',
                         help='If true crop training images, else resize images to match image width and height.')
     parser.add_argument('--mean_pixel_values',
                         default=[103.939,116.779,123.68, 137.86],
                         type=float)  # [103.939,116.779,123.68] [104.00699, 116.66877, 122.67892]
+    
+
     args = parser.parse_args()
-    return args
+
+    # Grab all information from args with literal default values
+    choose_test_data = args.choose_test_data
+    output_dir = args.output_dir
+    is_testing = not args.is_training
+    double_img = args.double_img
+    resume = args.resume
+    checkpoint_data = args.checkpoint_data
+    res_dir = args.res_dir
+    log_interval_vis = args.log_interval_vis
+    epochs = args.epochs
+    lr = args.lr
+    wd = args.wd
+    adjust_lr = args.adjust_lr
+    batch_size = args.batch_size
+    workers = args.workers
+    tensorboard = not args.no_tensorboard
+    img_width = args.img_width
+    img_height = args.img_height
+    channel_swap = args.channel_swap
+    crop_img = not args.no_crop_img
+    mean_pixel_values = args.mean_pixel_values
+
+    # Grab non-literal/dependent default values
+
+    TEST_DATA = DATASET_NAMES[choose_test_data] # max 8
+    test_inf = dataset_info(TEST_DATA, is_linux=IS_LINUX)
+
+    # Training settings
+    TRAIN_DATA = DATASET_NAMES[0] # BIPED=0, MDBD=6
+    train_inf = dataset_info(TRAIN_DATA, is_linux=IS_LINUX)
+
+    if args.input_dir is None:
+        input_dir = train_inf['data_dir']
+    else:
+        input_dir = args.input_dir
+
+    if args.input_val_dir is None:
+        input_val_dir = test_inf['data_dir']
+    else:
+        input_val_dir = args.input_val_dir
+
+    if args.train_data is None:
+        train_data = TRAIN_DATA
+    else:
+        train_data = args.train_data
+    
+    if args.test_data is None:
+        test_data = TEST_DATA
+    else:
+        test_data = args.test_data
+
+    if args.test_list is None:
+        test_list = test_inf['test_list']
+    else:
+        test_list = args.test_list
+    
+    if args.train_list is None:
+        train_list = train_inf['train_list']
+    else:
+        train_list = args.train_list
+
+    if args.test_img_width is None:
+        test_img_width = test_inf['img_width']
+    else:
+        test_img_width = args.test_img_width
+
+    if args.test_img_height is None:
+        test_img_height = test_inf['img_height']
+    else:
+        test_img_height = args.test_img_height
+
+    arg_struct = Args(choose_test_data, input_dir, input_val_dir, output_dir, train_data, test_data, \
+                    test_list, train_list, is_testing, double_img, resume, checkpoint_data, test_img_width, \
+                    test_img_height, res_dir, log_interval_vis, epochs, lr, wd, adjust_lr, batch_size, \
+                    workers, tensorboard, img_width, img_height, channel_swap, crop_img, mean_pixel_values)
+    
+    print(arg_struct)
+    return arg_struct
 
 
 def main(args):
